@@ -27,6 +27,7 @@ I'm designing the rack layout and network first so I know exactly what to buy.
 - [Parts list](parts-list.md) - what I plan to buy and why
 - [Security plan](security-plan.md) - how I'll keep it secure
 - [Research notes](research-notes.md) - what I've learned while planning
+- [Build log](build-log.md) - how the build is going, problems and fixes
 
 ## Progress
 
@@ -39,7 +40,7 @@ I'm designing the rack layout and network first so I know exactly what to buy.
 - [x] Draw network diagram
 - [x] Design rack layout
 - [x] Write security plan
-- [ ] Buy parts
+- [x] Buy parts
 - [ ] Build it
       
 I'll keep this updated as I go.
