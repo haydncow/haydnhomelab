@@ -1,31 +1,32 @@
 # Parts List
 
-Budget: around £200
+Budget: £200-300
 
-Prices checked October 2026. Pi prices have been going up, so I'll check again before buying.
+Prices checked mid October 2026. Raspberry Pi put prices up on 1 October because of RAM costs, and SD cards have gone up too, so this is more than I first planned.
 
 | Part | Why I need it | Where | Price |
 |------|---------------|-------|-------|
-| Raspberry Pi 5 (2GB) | Runs Pi-hole and Tailscale. Pi-hole is lightweight so 2GB is enough | The Pi Hut | £74.40 |
-| DeskPi RackMate T0 (4U, 10 inch) | Holds everything. Comes with a 1U shelf and a blank panel | Amazon UK | £66.49 |
-| TP-Link TL-SG105 (5 port gigabit switch) | Connects the Pi and future devices to my router | John Lewis | £17.99 |
-| Raspberry Pi 27W USB-C power supply | Official PSU recommended for the Pi 5 | The Pi Hut | £10.90 |
-| 32GB microSD card | Storage for the operating system | Various | ~£8 |
-| Active cooler for Pi 5 | Keeps the Pi cool inside the rack | The Pi Hut | ~£5 |
-| Short Cat6 patch cables (pack of 5) | Tidy connections inside the rack | Amazon UK | ~£7 |
+| Raspberry Pi 5 (2GB) | Runs Pi-hole and Tailscale. The 1GB would be enough but it's out of stock | The Pi Hut | £74.40 |
+| DeskPi RackMate T0 (4U, 10 inch) | Holds everything. Comes with a 1U shelf and a blank panel | Amazon UK | £79.99 |
+| TP-Link TL-SG105E (5 port managed switch) | Connects the Pi and future devices to my router, and lets me set up VLANs | Amazon UK | £17.99 |
+| Raspberry Pi 27W USB-C power supply | Official PSU recommended for the Pi 5 | The Pi Hut | £11.50 |
+| SanDisk Ultra 32GB microSD card | Storage for the operating system | Amazon UK | £19.95 |
+| UGREEN USB card reader | So I can flash the OS from my PC | Amazon UK | £6.34 |
+| Active cooler for Pi 5 | Keeps the Pi cool inside the rack | The Pi Hut | £4.80 |
+| DeskPi 1U SBC shelf | Mounts the Pi properly in the rack instead of it just sitting on the shelf | The Pi Hut | £15.40 |
+| Cable Matters Cat6 patch cables (x5, 0.3m) | Tidy connections inside the rack | Amazon UK | £7.99 |
 
-**Estimated total:** ~£190
+**Total:** £238.36 (plus Pi Hut delivery)
 
 ## Why these choices
 
-- **Pi 5 2GB:** the bigger RAM models cost a lot more and Pi-hole doesn't need them.
-- **4U rack:** enough room for a switch, the Pi and space to add more later.
-- **Unmanaged switch:** cheap and simple to start with.
+- **Pi 5 2GB:** I wanted the 1GB (£43.20) to save money, but it's out of stock at The Pi Hut. The 2GB gives me more room to add services later anyway.
+- **4U rack:** enough room for a switch, the Pi and space to add more later. Amazon and The Pi Hut are about the same price now.
+- **Managed switch:** I was going to get the unmanaged TL-SG105 first and upgrade later, but the managed TL-SG105E is about the same price. It means I can try VLANs straight away.
+- **Pi Hut for the small bits:** buying the Pi, PSU, cooler and SBC shelf in one order saves on delivery.
 
 ## Possible upgrades later
 
-- **Managed switch** (e.g. TP-Link TL-SG105E) so I can set up VLANs and
-  separate the lab from my home devices. Good for learning network security.
 - **SSD instead of microSD** for better reliability.
 - **A second Pi** for running more services.
 
