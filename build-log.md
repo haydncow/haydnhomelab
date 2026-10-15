@@ -2,6 +2,15 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
+## 15 October 2026
+
+- The DeskPi RackMate T0 arrived, with the shelf and blank panel in.
+- Took some photos of it against a white background (in [photos](photos/)).
+
+<img src="photos/rack-angle.jpg" alt="Rack from an angle" width="360">
+
+**Next:** flash the SD card, boot the Pi for the first time, then fit the Pi and switch in the rack.
+
 ## 14 October 2026
 
 - Ordered all the parts from The Pi Hut and Amazon (see the [parts list](parts-list.md)).

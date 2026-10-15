@@ -22,12 +22,23 @@ This is where I'm going to plan and research my first home lab before I build it
 
 I'm designing the rack layout and network first so I know exactly what to buy. 
 
+## Build so far
+
+<p align="center">
+  <img src="photos/rack-front.jpg" alt="Rack from the front" height="240">
+  <img src="photos/rack-angle.jpg" alt="Rack from an angle" height="240">
+  <img src="photos/rack-top.jpg" alt="Rack from above" height="240">
+</p>
+
+The DeskPi RackMate T0 with the shelf and blank panel in. The Pi and switch go in next.
+
 ## What's in this repo 
 
 - [Parts list](parts-list.md) - what I plan to buy and why
 - [Security plan](security-plan.md) - how I'll keep it secure
 - [Research notes](research-notes.md) - what I've learned while planning
 - [Build log](build-log.md) - how the build is going, problems and fixes
+- [Photos](photos/) - photos of the build as it goes
 
 ## Progress
 
