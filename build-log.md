@@ -2,6 +2,18 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
+## 16 October 2026
+
+- Flashed Raspberry Pi OS Lite (64-bit) onto the SD card with Raspberry Pi Imager 2.0. Set the hostname to `homelab`, made my own user, left Wi-Fi off (the Pi uses Ethernet) and turned on SSH with key login only.
+- The Pi booted and showed up on my network as `homelab.local`, but SSH kept saying `Permission denied (publickey)`.
+- Ran `ssh -v` to see what was going on. My Mac was offering the right key, but the Pi was rejecting it.
+- Checked the setup file Imager writes to the SD card (`user-data`). My key was in it and the fingerprint matched, so Imager had done its part. Something went wrong on the Pi during first boot. I didn't get to the bottom of it because reflashing wiped the Pi's logs.
+- Fix: reflashed with password login on, logged in, copied my key over with `ssh-copy-id`, checked key login worked, then turned password login off with a settings file in `/etc/ssh/sshd_config.d/`.
+- Tested it: `ssh -o PubkeyAuthentication=no haydn@homelab.local` now gives `Permission denied (publickey)`, so nobody can log in with just a password.
+- Also made a new SSH key because I'd forgotten the passphrase for the first one.
+
+**Next:** update the Pi, then set up the UFW firewall and automatic security updates.
+
 ## 15 October 2026
 
 - The DeskPi RackMate T0 arrived, with the shelf and blank panel in.
