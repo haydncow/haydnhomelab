@@ -15,7 +15,7 @@ learn more.
 - [x] Automatic security updates (`unattended-upgrades`)
 - [x] Fixed IP for the Pi (`192.168.1.5`)
 - [ ] Back up Pi-hole with Teleporter
-- [ ] Nmap scan from another device
+- [x] Nmap scan from my Mac on the home network (results below)
 - [ ] VLANs on the managed switch
 - [ ] Fail2ban
 
@@ -79,6 +79,16 @@ learn more.
 
 ## Testing
 
-Once it's built, I'll check my security by:
-- Scanning the Pi with Nmap from another device to see which ports are open
-- Making sure password login over SSH is actually blocked
+- [x] Password login over SSH is blocked. `ssh -o PubkeyAuthentication=no` gets `Permission denied (publickey)`
+- [x] Nmap scan from my Mac on the home network (17 October 2026)
+- [ ] Nmap scan over Tailscale
+
+### Nmap results (home network)
+
+| Scan | Command | Result |
+|------|---------|--------|
+| Top 1000 TCP ports | `nmap 192.168.1.5` | 22, 53, 80, 443 open. 996 filtered |
+| All 65,535 TCP ports | `sudo nmap -p- 192.168.1.5` | 22, 53, 80, 443 open. 65,531 filtered |
+| DNS over UDP | `sudo nmap -sU -p 53 192.168.1.5` | 53/udp open |
+
+Only the ports I opened in UFW show up. Everything else is "filtered", which means the firewall drops it without replying, so a scan can't even tell if anything is there.

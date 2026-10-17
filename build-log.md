@@ -19,6 +19,17 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 **Next:** Nmap scan to check only the ports I opened are showing, use Pi-hole for the whole house, and fit everything in the rack.
 
+### Later on 17 October: Nmap scan
+
+- Scanned the Pi with Nmap from my Mac to check the firewall is doing what I think it is.
+- `nmap 192.168.1.5` (the 1000 most common ports): only 22, 53, 80 and 443 open.
+- `sudo nmap -p- 192.168.1.5` (all 65,535 ports, took about 10 minutes): same 4 open, the other 65,531 filtered.
+- `sudo nmap -sU -p 53 192.168.1.5`: DNS over UDP open, which Pi-hole needs.
+- The ports show as filtered, not closed, because UFW drops the packets without replying. That's what I wanted.
+- Full results are in the [security plan](security-plan.md#nmap-results-home-network).
+
+**Next:** scan over Tailscale, use Pi-hole for the whole house, and fit everything in the rack.
+
 ## 16 October 2026
 
 - Flashed Raspberry Pi OS Lite (64-bit) onto the SD card with Raspberry Pi Imager 2.0. Set the hostname to `homelab`, made my own user, left Wi-Fi off (the Pi uses Ethernet) and turned on SSH with key login only.

@@ -57,7 +57,7 @@ The DeskPi RackMate T0 with the shelf and blank panel in. The Pi and switch go i
 - [x] Pi-hole (tested on my Mac)
 - [x] Tailscale remote access
 - [ ] Pi-hole for the whole house
-- [ ] Security testing (Nmap scan)
+- [x] Security testing (Nmap scan, only the ports I opened show up)
 - [ ] Fit everything in the rack
       
 I'll keep this updated as I go.
