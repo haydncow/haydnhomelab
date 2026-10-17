@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Builds a small public status page for my homelab.
+"""Collects live stats for my homelab status page.
 
-Runs every 5 minutes from cron and writes /srv/status/index.html,
-which Tailscale Funnel shares on the internet.
+Runs every minute from cron and writes /srv/status/stats.json.
+index.html (in the same folder) reads it, and Tailscale Funnel
+shares the folder on the internet.
 
 It only shows harmless numbers (uptime, temperature, memory, ads blocked).
 No IP addresses, hostnames or software versions, because those help attackers.
 """
-import html
 import json
 import os
 import time
@@ -79,57 +79,25 @@ def safe(fn):
 
 
 def main():
-    stats = safe(pihole_stats) or ("n/a", "n/a", "n/a")
-    rows = [
-        ("Uptime", safe(uptime)),
-        ("CPU temp", safe(cpu_temp)),
-        ("CPU load", safe(cpu_load)),
-        ("Memory used", safe(memory_used)),
-        ("Ads blocked (24h)", stats[0]),
-        ("DNS queries (24h)", stats[1]),
-        ("Blocked", stats[2]),
-    ]
-    items = "\n".join(
-        f'<div class="row"><span>{html.escape(k)}</span><b>{html.escape(v or "n/a")}</b></div>'
-        for k, v in rows
-    )
-    updated = time.strftime("%d %b %Y, %H:%M")
-
-    page = f"""<!doctype html>
-<html lang="en"><head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="refresh" content="300">
-<title>Haydn's homelab</title>
-<style>
-  body {{ margin: 0; min-height: 100vh; display: grid; place-items: center;
-         background: #0d1117; color: #e6edf3; font: 16px/1.5 ui-monospace, Menlo, monospace; }}
-  .card {{ width: min(420px, 92vw); border: 1px solid #30363d; border-radius: 12px;
-          padding: 24px; background: #161b22; }}
-  h1 {{ font-size: 18px; margin: 0 0 4px; }}
-  .live {{ color: #3fb950; }}
-  .sub {{ color: #8b949e; font-size: 13px; margin: 0 0 18px; }}
-  .row {{ display: flex; justify-content: space-between; padding: 8px 0;
-          border-bottom: 1px dashed #30363d; }}
-  .row:last-child {{ border-bottom: 0; }}
-  .row span {{ color: #8b949e; }}
-  footer {{ color: #8b949e; font-size: 12px; margin-top: 16px; }}
-  a {{ color: #58a6ff; }}
-</style></head>
-<body><div class="card">
-<h1>&gt; haydn's homelab <span class="live">&#9679; online</span></h1>
-<p class="sub">Raspberry Pi 5 in a 10 inch rack, running Pi-hole</p>
-{items}
-<footer>Updated {updated}, refreshes every 5 minutes.<br>
-How it's built: <a href="https://github.com/haydncow/homelab-plan">github.com/haydncow/homelab-plan</a></footer>
-</div></body></html>
-"""
+    blocked, queries, percent = safe(pihole_stats) or (None, None, None)
+    now = time.time()
+    data = {
+        "updated": int(now),
+        "updated_text": time.strftime("%d %b %Y, %H:%M", time.localtime(now)),
+        "uptime": safe(uptime),
+        "temp": safe(cpu_temp),
+        "load": safe(cpu_load),
+        "memory": safe(memory_used),
+        "blocked": blocked,
+        "queries": queries,
+        "percent": percent,
+    }
     os.makedirs(OUT_DIR, exist_ok=True)
-    tmp = os.path.join(OUT_DIR, ".index.html.tmp")
+    tmp = os.path.join(OUT_DIR, ".stats.json.tmp")
     with open(tmp, "w") as f:
-        f.write(page)
+        json.dump(data, f)
     os.chmod(tmp, 0o644)
-    os.replace(tmp, os.path.join(OUT_DIR, "index.html"))  # swap in one go
+    os.replace(tmp, os.path.join(OUT_DIR, "stats.json"))  # swap in one go
 
 
 if __name__ == "__main__":

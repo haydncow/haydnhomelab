@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haydn's homelab</title>
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --line: #30363d; --text: #e6edf3; --muted: #8b949e;
+    --green: #3fb950; --blue: #58a6ff; --amber: #e3b341; --metal: #2b3138; --metal2: #1e2228;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+         font: 15px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  header { max-width: 1040px; margin: 0 auto; padding: 28px 16px 8px; }
+  h1 { font-size: 22px; margin: 0; }
+  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; margin-left: 8px; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+  .online .dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .online { color: var(--green); }
+  .offline { color: var(--amber); }
+  .offline .dot { background: var(--amber); }
+  header p { color: var(--muted); margin: 6px 0 0; }
+  main { max-width: 1040px; margin: 0 auto; padding: 16px; display: grid;
+         grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
+  .rack-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+  svg { width: 100%; height: auto; display: block; }
+  .part { cursor: pointer; outline: none; }
+  .part .hit { fill: transparent; stroke: transparent; stroke-width: 3; rx: 6; transition: stroke .15s; }
+  .part:hover .hit, .part:focus-visible .hit { stroke: var(--blue); }
+  .part.active .hit { stroke: var(--green); }
+  .hint { fill: var(--muted); font-size: 11px; }
+  .led { animation: blink 1.6s infinite; }
+  .led.slow { animation-duration: 2.7s; }
+  .led.fast { animation-duration: .9s; }
+  @keyframes blink { 0%, 60% { opacity: 1; } 70%, 100% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { .led { animation: none; } }
+  .info { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-height: 300px; }
+  .info h2 { font-size: 18px; margin: 0 0 4px; }
+  .info .tag { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .info p { margin: 0 0 12px; }
+  .info ul { margin: 0 0 12px; padding-left: 18px; }
+  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 6px 0 14px; }
+  .stat { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .stat span { display: block; color: var(--muted); font-size: 12px; }
+  .stat b { font-size: 18px; }
+  .stat.big { grid-column: span 2; }
+  .bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 6px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--green); width: 0; transition: width .6s; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .badges { max-width: 1040px; margin: 0 auto; padding: 0 16px 8px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 13px; color: var(--muted); background: var(--panel); }
+  .badge b { color: var(--green); font-weight: normal; }
+  footer { max-width: 1040px; margin: 0 auto; padding: 8px 16px 32px; color: var(--muted); font-size: 13px; }
+  a { color: var(--blue); }
+</style>
+</head>
+<body>
+<header>
+  <h1>&gt; haydn's homelab <span id="status" class="status"><span class="dot"></span><span id="status-text">checking...</span></span></h1>
+  <p>A Raspberry Pi 5 in a 10 inch rack. Click any part of the rack to see what it does.</p>
+</header>
+
+<main>
+  <div class="rack-wrap">
+    <svg viewBox="0 0 520 560" role="img" aria-label="Drawing of my 10 inch rack">
+      <!-- handles -->
+      <path d="M95 52 v-26 q0-12 12-12 h96 q12 0 12 12 v26" fill="none" stroke="#6e7681" stroke-width="8" stroke-linecap="round"/>
+      <path d="M305 52 v-26 q0-12 12-12 h96 q12 0 12 12 v26" fill="none" stroke="#6e7681" stroke-width="8" stroke-linecap="round"/>
+      <!-- frame -->
+      <rect x="40" y="50" width="440" height="490" rx="14" fill="#11151a" stroke="#6e7681" stroke-width="5"/>
+      <rect x="64" y="66" width="22" height="458" fill="var(--metal)"/>
+      <rect x="434" y="66" width="22" height="458" fill="var(--metal)"/>
+      <g fill="#0d1117" stroke="#6e7681" stroke-width="1.5">
+        <circle cx="75" cy="92" r="4"/><circle cx="75" cy="128" r="4"/><circle cx="75" cy="200" r="4"/><circle cx="75" cy="236" r="4"/>
+        <circle cx="75" cy="308" r="4"/><circle cx="75" cy="344" r="4"/><circle cx="75" cy="416" r="4"/><circle cx="75" cy="452" r="4"/>
+        <circle cx="445" cy="92" r="4"/><circle cx="445" cy="128" r="4"/><circle cx="445" cy="200" r="4"/><circle cx="445" cy="236" r="4"/>
+        <circle cx="445" cy="308" r="4"/><circle cx="445" cy="344" r="4"/><circle cx="445" cy="416" r="4"/><circle cx="445" cy="452" r="4"/>
+      </g>
+
+      <!-- U1: KKSB panel with the Pi and a spare slot -->
+      <rect x="96" y="72" width="328" height="100" rx="6" fill="var(--metal2)" stroke="#444c56" stroke-width="2"/>
+      <g fill="#0d1117">
+        <rect x="108" y="80" width="5" height="12" rx="2"/><rect x="120" y="80" width="5" height="12" rx="2"/><rect x="132" y="80" width="5" height="12" rx="2"/>
+        <rect x="144" y="80" width="5" height="12" rx="2"/><rect x="156" y="80" width="5" height="12" rx="2"/><rect x="168" y="80" width="5" height="12" rx="2"/>
+        <rect x="352" y="80" width="5" height="12" rx="2"/><rect x="364" y="80" width="5" height="12" rx="2"/><rect x="376" y="80" width="5" height="12" rx="2"/>
+        <rect x="388" y="80" width="5" height="12" rx="2"/><rect x="400" y="80" width="5" height="12" rx="2"/>
+      </g>
+      <g class="part" id="part-pi" data-part="pi" tabindex="0" role="button" aria-label="Raspberry Pi 5">
+        <rect x="108" y="98" width="150" height="62" rx="5" fill="#0d1117" stroke="var(--green)" stroke-width="2"/>
+        <rect x="118" y="108" width="32" height="34" rx="3" fill="#161b22" stroke="#6e7681"/>
+        <rect x="124" y="112" width="5" height="5" fill="var(--green)" class="led fast"/>
+        <rect x="139" y="112" width="5" height="5" fill="var(--amber)" class="led slow"/>
+        <rect x="158" y="108" width="38" height="15" rx="2" fill="#161b22" stroke="#6e7681"/><rect x="164" y="111" width="26" height="5" fill="#1f6feb"/>
+        <rect x="158" y="127" width="38" height="15" rx="2" fill="#161b22" stroke="#6e7681"/><rect x="164" y="130" width="26" height="5" fill="#1f6feb"/>
+        <rect x="204" y="108" width="38" height="15" rx="2" fill="#161b22" stroke="#6e7681"/><rect x="210" y="111" width="26" height="5" fill="#30363d"/>
+        <rect x="204" y="127" width="38" height="15" rx="2" fill="#161b22" stroke="#6e7681"/><rect x="210" y="130" width="26" height="5" fill="#30363d"/>
+        <text x="118" y="155" class="hint">Raspberry Pi 5</text>
+        <rect class="hit" x="104" y="94" width="158" height="70"/>
+      </g>
+      <g class="part" data-part="spare" tabindex="0" role="button" aria-label="Spare Pi slot">
+        <rect x="268" y="98" width="146" height="62" rx="5" fill="#0d1117" stroke="#6e7681" stroke-width="1.5" stroke-dasharray="6 5"/>
+        <text x="341" y="127" text-anchor="middle" fill="var(--muted)" font-size="12">spare slot</text>
+        <text x="341" y="143" text-anchor="middle" class="hint">room for a 2nd Pi</text>
+        <rect class="hit" x="264" y="94" width="154" height="70"/>
+      </g>
+
+      <!-- U2: shelf with the switch -->
+      <g class="part" data-part="switch" tabindex="0" role="button" aria-label="TP-Link switch">
+        <rect x="140" y="196" width="240" height="62" rx="7" fill="#2d333b" stroke="#768390" stroke-width="2"/>
+        <text x="366" y="212" text-anchor="end" fill="#adbac7" font-size="10">tp-link TL-SG105E</text>
+        <g fill="#0b0d10" stroke="#555">
+          <rect x="154" y="220" width="30" height="26" rx="2"/><rect x="192" y="220" width="30" height="26" rx="2"/>
+          <rect x="230" y="220" width="30" height="26" rx="2"/><rect x="268" y="220" width="30" height="26" rx="2"/>
+          <rect x="306" y="220" width="30" height="26" rx="2"/>
+        </g>
+        <rect x="157" y="223" width="5" height="4" fill="var(--green)" class="led fast"/>
+        <rect x="195" y="223" width="5" height="4" fill="var(--green)" class="led"/>
+        <circle cx="358" cy="233" r="4" fill="var(--green)"/>
+        <rect class="hit" x="136" y="192" width="248" height="70"/>
+      </g>
+      <rect x="96" y="262" width="328" height="8" fill="var(--metal)" stroke="#444c56"/>
+      <text x="424" y="284" text-anchor="end" class="hint">shelf</text>
+
+      <!-- U3: blank panel -->
+      <g class="part" data-part="blank" tabindex="0" role="button" aria-label="Blank panel">
+        <rect x="96" y="294" width="328" height="100" rx="6" fill="var(--metal2)" stroke="#444c56" stroke-width="2"/>
+        <line x1="130" y1="326" x2="390" y2="326" stroke="#373e47" stroke-width="3"/>
+        <line x1="130" y1="344" x2="390" y2="344" stroke="#373e47" stroke-width="3"/>
+        <line x1="130" y1="362" x2="390" y2="362" stroke="#373e47" stroke-width="3"/>
+        <rect class="hit" x="92" y="290" width="336" height="108"/>
+      </g>
+
+      <!-- U4: empty -->
+      <g class="part" data-part="empty" tabindex="0" role="button" aria-label="Empty space">
+        <rect x="96" y="406" width="328" height="110" rx="6" fill="none" stroke="#444c56" stroke-width="2" stroke-dasharray="8 6"/>
+        <text x="260" y="458" text-anchor="middle" fill="var(--muted)" font-size="14">empty</text>
+        <text x="260" y="478" text-anchor="middle" class="hint">room to grow</text>
+        <rect class="hit" x="92" y="402" width="336" height="118"/>
+      </g>
+
+      <!-- cables -->
+      <path d="M134 160 C 134 180, 169 178, 169 220" fill="none" stroke="var(--blue)" stroke-width="4" stroke-linecap="round" opacity=".9" pointer-events="none"/>
+      <path d="M207 220 C 207 186, 470 190, 500 190" fill="none" stroke="var(--blue)" stroke-width="4" stroke-linecap="round" opacity=".9" pointer-events="none"/>
+      <text x="498" y="182" text-anchor="end" fill="var(--blue)" font-size="11">to router</text>
+    </svg>
+  </div>
+
+  <section class="info" id="info" aria-live="polite"></section>
+</main>
+
+<div class="badges">
+  <span class="badge"><b>&#10003;</b> no open ports on my router</span>
+  <span class="badge"><b>&#10003;</b> SSH keys only</span>
+  <span class="badge"><b>&#10003;</b> firewall on</span>
+  <span class="badge"><b>&#10003;</b> automatic security updates</span>
+</div>
+
+<footer>
+  This page is served from the Pi itself through Tailscale Funnel. Stats refresh every minute.<br>
+  How it's built: <a href="https://github.com/haydncow/homelab-plan">github.com/haydncow/homelab-plan</a>
+</footer>
+
+<script>
+const PARTS = {
+  intro: () => `
+    <h2>Welcome</h2>
+    <p class="tag">Click a part of the rack</p>
+    <p>This is my homelab. It's a small server I built to learn networking and cyber security hands-on.</p>
+    <p>Start with the <b>Raspberry Pi</b> (green box) to see live stats from the server this page is running on.</p>`,
+  pi: () => `
+    <h2>Raspberry Pi 5 (2GB)</h2>
+    <p class="tag">The server. This page is running on it right now.</p>
+    ${statsHtml()}
+    <p><b>What it runs</b></p>
+    <ul>
+      <li><b>Pi-hole</b>: blocks ads and trackers for my network by answering DNS lookups</li>
+      <li><b>Tailscale</b>: lets me reach it securely from anywhere, without opening ports</li>
+      <li><b>UFW firewall</b>: blocks everything coming in except what I've allowed</li>
+    </ul>`,
+  switch: () => `
+    <h2>TP-Link TL-SG105E</h2>
+    <p class="tag">5 port gigabit managed switch</p>
+    <p>Connects the Pi to my router with short 0.3m Cat6 cables. Port 1 goes to the Pi, port 2 goes to the router.</p>
+    <p>It's a <b>managed</b> switch, so it supports <b>VLANs</b>. Next I want to use them to keep the lab separate from the rest of my home devices.</p>`,
+  spare: () => `
+    <h2>Spare slot</h2>
+    <p class="tag">KKSB 10" 1U rack panel</p>
+    <p>The panel holds two Pis with their ports at the front. This side is empty for now, ready for a second Pi to run more services later.</p>`,
+  blank: () => `
+    <h2>Blank panel</h2>
+    <p class="tag">Came with the rack</p>
+    <p>Covers a gap so the rack looks tidy and the cables stay hidden behind it.</p>`,
+  empty: () => `
+    <h2>Empty space</h2>
+    <p class="tag">Room to grow</p>
+    <p>Space for future upgrades, like an SSD or a patch panel.</p>`,
+};
+
+let stats = null, current = "intro";
+
+function tile(label, value, extra = "", big = false) {
+  return `<div class="stat${big ? " big" : ""}"><span>${label}</span><b>${value ?? "n/a"}</b>${extra}</div>`;
+}
+
+function statsHtml() {
+  if (!stats) return `<p class="muted">Loading live stats...</p>`;
+  const pct = parseFloat(stats.percent) || 0;
+  return `<div class="stats">
+    ${tile("Uptime", stats.uptime)}
+    ${tile("CPU temp", stats.temp)}
+    ${tile("CPU load", stats.load)}
+    ${tile("Memory used", stats.memory)}
+    ${tile("Ads blocked (24h)", stats.blocked)}
+    ${tile("DNS queries (24h)", stats.queries)}
+    ${tile("Requests blocked", stats.percent, `<div class="bar"><i style="width:${Math.min(pct, 100)}%"></i></div>`, true)}
+  </div>
+  <p class="muted">Updated ${stats.updated_text}</p>`;
+}
+
+function show(part) {
+  current = part;
+  document.getElementById("info").innerHTML = PARTS[part]();
+  document.querySelectorAll(".part").forEach(p => p.classList.toggle("active", p.dataset.part === part));
+}
+
+document.querySelectorAll(".part").forEach(p => {
+  p.addEventListener("click", () => show(p.dataset.part));
+  p.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(p.dataset.part); } });
+});
+
+async function load() {
+  const box = document.getElementById("status"), text = document.getElementById("status-text");
+  try {
+    const r = await fetch("stats.json", { cache: "no-store" });
+    stats = await r.json();
+    const ageMin = (Date.now() / 1000 - stats.updated) / 60;
+    const fresh = ageMin < 15;
+    box.className = "status " + (fresh ? "online" : "offline");
+    text.textContent = fresh ? "online" : "last seen " + stats.updated_text;
+  } catch (e) {
+    box.className = "status offline";
+    text.textContent = "stats unavailable";
+  }
+  if (current === "pi") show("pi");
+}
+
+show("intro");
+load();
+setInterval(load, 60000);
+</script>
+</body>
+</html>
