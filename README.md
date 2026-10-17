@@ -52,6 +52,12 @@ The DeskPi RackMate T0 with the shelf and blank panel in. The Pi and switch go i
 - [x] Design rack layout
 - [x] Write security plan
 - [x] Buy parts
-- [ ] Build it
+- [x] Flash the SD card and set up SSH with keys
+- [x] Firewall (UFW) and automatic security updates
+- [x] Pi-hole (tested on my Mac)
+- [x] Tailscale remote access
+- [ ] Pi-hole for the whole house
+- [ ] Security testing (Nmap scan)
+- [ ] Fit everything in the rack
       
 I'll keep this updated as I go.

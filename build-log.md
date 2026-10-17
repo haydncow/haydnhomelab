@@ -2,6 +2,23 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
+## 17 October 2026
+
+- Plugged the Pi in through a TP-Link instead of straight into the router. It still worked, but SSH said `Permission denied (publickey)` again.
+- Worked out why with `ssh-keygen -lf` and `ssh -v`: the key my Mac was offering didn't match the one on the Pi. I'd run `ssh-copy-id` before making my new key, so the Pi had my old one. With password login turned off I was locked out, which is the security setting working properly.
+- Reflashed the card and did it in the right order this time: log in with password, `ssh-copy-id`, check key login works, then turn password login off.
+- Updated everything with `sudo apt update && sudo apt full-upgrade`.
+- Set up the UFW firewall: block everything coming in by default, and only allow SSH from my home network (`192.168.1.0/24`).
+- Turned on automatic security updates with `unattended-upgrades`.
+- Gave the Pi a fixed IP (`192.168.1.5`) with `nmcli`. I couldn't reserve it on my EE hub because the Pi didn't show up in the hub's device list behind the TP-Link. The hub hands out `.10` to `.253`, so `.5` can't clash with anything.
+- Installed Pi-hole. Downloaded the install script and read it first instead of piping it straight into bash. Opened DNS (port 53) and the admin page (80/443) to my home network only.
+- Tested Pi-hole on my Mac first. `dig doubleclick.net @192.168.1.5` gave back `0.0.0.0` and the ads were blocked.
+- Installed Tailscale and allowed SSH and the Pi-hole admin page over Tailscale only. Tested from my phone on mobile data and the dashboard loaded, with no ports forwarded on my router.
+
+**Lessons:** make the SSH key once, save the passphrase in a password manager, and only turn password login off after key login works.
+
+**Next:** Nmap scan to check only the ports I opened are showing, use Pi-hole for the whole house, and fit everything in the rack.
+
 ## 16 October 2026
 
 - Flashed Raspberry Pi OS Lite (64-bit) onto the SD card with Raspberry Pi Imager 2.0. Set the hostname to `homelab`, made my own user, left Wi-Fi off (the Pi uses Ethernet) and turned on SSH with key login only.

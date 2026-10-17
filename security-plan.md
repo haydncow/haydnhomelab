@@ -3,6 +3,22 @@
 How I plan to keep my homelab secure. I'll update this as I build it and
 learn more.
 
+## Status (17 October 2026)
+
+- [x] Tailscale for remote access, with no port forwarding on my router
+- [x] SSH keys only, password login over SSH turned off and tested
+- [x] UFW blocks everything coming in except what's needed:
+  - SSH from my home network and over Tailscale
+  - DNS (53) from my home network for Pi-hole
+  - Pi-hole admin page (80/443) from my home network and over Tailscale
+- [x] Pi-hole admin page has a password
+- [x] Automatic security updates (`unattended-upgrades`)
+- [x] Fixed IP for the Pi (`192.168.1.5`)
+- [ ] Back up Pi-hole with Teleporter
+- [ ] Nmap scan from another device
+- [ ] VLANs on the managed switch
+- [ ] Fail2ban
+
 ## What I'm protecting against
 
 - Someone accessing my Pi from the internet
