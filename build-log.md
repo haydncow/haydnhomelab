@@ -26,9 +26,10 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - `sudo nmap -p- 192.168.1.5` (all 65,535 ports, took about 10 minutes): same 4 open, the other 65,531 filtered.
 - `sudo nmap -sU -p 53 192.168.1.5`: DNS over UDP open, which Pi-hole needs.
 - The ports show as filtered, not closed, because UFW drops the packets without replying. That's what I wanted.
+- Scanned over Tailscale too: only 22, 80 and 443, no DNS, which matches my UFW rules.
 - Full results are in the [security plan](security-plan.md#nmap-results-home-network).
 
-**Next:** scan over Tailscale, use Pi-hole for the whole house, and fit everything in the rack.
+**Next:** use Pi-hole for the whole house, and fit everything in the rack.
 
 ## 16 October 2026
 
