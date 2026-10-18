@@ -108,7 +108,7 @@ What I fixed:
 | Lynis test | What I did |
 |------------|------------|
 | SSH-7408 | Hardened SSH: no root login, only my user allowed, max 3 login tries, no forwarding, idle sessions time out, verbose logging |
-| BANN-7126/7130 | Added a "authorised access only" login banner |
+| BANN-7126/7130 | Added an "authorised access only" login banner |
 | AUTH-9328 | Made default file permissions stricter (umask 027) |
 | NETW-3200 | Turned off network protocols I don't use (dccp, sctp, rds, tipc) and firewire |
 | KRNL-6000 | Kernel hardening with sysctl: ignore ICMP redirects and source routing, log suspicious packets, hide kernel pointers. I left the settings Tailscale needs alone |
