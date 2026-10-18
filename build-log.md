@@ -10,9 +10,12 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Set up a Cloudflare Tunnel so the status page is on my domain. The Pi connects out to Cloudflare, so I still haven't opened any ports on my router.
 - Made a small web server (`status-web`) that only listens on the Pi itself, for the tunnel to use.
 - Problem: the site worked on my Mac but nowhere else. The DNS record was called `http.haydnhomelab.com` because I'd typed "http" in the subdomain box. Fixed it, added `www` too, then cleared the old "not found" answers my devices had saved.
-- Rebuilt the status page with a boot screen, clickable zoom, live service status, 24 hour graphs and a security section.
+- Rebuilt the status page with a power-on intro, clickable zoom, live service status, 24 hour graphs and a security section.
+- Turned off key expiry for the Pi in Tailscale so it doesn't drop off my network after 6 months.
+- Set up Fail2ban. If an IP gets the SSH login wrong 5 times in 10 minutes it gets banned in UFW for an hour, and longer each time it comes back. It reads the logs from systemd's journal because that's where my Pi's OS keeps them.
+- Tested it by trying to log in as a fake user from my Kali VM. After 5 tries the VM's IP was banned, then I unbanned it with `fail2ban-client`.
 
-**Next:** use Pi-hole for the whole house, back up Pi-hole with Teleporter, and set up Fail2ban.
+**Next:** back up Pi-hole with Teleporter, set up VLANs on the switch, and use Pi-hole for the whole house.
 
 ## 17 October 2026
 

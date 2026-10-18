@@ -17,7 +17,7 @@ learn more.
 - [ ] Back up Pi-hole with Teleporter
 - [x] Nmap scan from my Mac on the home network (results below)
 - [ ] VLANs on the managed switch
-- [ ] Fail2ban
+- [x] Fail2ban: bans an IP in UFW after 5 failed SSH logins in 10 minutes (tested)
 
 ## What I'm protecting against
 
@@ -74,7 +74,6 @@ learn more.
 
 - Get a managed switch and use **VLANs** to separate the lab from my
   other home devices
-- Set up Fail2ban to block repeated failed login attempts
 - Look at Pi-hole logs to see what my devices are contacting
 
 ## Testing
