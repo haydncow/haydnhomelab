@@ -21,7 +21,8 @@ import time
 import urllib.parse
 import urllib.request
 
-DEST = "/mnt/media/classics"
+MOUNT = "/mnt/media"
+DEST = os.path.join(MOUNT, "classics")
 STATE = os.path.join(DEST, ".downloaded.json")   # films already got, so they aren't downloaded twice
 KEEP_FREE_GB = 100      # stop if the drive has less than this free
 MAX_FILM_GB = 4         # skip anything bigger than this
@@ -80,6 +81,12 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--count", type=int, default=2, help="how many films to add this run")
     args = ap.parse_args()
+
+    # If the drive isn't plugged in, /mnt/media is just an empty folder on the
+    # SD card. Never download in that case or it would fill the SD card.
+    if not os.path.ismount(MOUNT):
+        log(f"Stopping: the media drive isn't mounted at {MOUNT}")
+        return 1
 
     os.umask(0o002)   # so the jellyfin group can read new files
     os.makedirs(DEST, exist_ok=True)

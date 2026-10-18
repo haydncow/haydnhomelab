@@ -19,5 +19,6 @@ The Internet Archive has a "Feature Films" collection of old films that are in t
 - Only picks MP4 versions, which the Pi can play without converting
 - Skips anything over 4 GB and stops if the drive gets below 100 GB free
 - Downloads to a `.part` file first, so half-finished films never show up in Jellyfin
+- Refuses to run if the drive isn't mounted, so it can never fill up the SD card by mistake (this happened on the first try)
 
 Claude (AI) wrote this script. I set it up on the Pi.
