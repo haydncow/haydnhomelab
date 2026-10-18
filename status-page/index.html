@@ -329,6 +329,7 @@
       <div class="card chart wide" id="chart-dns"></div>
       <div class="card chart" id="chart-temp"></div>
       <div class="card chart" id="chart-mem"></div>
+      <div class="card chart wide" id="chart-power"></div>
     </div>
   </section>
 
@@ -557,6 +558,7 @@ function statsHtml() {
   return `<div class="stats">
     ${tile("Uptime", stats.uptime)}${tile("CPU temp", stats.temp)}
     ${tile("CPU load", stats.load)}${tile("Memory used", stats.memory)}
+    ${tile("Power", stats.power)}${tile("Cost per year (est.)", stats.cost_year)}
     ${tile("Ads blocked (24h)", stats.blocked)}${tile("DNS queries (24h)", stats.queries)}
     ${tile("Requests blocked", stats.percent, `<div class="bar"><i data-w="${Math.min(pct, 100)}"></i></div>`, true)}
   </div><p class="muted">Updated ${stats.updated_text}</p>`;
@@ -612,7 +614,7 @@ function drawServices() {
 
 /* ---------- charts (hand-drawn SVG, crosshair + tooltip) ---------- */
 const fmtTime = t => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v }) {
+function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v, tickFmt = null }) {
   const pts = series[0].data;
   const legend = series.length > 1
     ? `<div class="legend">${series.map(s => `<span><i style="background:${s.colour}"></i>${s.name}</span>`).join("")}</div>` : "";
@@ -626,7 +628,7 @@ function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v
   const Y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
   const ticks = [0, .5, 1].map(f => lo + (hi - lo) * f);
   let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}, ${sub}">`;
-  ticks.forEach(v => svg += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${fmt(Math.round(v))}</text>`);
+  ticks.forEach(v => svg += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${tickFmt ? tickFmt(v) : fmt(Math.round(v))}</text>`);
   [x0, (x0 + x1) / 2, x1].forEach((t, i) => svg += `<text class="axis" x="${X(t)}" y="${H - 4}" text-anchor="${["start", "middle", "end"][i]}">${fmtTime(t)}</text>`);
   series.forEach(s => {
     const d = s.data.map((p, i) => `${i ? "L" : "M"}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join("");
@@ -668,6 +670,8 @@ function drawCharts() {
     ], min: 0, fmt: n,
   });
   lineChart($("#chart-temp"), { title: "CPU temperature", sub: "Every 5 minutes", unit: "°C", series: [{ name: "CPU temp", colour: "var(--s-blocked)", data: pi.map(p => [p[0], p[1]]) }] });
+  const pw = pi.filter(p => p.length > 3 && p[3] > 0);
+  lineChart($("#chart-power"), { title: "Power use", sub: `The Pi's own reading, every 5 minutes. The whole rack (with the switch) costs about ${stats && stats.cost_year ? stats.cost_year : "£8"} a year to run.`, unit: " W", min: 0, fmt: v => Number(v).toFixed(1), tickFmt: v => v.toFixed(1), series: [{ name: "Power", colour: "var(--s-blocked)", data: pw.map(p => [p[0], p[3]]) }] });
   lineChart($("#chart-mem"), { title: "Memory used", sub: "Every 5 minutes", unit: "%", min: 0, series: [{ name: "Memory used", colour: "var(--s-blocked)", data: pi.map(p => [p[0], p[2]]) }] });
 }
 

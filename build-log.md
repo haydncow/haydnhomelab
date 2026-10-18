@@ -22,6 +22,8 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Ran a Lynis security audit. Score was 63. Hardened SSH, added a login banner, turned off unused network protocols, tightened file permissions and kernel network settings, then rebooted. New score: 75. Full list of what I fixed and what I skipped (and why) is in the [security plan](security-plan.md#lynis-audit-18-october-2026).
 - Two Lynis warnings were false positives. It said I had no security updates repository, but `trixie-security` is there (Lynis doesn't read Debian 13's newer file format). It also said I needed a reboot, but `needrestart -k -b` showed I'm running the Pi 5 build of the latest kernel, and it was just seeing the build for older Pis.
 
+- Measured how much power the Pi uses with `vcgencmd pmic_read_adc`: about 1.7 W. With the switch and power supply losses the whole rack is about 3.7 W, which is roughly £8 a year. Added power use and the cost to the status page.
+
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
 ## 17 October 2026

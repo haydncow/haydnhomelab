@@ -5,8 +5,8 @@ Runs every minute from cron (as root) and writes /srv/status/stats.json.
 index.html (in the same folder) reads it, and a Cloudflare Tunnel
 shares the page on the internet.
 
-It only shows harmless info (uptime, temperature, memory, ads blocked,
-whether each service is running). No IP addresses, hostnames, ports or
+It only shows harmless info (uptime, temperature, memory, power use,
+ads blocked, whether each service is running). No IP addresses, hostnames, ports or
 software versions, because those help attackers.
 """
 import json
@@ -28,6 +28,10 @@ SERVICES = [
     ("Web server", "status-web"),
     ("Auto updates", "unattended-upgrades"),
 ]
+# Power cost estimate. The Pi only measures its own board, so add a rough
+# figure for the switch and the power supply's losses.
+EXTRA_WATTS = 2.0
+PRICE_PER_KWH = 0.25  # pounds, roughly what I pay
 SAMPLE_EVERY = 300  # save a reading for the graphs every 5 minutes
 KEEP = 24 * 3600
 
@@ -58,6 +62,23 @@ def memory_pct():
 
 def cpu_load():
     return read("/proc/loadavg").split()[0]
+
+
+def power_watts():
+    # The Pi 5's power chip reports the volts and amps on each supply rail.
+    # Watts = volts x amps, added up across all the rails.
+    out = subprocess.run(["vcgencmd", "pmic_read_adc"], capture_output=True, text=True).stdout
+    amps, volts = {}, {}
+    for line in out.splitlines():
+        parts = line.split()
+        if len(parts) != 2 or "=" not in parts[1]:
+            continue
+        name, value = parts[0], float(parts[1].split("=")[1].rstrip("AV"))
+        if name.endswith("_A"):
+            amps[name[:-2]] = value
+        elif name.endswith("_V"):
+            volts[name[:-2]] = value
+    return sum(amps[k] * volts[k] for k in amps if k in volts)
 
 
 def services():
@@ -110,12 +131,12 @@ def safe(fn, default=None):
         return default
 
 
-def history(now, temp, mem):
+def history(now, temp, mem, watts):
     # Keep a reading every 5 minutes for the temperature and memory graphs
     path = os.path.join(STATE_DIR, "history.json")
     hist = safe(lambda: json.load(open(path)), [])
     if temp is not None and (not hist or now - hist[-1][0] >= SAMPLE_EVERY):
-        hist.append([int(now), round(temp, 1), round(mem or 0)])
+        hist.append([int(now), round(temp, 1), round(mem or 0), round(watts or 0, 2)])
     hist = [h for h in hist if now - h[0] <= KEEP]
     os.makedirs(STATE_DIR, exist_ok=True)
     with open(path, "w") as f:
@@ -127,6 +148,7 @@ def main():
     now = time.time()
     temp = safe(temp_c)
     mem = safe(memory_pct)
+    watts = safe(power_watts)
     ph = safe(pihole, {})
     data = {
         "updated": int(now),
@@ -135,12 +157,14 @@ def main():
         "temp": f"{temp:.1f}°C" if temp is not None else None,
         "load": safe(cpu_load),
         "memory": f"{mem:.0f}%" if mem is not None else None,
+        "power": f"{watts:.1f} W" if watts else None,
+        "cost_year": f"£{(watts + EXTRA_WATTS) * 24 * 365 / 1000 * PRICE_PER_KWH:.2f}" if watts else None,
         "blocked": ph.get("blocked"),
         "queries": ph.get("queries"),
         "percent": ph.get("percent"),
         "services": safe(services, []),
         "dns_history": ph.get("dns_history", []),
-        "pi_history": safe(lambda: history(now, temp, mem), []),
+        "pi_history": safe(lambda: history(now, temp, mem, watts), []),
     }
     os.makedirs(OUT_DIR, exist_ok=True)
     tmp = os.path.join(OUT_DIR, ".stats.json.tmp")
