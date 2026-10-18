@@ -1,0 +1,23 @@
+[Unit]
+Description=Live stats for the homelab status page
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/bin/homelab-live.py
+Restart=always
+RestartSec=5
+
+# Lock it down: it only needs to read system stats and write one folder
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/srv/status
+ProtectHome=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

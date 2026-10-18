@@ -165,6 +165,10 @@
   .svc i { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--muted); }
   .svc.up i { background: var(--led); box-shadow: 0 0 8px var(--led); animation: pulse 2.4s infinite; }
   .svc.down i { background: var(--bad); }
+  .livetag { display: none; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--led); border: 1px solid #5cff3a55;
+             border-radius: 4px; padding: 0 4px; margin-left: 4px; animation: pulse-t 2s infinite; }
+  .is-live .livetag { display: inline-block; }
+  @keyframes pulse-t { 50% { opacity: .45; } }
   .count { margin-left: auto; color: var(--led); letter-spacing: 0; font-size: 11px; text-transform: none; }
 
   /* security */
@@ -422,12 +426,12 @@
       <div class="label">uptime <span class="ex">&#8599;</span></div>
       <div class="big" id="uptime">-</div>
       <div class="note">since the Pi last restarted</div>
-      <div class="note" style="margin-top:auto">load <b id="load" style="color:var(--text)">-</b> &middot; memory <b id="mem" style="color:var(--text)">-</b></div>
-      <svg class="spark" id="spark-mem" preserveAspectRatio="none" aria-hidden="true"></svg>
+      <div class="note" style="margin-top:auto">cpu <b id="cpu" style="color:var(--text)">-</b> &middot; memory <b id="mem" style="color:var(--text)">-</b> <span class="livetag">live</span></div>
+      <svg class="spark" id="spark-cpu" preserveAspectRatio="none" aria-hidden="true"></svg>
     </section>
 
     <section class="tile t-temp click" style="--i:4" tabindex="0" role="button" data-open="temp" aria-label="CPU temperature. Open graph.">
-      <div class="label">cpu temp <span class="ex">&#8599;</span></div>
+      <div class="label">cpu temp <span class="livetag">live</span><span class="ex">&#8599;</span></div>
       <svg class="gauge" viewBox="0 0 120 74" aria-hidden="true">
         <path class="bg" d="M12 64 A48 48 0 0 1 108 64"/>
         <path class="fg" id="gauge" d="M12 64 A48 48 0 0 1 108 64" stroke="var(--led)" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
@@ -436,7 +440,7 @@
     </section>
 
     <section class="tile t-pow click" style="--i:5" tabindex="0" role="button" data-open="power" aria-label="Power use. Open graph.">
-      <div class="label">power <span class="ex">&#8599;</span></div>
+      <div class="label">power <span class="livetag">live</span><span class="ex">&#8599;</span></div>
       <div class="big"><span data-count="power" data-dec="1">0</span><small>W</small></div>
       <div class="note">about <b id="cost" style="color:var(--text)">-</b> a year</div>
       <svg class="spark" id="spark-pow" preserveAspectRatio="none" aria-hidden="true"></svg>
@@ -468,7 +472,7 @@
   </main>
 
   <footer>
-    <span>Served from the Pi itself through a Cloudflare Tunnel. Updates every minute.</span>
+    <span>Served from the Pi itself through a Cloudflare Tunnel. Live stats every 3 seconds.</span>
     <span>Code written by Claude (AI), built and run by me. <a href="https://github.com/haydncow/homelab-plan">How it's built</a></span>
   </footer>
 </div>
@@ -703,23 +707,28 @@ function spark(svg, series) {
     return `<path class="a" d="${d}L${w} ${h}L0 ${h}Z" fill="${s.colour}"/><path class="l" d="${d}" stroke="${s.colour}" vector-effect="non-scaling-stroke"/>`;
   }).join("");
 }
+function setGauge(t) {
+  const g = $("#gauge");
+  $("#gauge-t").textContent = t == null ? "--" : t.toFixed(1);
+  g.style.strokeDashoffset = 100 - Math.max(0, Math.min(1, ((t ?? 30) - 30) / 55)) * 100;
+  g.setAttribute("stroke", t >= 75 ? "var(--bad)" : t >= 62 ? "var(--amber)" : "var(--led)");
+}
 function render() {
   if (!stats) return;
-  document.querySelectorAll("[data-count]").forEach(el => countTo(el, num(stats[el.dataset.count]), +el.dataset.dec || 0));
+  document.querySelectorAll("[data-count]").forEach(el => { if (!(liveOk && el.dataset.count === "power")) countTo(el, num(stats[el.dataset.count]), +el.dataset.dec || 0); });
   const pct = num(stats.percent);
   $("#pct").textContent = (stats.percent ?? "n/a");
   $("#ring").style.strokeDashoffset = 207.3 * (1 - Math.min(pct, 100) / 100);
   $("#uptime").textContent = stats.uptime ?? "n/a";
-  $("#load").textContent = stats.load ?? "-"; $("#mem").textContent = stats.memory ?? "-";
+  if (!liveOk) { $("#cpu").textContent = stats.load ? "load " + stats.load : "-"; $("#mem").textContent = stats.memory ?? "-"; }
   $("#cost").textContent = stats.cost_year ?? "n/a";
-  const t = num(stats.temp), g = $("#gauge");
-  $("#gauge-t").textContent = stats.temp ? t.toFixed(1) : "--";
-  g.style.strokeDashoffset = 100 - Math.max(0, Math.min(1, (t - 30) / 55)) * 100;
-  g.setAttribute("stroke", t >= 75 ? "var(--bad)" : t >= 62 ? "var(--amber)" : "var(--led)");
+  if (!liveOk) setGauge(stats.temp ? num(stats.temp) : null);
   const pi = stats.pi_history || [], dns = stats.dns_history || [];
   spark($("#spark-dns"), [{ colour: "var(--s-total)", data: dns.map(d => d[1]) }, { colour: "var(--s-blocked)", data: dns.map(d => d[2]) }]);
-  spark($("#spark-mem"), [{ colour: "var(--s-blocked)", data: pi.map(p => p[2]) }]);
-  spark($("#spark-pow"), [{ colour: "var(--s-blocked)", data: pi.filter(p => p[3] > 0).map(p => p[3]) }]);
+  if (!liveOk) {
+    spark($("#spark-cpu"), [{ colour: "var(--s-blocked)", data: pi.map(p => p[2]) }]);
+    spark($("#spark-pow"), [{ colour: "var(--s-blocked)", data: pi.filter(p => p[3] > 0).map(p => p[3]) }]);
+  }
   const svc = stats.services || [], up = svc.filter(s => s.up).length;
   $("#svc-count").textContent = svc.length ? `${up}/${svc.length} up` : "";
   $("#svc").innerHTML = svc.length ? svc.map(s => `<div class="svc ${s.up ? "up" : "down"}"><i></i>${s.name}</div>`).join("") : `<span class="note">not available yet</span>`;
@@ -728,7 +737,7 @@ function render() {
 
 /* ---------- expanded views ---------- */
 const fmtTime = t => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v, tickFmt = null }) {
+function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v, tickFmt = null, tf = fmtTime }) {
   const pts = series[0].data;
   const legend = series.length > 1
     ? `<div class="legend">${series.map(s => `<span><i style="background:${s.colour}"></i>${s.name}</span>`).join("")}</div>` : "";
@@ -743,7 +752,7 @@ function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v
   const ticks = [0, .5, 1].map(f => lo + (hi - lo) * f);
   let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}, ${sub}">`;
   ticks.forEach(v => svg += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${tickFmt ? tickFmt(v) : fmt(Math.round(v))}</text>`);
-  [x0, (x0 + x1) / 2, x1].forEach((t, i) => svg += `<text class="axis" x="${X(t)}" y="${H - 4}" text-anchor="${["start", "middle", "end"][i]}">${fmtTime(t)}</text>`);
+  [x0, (x0 + x1) / 2, x1].forEach((t, i) => svg += `<text class="axis" x="${X(t)}" y="${H - 4}" text-anchor="${["start", "middle", "end"][i]}">${tf(t)}</text>`);
   series.forEach(s => {
     const d = s.data.map((p, i) => `${i ? "L" : "M"}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join("");
     svg += `<path class="ln draw" d="${d}" stroke="${s.colour}"/>`;
@@ -764,7 +773,7 @@ function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v
     const x = X(xs[i]);
     xh.setAttribute("x1", x); xh.setAttribute("x2", x); xh.style.opacity = 1;
     series.forEach((sr, k) => { const p = sr.data[i]; if (!p) return; hv[k].setAttribute("cx", x); hv[k].setAttribute("cy", Y(p[1])); hv[k].style.opacity = 1; });
-    tip.innerHTML = `<div class="muted">${fmtTime(xs[i])}</div>` + series.map(sr => sr.data[i] ? `<div><i style="background:${sr.colour}"></i>${sr.name}: <b>${fmt(sr.data[i][1])}${unit}</b></div>` : "").join("");
+    tip.innerHTML = `<div class="muted">${tf(xs[i])}</div>` + series.map(sr => sr.data[i] ? `<div><i style="background:${sr.colour}"></i>${sr.name}: <b>${fmt(sr.data[i][1])}${unit}</b></div>` : "").join("");
     tip.style.opacity = 1;
     const er = el.getBoundingClientRect(), px = x / W * r.width + (r.left - er.left);
     tip.style.left = Math.min(px + 12, er.width - tip.offsetWidth - 8) + "px";
@@ -784,11 +793,11 @@ const MODALS = {
     <div class="chart" id="mc-dns"></div>`,
   pi: () => `<h2 id="m-title">Raspberry Pi 5</h2><p class="tag">Live stats from the server this page runs on.</p>
     <div class="mgrid">${st("Uptime", stats.uptime)}${st("CPU temp", stats.temp)}${st("CPU load", stats.load)}${st("Memory used", stats.memory)}${st("Power", stats.power)}${st("Cost per year (est.)", stats.cost_year)}</div>
-    <div class="chart" id="mc-mem"></div>`,
+    <div class="chart" id="ml-cpu"></div><div class="chart" id="mc-mem"></div>`,
   temp: () => `<h2 id="m-title">CPU temperature</h2><p class="tag">The Pi has an active cooler. Under 60°C is comfortable, it slows down at 85°C.</p>
-    <div class="mgrid">${st("Right now", stats.temp)}${st("CPU load", stats.load)}</div><div class="chart" id="mc-temp"></div>`,
+    <div class="mgrid">${st("Right now", stats.temp)}${st("CPU load", stats.load)}</div><div class="chart" id="ml-temp"></div><div class="chart" id="mc-temp"></div>`,
   power: () => `<h2 id="m-title">Power use</h2><p class="tag">Measured by the Pi 5's own power chip (volts x amps on each rail). The yearly cost adds about 2 W for the switch and power supply, at about 25p per kWh.</p>
-    <div class="mgrid">${st("Pi right now", stats.power)}${st("Whole rack per year (est.)", stats.cost_year)}</div><div class="chart" id="mc-pow"></div>`,
+    <div class="mgrid">${st("Pi right now", stats.power)}${st("Whole rack per year (est.)", stats.cost_year)}</div><div class="chart" id="ml-pow"></div><div class="chart" id="mc-pow"></div>`,
   services: () => `<h2 id="m-title">What's running</h2><p class="tag">Checked every minute with systemd.</p>
     <div class="svc-big">${(stats.services || []).map(s => `<div class="${s.up ? "up" : ""}"><i></i><div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span></div><em>${s.up ? "running" : "down"}</em></div>`).join("")}</div>`,
   security: () => `<h2 id="m-title">Security</h2><p class="tag">How the Pi is locked down, and how I tested it.</p>
@@ -822,6 +831,7 @@ function drawModal(kind, animate = true) {
   const pw = pi.filter(p => p.length > 3 && p[3] > 0);
   C("mc-pow", { title: "Power, last 24 hours", sub: "Every 5 minutes", unit: " W", min: 0, fmt: v => Number(v).toFixed(1), tickFmt: v => v.toFixed(1),
     series: [{ name: "Power", colour: "var(--s-blocked)", data: pw.map(p => [p[0], p[3]]) }] });
+  drawLive(animate);
   if (!animate) document.querySelectorAll("#m-body .draw").forEach(p => p.classList.remove("draw"));
 }
 let modalOpen = null, opener = null;
@@ -858,7 +868,52 @@ addEventListener("keydown", e => {
 });
 let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && drawModal(modalOpen, false), 200); });
 
-/* ---------- live data ---------- */
+/* ---------- live data: every 3 seconds ---------- */
+let live = null, liveOk = false, liveFails = 0;
+const secs = t => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+function drawLive(animate = false) {
+  if (!liveOk || !modalOpen) return;
+  const pts = live.points, col = i => pts.filter(p => p[i] != null).map(p => [p[0], p[i]]);
+  const sub = `Live. A new reading every ${live.every || 3} seconds.`;
+  const D = (id, o) => {
+    const el = document.getElementById(id);
+    if (!el || el.matches(":hover")) return;   // don't redraw under the mouse
+    lineChart(el, { ...o, sub, tf: secs });
+    if (!animate) el.querySelectorAll(".draw").forEach(p => p.classList.remove("draw"));
+  };
+  D("ml-cpu", { title: "CPU use, last 5 minutes", unit: "%", min: 0, fmt: v => Math.round(v), series: [{ name: "CPU", colour: "var(--s-blocked)", data: col(1) }] });
+  D("ml-temp", { title: "CPU temperature, last 5 minutes", unit: "°C", fmt: v => Number(v).toFixed(1), tickFmt: v => v.toFixed(1), series: [{ name: "CPU temp", colour: "var(--s-blocked)", data: col(2) }] });
+  D("ml-pow", { title: "Power, last 5 minutes", unit: " W", min: 0, fmt: v => Number(v).toFixed(2), tickFmt: v => v.toFixed(1), series: [{ name: "Power", colour: "var(--s-blocked)", data: col(3) }] });
+}
+function renderLive() {
+  const pts = live.points, last = pts[pts.length - 1];
+  if (last[2] != null) setGauge(last[2]);
+  if (last[3] != null) countTo(document.querySelector('[data-count="power"]'), last[3], 1);
+  $("#cpu").textContent = Math.round(last[1]) + "%";
+  if (last[4] != null) $("#mem").textContent = Math.round(last[4]) + "%";
+  spark($("#spark-cpu"), [{ colour: "var(--s-blocked)", data: pts.map(p => p[1]) }]);
+  const pw = pts.filter(p => p[3] != null).map(p => p[3]);
+  if (pw.length > 1) spark($("#spark-pow"), [{ colour: "var(--s-blocked)", data: pw }]);
+  drawLive();
+}
+async function loadLive() {
+  if (document.hidden || !booted) return;
+  try {
+    const r = await fetch("live.json", { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const data = await r.json(), pts = data.points || [];
+    if (!pts.length || Date.now() / 1000 - pts[pts.length - 1][0] > 30) throw new Error("stale");
+    live = data; liveOk = true; liveFails = 0;
+    document.body.classList.add("is-live");
+    renderLive();
+  } catch (e) {
+    // live service not running: fall back to the once-a-minute stats
+    if (++liveFails >= 3 && liveOk) { liveOk = false; document.body.classList.remove("is-live"); render(); }
+  }
+}
+setInterval(loadLive, 3000);
+
+/* ---------- minute data ---------- */
 async function load() {
   const pill = $("#status"), text = $("#status-text");
   try {
@@ -875,7 +930,7 @@ async function load() {
   }
 }
 const _showRest = showRest;
-showRest = function () { _showRest(); setTimeout(render, 300); };
+showRest = function () { _showRest(); setTimeout(() => { render(); loadLive(); }, 300); };
 
 show("intro", false);
 runBoot();
