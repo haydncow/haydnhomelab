@@ -14,7 +14,7 @@ learn more.
 - [x] Pi-hole admin page has a password
 - [x] Automatic security updates (`unattended-upgrades`)
 - [x] Fixed IP for the Pi (`192.168.1.5`)
-- [ ] Back up Pi-hole with Teleporter
+- [x] Back up Pi-hole with Teleporter (kept off the Pi and off GitHub, because it has password hashes in it)
 - [x] Nmap scan from my Mac on the home network (results below)
 - [ ] VLANs on the managed switch
 - [x] Fail2ban: bans an IP in UFW after 5 failed SSH logins in 10 minutes (tested)

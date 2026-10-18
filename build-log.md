@@ -14,8 +14,9 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Turned off key expiry for the Pi in Tailscale so it doesn't drop off my network after 6 months.
 - Set up Fail2ban. If an IP gets the SSH login wrong 5 times in 10 minutes it gets banned in UFW for an hour, and longer each time it comes back. It reads the logs from systemd's journal because that's where my Pi's OS keeps them.
 - Tested it by trying to log in as a fake user from my Kali VM. After 5 tries the VM's IP was banned, then I unbanned it with `fail2ban-client`.
+- Backed up Pi-hole with Teleporter and saved the zip off the Pi. It has my password hashes in, so it doesn't go on GitHub.
 
-**Next:** back up Pi-hole with Teleporter, set up VLANs on the switch, and use Pi-hole for the whole house.
+**Next:** set up VLANs on the switch, and use Pi-hole for the whole house.
 
 ## 17 October 2026
 
