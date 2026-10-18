@@ -32,6 +32,7 @@ SERVICES = [
     ("Live stats", ["status-live"], None),
     ("SSH", ["ssh"], None),
     ("Fail2ban", ["fail2ban"], "fail2ban"),
+    ("Jellyfin", ["jellyfin"], None),
     ("Auto updates", ["unattended-upgrades"], "updates"),
 ]
 

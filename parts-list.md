@@ -18,6 +18,10 @@ Prices checked mid October 2026. Raspberry Pi put prices up on 1 October because
 
 **Total:** £240.16 (plus Pi Hut delivery)
 
+## Things I already had
+
+- **WD My Passport 1TB:** portable hard drive, plugged into the Pi for Jellyfin films and backups.
+
 ## Why these choices
 
 - **Pi 5 2GB:** I wanted the 1GB (£43.20) to save money, but it's out of stock at The Pi Hut. The 2GB gives me more room to add services later anyway.

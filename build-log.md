@@ -28,6 +28,11 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Problem: the site kept showing Cloudflare's "bad gateway" error. Python's simple web server couldn't keep up with the page asking for new data every 3 seconds, so I swapped it for Caddy.
 - Problem: ads blocked and DNS queries kept dropping to 0. When Pi-hole didn't answer in time, the script saved nothing and the page counted down to 0. Now it keeps the last numbers and writes the error to a log.
 - Added Fail2ban, SSH, Caddy and the live stats service to "What's running", with extra details for each.
+- Plugged a 1TB WD My Passport into the Pi for media. It was formatted for Windows (NTFS) and empty, so I wiped it and formatted it as ext4, the Linux format. It mounts automatically at `/mnt/media` using its UUID in `/etc/fstab`, with `nofail` so the Pi still boots if the drive is unplugged.
+- Installed Jellyfin, my own Netflix-style media server. I checked the install script's checksum and read it before running it.
+- Problem: the installer said `/tmp` was too small. On the Pi, `/tmp` lives in RAM and is capped at about 1GB, so I made it bigger until the next reboot with `mount -o remount,size=1500M /tmp`.
+- Problem: Jellyfin couldn't open the films folder. My stricter default permissions from the Lynis fixes meant other users couldn't read it. Fixed it by giving the folders to the jellyfin group, with the setgid bit (`2775`) so new files get the right group too.
+- Jellyfin is only open to my home network and Tailscale in UFW, not on my public domain.
 
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
