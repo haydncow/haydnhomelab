@@ -72,6 +72,8 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Live status page
 - [ ] Pi-hole on my own devices (PC and Mac)
 - [x] Security testing (Nmap scan, only the ports I opened show up)
+- [x] Fail2ban
+- [x] Lynis security audit (hardening score 63 to 75)
 - [ ] Fit everything in the rack
       
 I'll keep this updated as I go.

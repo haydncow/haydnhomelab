@@ -82,6 +82,7 @@ learn more.
 - [x] Nmap scan from my Mac on the home network (17 October 2026)
 - [x] Nmap scan over Tailscale (17 October 2026)
 - [x] Fail2ban: 5 fake logins from my Kali VM got its IP banned straight away (18 October 2026)
+- [x] Lynis security audit: hardening score went from 63 to 75 (18 October 2026)
 
 ### Nmap results (home network)
 
@@ -95,3 +96,32 @@ learn more.
 Only the ports I opened in UFW show up. Everything else is "filtered", which means the firewall drops it without replying, so a scan can't even tell if anything is there.
 
 Over Tailscale, DNS (53) doesn't show because I only allowed it from my home network.
+
+### Lynis audit (18 October 2026)
+
+[Lynis](https://cisofy.com/lynis/) checks hundreds of security settings and gives a hardening score out of 100.
+
+**Score: 63 before, 75 after.**
+
+What I fixed:
+
+| Lynis test | What I did |
+|------------|------------|
+| SSH-7408 | Hardened SSH: no root login, only my user allowed, max 3 login tries, no forwarding, idle sessions time out, verbose logging |
+| BANN-7126/7130 | Added a "authorised access only" login banner |
+| AUTH-9328 | Made default file permissions stricter (umask 027) |
+| NETW-3200 | Turned off network protocols I don't use (dccp, sctp, rds, tipc) and firewire |
+| KRNL-6000 | Kernel hardening with sysctl: ignore ICMP redirects and source routing, log suspicious packets, hide kernel pointers. I left the settings Tailscale needs alone |
+| DEB / PKGS / ACCT | Installed libpam-tmpdir, needrestart, debsums, apt-show-versions, sysstat and process accounting |
+| KRNL-5830 | Rebooted to load the updated kernel |
+
+What I checked and didn't change, and why:
+
+- **PKGS-7388 "no security repository":** false positive. My Pi does get `trixie-security` updates, but Debian 13 uses a newer sources file format that this version of Lynis doesn't read.
+- **Changing the SSH port:** hiding SSH on another port doesn't make it more secure. It's already key-only, firewalled and protected by Fail2ban.
+- **Password age, strength and expiry rules:** I only log in with SSH keys, so passwords aren't used for SSH.
+- **Separate /home and /var partitions:** would mean rebuilding the SD card, not worth it on a Pi.
+- **Disabling USB storage:** I might plug in a drive for a media server later.
+- **Malware scanner, file integrity tool, auditd:** too heavy for a 2GB Pi running Pi-hole. Something to look at on bigger hardware.
+- **Remote logging:** a future project, sending logs to my NAS.
+

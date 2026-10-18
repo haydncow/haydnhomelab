@@ -18,6 +18,10 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 - Decided to only use Pi-hole on my own devices (PC and Mac) instead of the whole house. With one Pi, if it goes down every device using it loses DNS, so this way the rest of the house isn't affected. A second Pi-hole in the spare slot would fix that later.
 
+- Problem: my Mac couldn't reach the Pi (ping timed out) but the website still worked. The website works because the Pi connects out to Cloudflare, so the Pi was fine. Restarting the TP-Link wireless box between my switch and the router fixed it. If it happens again, that's the first thing to restart.
+- Ran a Lynis security audit. Score was 63. Hardened SSH, added a login banner, turned off unused network protocols, tightened file permissions and kernel network settings, then rebooted. New score: 75. Full list of what I fixed and what I skipped (and why) is in the [security plan](security-plan.md#lynis-audit-18-october-2026).
+- One Lynis warning was a false positive: it said I had no security updates repository, but I checked and `trixie-security` is there. Lynis just doesn't read Debian 13's newer file format.
+
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
 ## 17 October 2026
