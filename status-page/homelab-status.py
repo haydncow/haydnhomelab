@@ -12,7 +12,9 @@ software versions, because those help attackers.
 import json
 import os
 import subprocess
+import sys
 import time
+import traceback
 import urllib.request
 
 OUT_DIR = "/srv/status"
@@ -97,7 +99,7 @@ def api(method, path, sid=None, body=None):
         headers["X-FTL-SID"] = sid
     data = json.dumps(body).encode() if body else None
     req = urllib.request.Request(API + path, data=data, headers=headers, method=method)
-    with urllib.request.urlopen(req, timeout=10) as r:
+    with urllib.request.urlopen(req, timeout=20) as r:
         return json.loads(r.read() or b"{}")
 
 
@@ -124,10 +126,13 @@ def pihole():
 
 
 def safe(fn, default=None):
-    # If one reading fails, show "n/a" instead of breaking the whole page
+    # If one reading fails, carry on instead of breaking the whole page,
+    # but write the error to the log so I can see what went wrong
     try:
         return fn()
     except Exception:
+        print(time.strftime("%Y-%m-%d %H:%M:%S"), f"{getattr(fn, '__name__', 'reading')} failed:", file=sys.stderr)
+        traceback.print_exc()
         return default
 
 
@@ -150,6 +155,11 @@ def main():
     mem = safe(memory_pct)
     watts = safe(power_watts)
     ph = safe(pihole, {})
+    if not ph:
+        # Pi-hole didn't answer this time, so keep the last numbers it gave
+        old = safe(lambda: json.load(open(os.path.join(OUT_DIR, "stats.json"))), {})
+        ph = {k: old.get(k) for k in ("blocked", "queries", "percent", "dns_history")}
+        ph["dns_history"] = ph["dns_history"] or []
     data = {
         "updated": int(now),
         "updated_text": time.strftime("%d %b %Y, %H:%M", time.localtime(now)),

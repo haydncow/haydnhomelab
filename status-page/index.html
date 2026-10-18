@@ -715,10 +715,16 @@ function setGauge(t) {
 }
 function render() {
   if (!stats) return;
-  document.querySelectorAll("[data-count]").forEach(el => { if (!(liveOk && el.dataset.count === "power")) countTo(el, num(stats[el.dataset.count]), +el.dataset.dec || 0); });
-  const pct = num(stats.percent);
-  $("#pct").textContent = (stats.percent ?? "n/a");
-  $("#ring").style.strokeDashoffset = 207.3 * (1 - Math.min(pct, 100) / 100);
+  // a missing reading keeps the last number on screen instead of dropping to 0
+  document.querySelectorAll("[data-count]").forEach(el => {
+    const v = stats[el.dataset.count];
+    if (v == null || (liveOk && el.dataset.count === "power")) return;
+    countTo(el, num(v), +el.dataset.dec || 0);
+  });
+  if (stats.percent != null) {
+    $("#pct").textContent = stats.percent;
+    $("#ring").style.strokeDashoffset = 207.3 * (1 - Math.min(num(stats.percent), 100) / 100);
+  }
   $("#uptime").textContent = stats.uptime ?? "n/a";
   if (!liveOk) { $("#cpu").textContent = stats.load ? "load " + stats.load : "-"; $("#mem").textContent = stats.memory ?? "-"; }
   $("#cost").textContent = stats.cost_year ?? "n/a";
