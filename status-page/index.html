@@ -3,250 +3,660 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Haydn's homelab</title>
+<title>Haydn's Homelab</title>
+<meta name="description" content="A Raspberry Pi 5 homelab in a 10 inch rack, with live stats.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d1117; --panel: #161b22; --line: #30363d; --text: #e6edf3; --muted: #8b949e;
-    --green: #3fb950; --blue: #58a6ff; --amber: #e3b341; --metal: #2b3138; --metal2: #1e2228;
+    --bg: #0a0a0a; --panel: #111213; --panel2: #161718; --line: #24272a; --text: #e8eae6; --muted: #8d928c;
+    --led: #5cff3a; --amber: #ffb21a; --bad: #ff5a4a;
+    --s-total: #5a86e6; --s-blocked: #35a822;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--bg); color: var(--text);
-         font: 15px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  header { max-width: 1040px; margin: 0 auto; padding: 28px 16px 8px; }
-  h1 { font-size: 22px; margin: 0; }
-  .status { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; margin-left: 8px; }
-  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
-  .online .dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
-  .online { color: var(--green); }
-  .offline { color: var(--amber); }
-  .offline .dot { background: var(--amber); }
-  header p { color: var(--muted); margin: 6px 0 0; }
-  main { max-width: 1040px; margin: 0 auto; padding: 16px; display: grid;
-         grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-  @media (max-width: 760px) { main { grid-template-columns: 1fr; } }
-  .rack-wrap { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
-  svg { width: 100%; height: auto; display: block; }
+         font: 14px/1.6 "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; overflow-x: hidden; }
+  body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: linear-gradient(#ffffff06 1px, transparent 1px), linear-gradient(90deg, #ffffff06 1px, transparent 1px);
+    background-size: 32px 32px; mask-image: radial-gradient(ellipse at 50% 20%, #000 30%, transparent 75%); }
+  .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+  a { color: var(--led); }
+
+  /* boot screen */
+  #boot { position: fixed; inset: 0; z-index: 50; background: #050505; display: flex; align-items: center; justify-content: center;
+          transition: opacity .6s, visibility .6s; }
+  #boot.gone { opacity: 0; visibility: hidden; }
+  #boot pre { margin: 0; padding: 16px; font: inherit; font-size: 13px; color: #b9beb7; min-width: min(520px, 100%); white-space: pre-wrap; }
+  #boot .ok { color: var(--led); }
+  #boot .cursor { display: inline-block; width: 8px; height: 15px; background: var(--led); vertical-align: -2px; animation: blink 1s steps(1) infinite; }
+  #skip { position: absolute; bottom: 24px; right: 24px; background: none; border: 1px solid var(--line); color: var(--muted);
+          font: inherit; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
+  #skip:hover { color: var(--text); border-color: var(--muted); }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  header { padding: 32px 0 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+  h1 { font-size: clamp(20px, 3.4vw, 28px); margin: 0; font-weight: 800; letter-spacing: -.5px; }
+  h1 .p { color: var(--led); text-shadow: 0 0 14px #5cff3a66; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px;
+          padding: 4px 12px; font-size: 12px; color: var(--muted); background: var(--panel); }
+  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .pill.online { color: var(--led); } .pill.online .dot { background: var(--led); box-shadow: 0 0 10px var(--led); animation: pulse 2s infinite; }
+  .pill.offline { color: var(--amber); } .pill.offline .dot { background: var(--amber); }
+  @keyframes pulse { 50% { box-shadow: 0 0 2px var(--led); } }
+  .lead { color: var(--muted); margin: 0 0 20px; max-width: 60ch; }
+  nav { display: flex; gap: 18px; margin-left: auto; font-size: 13px; }
+  nav a { color: var(--muted); text-decoration: none; } nav a:hover { color: var(--text); }
+
+  .hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+  @media (max-width: 820px) { .hero { grid-template-columns: 1fr; } nav { margin-left: 0; width: 100%; } }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
+  .rack-card { position: relative; padding: 10px; overflow: hidden;
+    background: radial-gradient(ellipse at 38% 30%, #0f2110 0%, var(--panel) 62%); }
+  .rack-card svg { width: 100%; height: auto; display: block; aspect-ratio: 460 / 590; }
+  #back { position: absolute; top: 12px; left: 12px; z-index: 2; font: inherit; font-size: 12px; color: var(--text);
+          background: #000a; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer;
+          opacity: 0; pointer-events: none; transition: opacity .3s; }
+  #back.show { opacity: 1; pointer-events: auto; }
+  .zoomed .tip { opacity: 0; }
+  .tip { transition: opacity .3s; }
+  .tip { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--muted); pointer-events: none; }
+
   .part { cursor: pointer; outline: none; }
-  .part .hit { fill: transparent; stroke: transparent; stroke-width: 3; rx: 6; transition: stroke .15s; }
-  .part:hover .hit, .part:focus-visible .hit { stroke: var(--blue); }
-  .part.active .hit { stroke: var(--green); }
-  .hint { fill: var(--muted); font-size: 11px; }
-  .led { animation: blink 1.6s infinite; }
-  .led.slow { animation-duration: 2.7s; }
-  .led.fast { animation-duration: .9s; }
-  @keyframes blink { 0%, 60% { opacity: 1; } 70%, 100% { opacity: .25; } }
-  @media (prefers-reduced-motion: reduce) { .led { animation: none; } }
-  .info { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-height: 300px; }
-  .info h2 { font-size: 18px; margin: 0 0 4px; }
-  .info .tag { color: var(--muted); font-size: 13px; margin: 0 0 14px; }
+  .part .hit { fill: transparent; stroke: transparent; stroke-width: 2; transition: stroke .2s, fill .2s; }
+  .part:hover .hit, .part:focus-visible .hit { stroke: #ffffff70; fill: #ffffff08; }
+  .part.active .hit { stroke: var(--led); fill: #5cff3a0d; }
+  .light { transition: opacity .35s; }
+  .booting .light { opacity: 0; }
+  .led { animation: flick 1.6s infinite; }
+  .led.slow { animation-duration: 2.7s; } .led.fast { animation-duration: .9s; }
+  @keyframes flick { 0%, 60% { opacity: 1; } 70%, 100% { opacity: .3; } }
+  .booting .led { animation: none; }
+
+  .info { padding: 22px; min-height: 420px; }
+  .info .kicker { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--led); margin: 0 0 6px; }
+  .info h2 { font-size: 20px; margin: 0 0 4px; }
+  .info .tag { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
   .info p { margin: 0 0 12px; }
   .info ul { margin: 0 0 12px; padding-left: 18px; }
-  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 6px 0 14px; }
+  .info li { margin-bottom: 4px; }
+  .swap { animation: rise .35s ease-out; }
+  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 4px 0 14px; }
   .stat { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
-  .stat span { display: block; color: var(--muted); font-size: 12px; }
-  .stat b { font-size: 18px; }
+  .stat span { display: block; color: var(--muted); font-size: 11px; }
+  .stat b { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .stat.big { grid-column: span 2; }
-  .bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 6px; overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--green); width: 0; transition: width .6s; }
-  .muted { color: var(--muted); font-size: 13px; }
-  .badges { max-width: 1040px; margin: 0 auto; padding: 0 16px 8px; display: flex; flex-wrap: wrap; gap: 8px; }
-  .badge { border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 13px; color: var(--muted); background: var(--panel); }
-  .badge b { color: var(--green); font-weight: normal; }
-  footer { max-width: 1040px; margin: 0 auto; padding: 8px 16px 32px; color: var(--muted); font-size: 13px; }
-  a { color: var(--blue); }
+  .bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 8px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--s-blocked); width: 0; transition: width 1s ease-out; border-radius: 3px; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; background: var(--bg); cursor: pointer; color: var(--text); font-family: inherit; }
+  .chip:hover { border-color: var(--led); }
+
+  section { padding: 44px 0 8px; }
+  section h3 { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; font-weight: 500; }
+  section h3::before { content: "## "; color: var(--led); }
+  .services { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .svc { padding: 14px 16px; display: flex; align-items: center; gap: 12px; opacity: 0; transform: translateY(10px);
+         transition: opacity .5s, transform .5s, border-color .3s; }
+  .svc.in { opacity: 1; transform: none; }
+  .svc:hover { border-color: #3a3e42; }
+  .svc .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--muted); }
+  .svc.up .dot { background: var(--led); box-shadow: 0 0 10px var(--led); animation: pulse 2.4s infinite; }
+  .svc.down .dot { background: var(--bad); }
+  .svc b { display: block; font-size: 14px; }
+  .svc span { font-size: 12px; color: var(--muted); }
+  .svc .state { margin-left: auto; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+  .svc.up .state { color: var(--led); } .svc.down .state { color: var(--bad); }
+
+  .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .charts .wide { grid-column: span 2; }
+  @media (max-width: 820px) { .charts { grid-template-columns: 1fr; } .charts .wide { grid-column: auto; } }
+  .chart { padding: 16px 16px 10px; position: relative; }
+  .chart h4 { margin: 0; font-size: 14px; }
+  .chart .sub { color: var(--muted); font-size: 12px; margin: 2px 0 8px; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  .chart svg { width: 100%; height: auto; display: block; overflow: visible; touch-action: pan-y; }
+  .chart .grid { stroke: #ffffff10; stroke-width: 1; }
+  .chart .axis { fill: var(--muted); font-size: 11px; font-family: inherit; }
+  .chart .ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+  .chart .draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 1.6s ease-out forwards; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  .chart .xh { stroke: #ffffff55; stroke-width: 1; }
+  .ttip { position: absolute; pointer-events: none; background: #050505ee; border: 1px solid var(--line); border-radius: 8px;
+          padding: 6px 10px; font-size: 12px; white-space: nowrap; opacity: 0; transition: opacity .15s; z-index: 3; }
+  .ttip i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
+  .empty { color: var(--muted); font-size: 12px; padding: 40px 0; text-align: center; }
+
+  .sec { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+  .sec .card { padding: 16px; }
+  .sec b { display: block; margin-bottom: 4px; }
+  .sec b::before { content: "\2713  "; color: var(--led); }
+  .sec p { margin: 0; color: var(--muted); font-size: 13px; }
+  .scan { padding: 16px; margin-top: 12px; overflow-x: auto; }
+  .scan pre { margin: 0; font: inherit; font-size: 12px; color: #b9beb7; }
+  .scan .o { color: var(--led); } .scan .f { color: var(--muted); }
+
+  footer { padding: 40px 0 48px; color: var(--muted); font-size: 12px; }
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s, transform .7s; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal, .svc { opacity: 1; transform: none; }
+    .chart .draw { stroke-dashoffset: 0; }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>&gt; haydn's homelab <span id="status" class="status"><span class="dot"></span><span id="status-text">checking...</span></span></h1>
-  <p>A Raspberry Pi 5 in a 10 inch rack. Click any part of the rack to see what it does.</p>
-</header>
 
-<main>
-  <div class="rack-wrap">
-    <svg viewBox="0 0 520 560" role="img" aria-label="Drawing of my 10 inch rack">
-      <!-- handles -->
-      <path d="M95 52 v-26 q0-12 12-12 h96 q12 0 12 12 v26" fill="none" stroke="#6e7681" stroke-width="8" stroke-linecap="round"/>
-      <path d="M305 52 v-26 q0-12 12-12 h96 q12 0 12 12 v26" fill="none" stroke="#6e7681" stroke-width="8" stroke-linecap="round"/>
-      <!-- frame -->
-      <rect x="40" y="50" width="440" height="490" rx="14" fill="#11151a" stroke="#6e7681" stroke-width="5"/>
-      <rect x="64" y="66" width="22" height="458" fill="var(--metal)"/>
-      <rect x="434" y="66" width="22" height="458" fill="var(--metal)"/>
-      <g fill="#0d1117" stroke="#6e7681" stroke-width="1.5">
-        <circle cx="75" cy="92" r="4"/><circle cx="75" cy="128" r="4"/><circle cx="75" cy="200" r="4"/><circle cx="75" cy="236" r="4"/>
-        <circle cx="75" cy="308" r="4"/><circle cx="75" cy="344" r="4"/><circle cx="75" cy="416" r="4"/><circle cx="75" cy="452" r="4"/>
-        <circle cx="445" cy="92" r="4"/><circle cx="445" cy="128" r="4"/><circle cx="445" cy="200" r="4"/><circle cx="445" cy="236" r="4"/>
-        <circle cx="445" cy="308" r="4"/><circle cx="445" cy="344" r="4"/><circle cx="445" cy="416" r="4"/><circle cx="445" cy="452" r="4"/>
-      </g>
-
-      <!-- U1: KKSB panel with the Pi and a spare slot -->
-      <rect x="96" y="72" width="328" height="100" rx="6" fill="var(--metal2)" stroke="#444c56" stroke-width="2"/>
-      <g fill="#0d1117">
-        <rect x="108" y="80" width="5" height="12" rx="2"/><rect x="120" y="80" width="5" height="12" rx="2"/><rect x="132" y="80" width="5" height="12" rx="2"/>
-        <rect x="144" y="80" width="5" height="12" rx="2"/><rect x="156" y="80" width="5" height="12" rx="2"/><rect x="168" y="80" width="5" height="12" rx="2"/>
-        <rect x="352" y="80" width="5" height="12" rx="2"/><rect x="364" y="80" width="5" height="12" rx="2"/><rect x="376" y="80" width="5" height="12" rx="2"/>
-        <rect x="388" y="80" width="5" height="12" rx="2"/><rect x="400" y="80" width="5" height="12" rx="2"/>
-      </g>
-      <g class="part" id="part-pi" data-part="pi" tabindex="0" role="button" aria-label="Raspberry Pi 5">
-        <rect x="108" y="98" width="150" height="62" rx="5" fill="#0d1117" stroke="var(--green)" stroke-width="2"/>
-        <rect x="118" y="108" width="32" height="34" rx="3" fill="#161b22" stroke="#6e7681"/>
-        <rect x="124" y="112" width="5" height="5" fill="var(--green)" class="led fast"/>
-        <rect x="139" y="112" width="5" height="5" fill="var(--amber)" class="led slow"/>
-        <rect x="158" y="108" width="38" height="15" rx="2" fill="#161b22" stroke="#6e7681"/><rect x="164" y="111" width="26" height="5" fill="#1f6feb"/>
-        <rect x="158" y="127" width="38" height="15" rx="2" fill="#161b22" stroke="#6e7681"/><rect x="164" y="130" width="26" height="5" fill="#1f6feb"/>
-        <rect x="204" y="108" width="38" height="15" rx="2" fill="#161b22" stroke="#6e7681"/><rect x="210" y="111" width="26" height="5" fill="#30363d"/>
-        <rect x="204" y="127" width="38" height="15" rx="2" fill="#161b22" stroke="#6e7681"/><rect x="210" y="130" width="26" height="5" fill="#30363d"/>
-        <text x="118" y="155" class="hint">Raspberry Pi 5</text>
-        <rect class="hit" x="104" y="94" width="158" height="70"/>
-      </g>
-      <g class="part" data-part="spare" tabindex="0" role="button" aria-label="Spare Pi slot">
-        <rect x="268" y="98" width="146" height="62" rx="5" fill="#0d1117" stroke="#6e7681" stroke-width="1.5" stroke-dasharray="6 5"/>
-        <text x="341" y="127" text-anchor="middle" fill="var(--muted)" font-size="12">spare slot</text>
-        <text x="341" y="143" text-anchor="middle" class="hint">room for a 2nd Pi</text>
-        <rect class="hit" x="264" y="94" width="154" height="70"/>
-      </g>
-
-      <!-- U2: shelf with the switch -->
-      <g class="part" data-part="switch" tabindex="0" role="button" aria-label="TP-Link switch">
-        <rect x="140" y="196" width="240" height="62" rx="7" fill="#2d333b" stroke="#768390" stroke-width="2"/>
-        <text x="366" y="212" text-anchor="end" fill="#adbac7" font-size="10">tp-link TL-SG105E</text>
-        <g fill="#0b0d10" stroke="#555">
-          <rect x="154" y="220" width="30" height="26" rx="2"/><rect x="192" y="220" width="30" height="26" rx="2"/>
-          <rect x="230" y="220" width="30" height="26" rx="2"/><rect x="268" y="220" width="30" height="26" rx="2"/>
-          <rect x="306" y="220" width="30" height="26" rx="2"/>
-        </g>
-        <rect x="157" y="223" width="5" height="4" fill="var(--green)" class="led fast"/>
-        <rect x="195" y="223" width="5" height="4" fill="var(--green)" class="led"/>
-        <circle cx="358" cy="233" r="4" fill="var(--green)"/>
-        <rect class="hit" x="136" y="192" width="248" height="70"/>
-      </g>
-      <rect x="96" y="262" width="328" height="8" fill="var(--metal)" stroke="#444c56"/>
-      <text x="424" y="284" text-anchor="end" class="hint">shelf</text>
-
-      <!-- U3: blank panel -->
-      <g class="part" data-part="blank" tabindex="0" role="button" aria-label="Blank panel">
-        <rect x="96" y="294" width="328" height="100" rx="6" fill="var(--metal2)" stroke="#444c56" stroke-width="2"/>
-        <line x1="130" y1="326" x2="390" y2="326" stroke="#373e47" stroke-width="3"/>
-        <line x1="130" y1="344" x2="390" y2="344" stroke="#373e47" stroke-width="3"/>
-        <line x1="130" y1="362" x2="390" y2="362" stroke="#373e47" stroke-width="3"/>
-        <rect class="hit" x="92" y="290" width="336" height="108"/>
-      </g>
-
-      <!-- U4: empty -->
-      <g class="part" data-part="empty" tabindex="0" role="button" aria-label="Empty space">
-        <rect x="96" y="406" width="328" height="110" rx="6" fill="none" stroke="#444c56" stroke-width="2" stroke-dasharray="8 6"/>
-        <text x="260" y="458" text-anchor="middle" fill="var(--muted)" font-size="14">empty</text>
-        <text x="260" y="478" text-anchor="middle" class="hint">room to grow</text>
-        <rect class="hit" x="92" y="402" width="336" height="118"/>
-      </g>
-
-      <!-- cables -->
-      <path d="M134 160 C 134 180, 169 178, 169 220" fill="none" stroke="var(--blue)" stroke-width="4" stroke-linecap="round" opacity=".9" pointer-events="none"/>
-      <path d="M207 220 C 207 186, 470 190, 500 190" fill="none" stroke="var(--blue)" stroke-width="4" stroke-linecap="round" opacity=".9" pointer-events="none"/>
-      <text x="498" y="182" text-anchor="end" fill="var(--blue)" font-size="11">to router</text>
-    </svg>
-  </div>
-
-  <section class="info" id="info" aria-live="polite"></section>
-</main>
-
-<div class="badges">
-  <span class="badge"><b>&#10003;</b> no open ports on my router</span>
-  <span class="badge"><b>&#10003;</b> SSH keys only</span>
-  <span class="badge"><b>&#10003;</b> firewall on</span>
-  <span class="badge"><b>&#10003;</b> automatic security updates</span>
+<div id="boot" aria-hidden="true">
+  <pre id="boot-text"></pre>
+  <button id="skip">skip &rarr;</button>
 </div>
 
-<footer>
-  This page is served from the Pi itself through Tailscale Funnel. Stats refresh every minute.<br>
-  How it's built: <a href="https://github.com/haydncow/homelab-plan">github.com/haydncow/homelab-plan</a>
-</footer>
+<div class="wrap">
+  <header>
+    <h1><span class="p">&gt;</span> haydnhomelab</h1>
+    <span id="status" class="pill"><span class="dot"></span><span id="status-text">checking</span></span>
+    <nav><a href="#running">running</a><a href="#graphs">graphs</a><a href="#security">security</a></nav>
+  </header>
+  <p class="lead">A Raspberry Pi 5 in a 10 inch rack, built to learn networking and cyber security hands-on. Click any part of the rack to zoom in.</p>
+
+  <div class="hero">
+    <div class="card rack-card">
+      <button id="back">&larr; whole rack</button>
+      <svg id="rack" class="booting" viewBox="30 0 460 590" role="img" aria-label="Drawing of my 10 inch rack. Each part can be clicked.">
+<defs>
+  <filter id="glow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  <radialGradient id="haze" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#5cff3a" stop-opacity=".22"/><stop offset="1" stop-color="#5cff3a" stop-opacity="0"/></radialGradient>
+  <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1d1f"/><stop offset="1" stop-color="#0f1011"/></linearGradient>
+  <linearGradient id="lid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#202224"/><stop offset="1" stop-color="#121314"/></linearGradient>
+</defs>
+<path d="M62 76 v-46 q0-14 14-14 h32 q14 0 14 14 v46" fill="none" stroke="#1a1b1c" stroke-width="13" stroke-linejoin="round"/>
+<path d="M62 76 v-46 q0-14 14-14 h32 q14 0 14 14 v46" fill="none" stroke="#34373a" stroke-width="1.5"/>
+<circle cx="92" cy="44" r="5" fill="#0b0b0c" stroke="#3a3d40"/>
+<path d="M398 76 v-46 q0-14 14-14 h32 q14 0 14 14 v46" fill="none" stroke="#1a1b1c" stroke-width="13" stroke-linejoin="round"/>
+<path d="M398 76 v-46 q0-14 14-14 h32 q14 0 14 14 v46" fill="none" stroke="#34373a" stroke-width="1.5"/>
+<circle cx="428" cy="44" r="5" fill="#0b0b0c" stroke="#3a3d40"/>
+<rect x="40" y="62" width="440" height="30" rx="4" fill="url(#lid)" stroke="#2c2f32"/>
+<rect x="128.2" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="145.6" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="163.0" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="180.4" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="197.8" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="215.2" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="232.6" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="250.0" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="267.4" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="284.8" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="302.2" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="319.6" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="337.0" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="354.4" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="371.8" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="389.2" y="68" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="128.2" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="145.6" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="163.0" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="180.4" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="197.8" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="215.2" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="232.6" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="250.0" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="267.4" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="284.8" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="302.2" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="319.6" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="337.0" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="354.4" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="371.8" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="389.2" y="79" width="11" height="6" rx="1.5" fill="#050505"/>
+<rect x="40" y="92" width="440" height="456" fill="#0c0d0e"/>
+<rect x="40" y="92" width="28" height="456" fill="url(#metal)" stroke="#232527"/>
+<rect x="452" y="92" width="28" height="456" fill="url(#metal)" stroke="#232527"/>
+<rect x="44" y="548" width="26" height="14" fill="#141516"/>
+<rect x="450" y="548" width="26" height="14" fill="#141516"/>
+<circle cx="60" cy="110" r="6" fill="#151617" stroke="#2e3134"/><circle cx="58.5" cy="108.5" r="2" fill="#3a3d40"/>
+<circle cx="460" cy="110" r="6" fill="#151617" stroke="#2e3134"/><circle cx="458.5" cy="108.5" r="2" fill="#3a3d40"/>
+<circle cx="60" cy="180" r="6" fill="#151617" stroke="#2e3134"/><circle cx="58.5" cy="178.5" r="2" fill="#3a3d40"/>
+<circle cx="460" cy="180" r="6" fill="#151617" stroke="#2e3134"/><circle cx="458.5" cy="178.5" r="2" fill="#3a3d40"/>
+<circle cx="60" cy="214" r="6" fill="#151617" stroke="#2e3134"/><circle cx="58.5" cy="212.5" r="2" fill="#3a3d40"/>
+<circle cx="460" cy="214" r="6" fill="#151617" stroke="#2e3134"/><circle cx="458.5" cy="212.5" r="2" fill="#3a3d40"/>
+<circle cx="60" cy="284" r="6" fill="#151617" stroke="#2e3134"/><circle cx="58.5" cy="282.5" r="2" fill="#3a3d40"/>
+<circle cx="460" cy="284" r="6" fill="#151617" stroke="#2e3134"/><circle cx="458.5" cy="282.5" r="2" fill="#3a3d40"/>
+<circle cx="60" cy="318" r="6" fill="#151617" stroke="#2e3134"/><circle cx="58.5" cy="316.5" r="2" fill="#3a3d40"/>
+<circle cx="460" cy="318" r="6" fill="#151617" stroke="#2e3134"/><circle cx="458.5" cy="316.5" r="2" fill="#3a3d40"/>
+<circle cx="60" cy="388" r="6" fill="#151617" stroke="#2e3134"/><circle cx="58.5" cy="386.5" r="2" fill="#3a3d40"/>
+<circle cx="460" cy="388" r="6" fill="#151617" stroke="#2e3134"/><circle cx="458.5" cy="386.5" r="2" fill="#3a3d40"/>
+<circle cx="60" cy="422" r="6" fill="#151617" stroke="#2e3134"/><circle cx="58.5" cy="420.5" r="2" fill="#3a3d40"/>
+<circle cx="460" cy="422" r="6" fill="#151617" stroke="#2e3134"/><circle cx="458.5" cy="420.5" r="2" fill="#3a3d40"/>
+<circle cx="60" cy="492" r="6" fill="#151617" stroke="#2e3134"/><circle cx="58.5" cy="490.5" r="2" fill="#3a3d40"/>
+<circle cx="460" cy="492" r="6" fill="#151617" stroke="#2e3134"/><circle cx="458.5" cy="490.5" r="2" fill="#3a3d40"/>
+<rect x="68" y="98" width="384" height="98" rx="3" fill="url(#metal)" stroke="#2a2c2e"/>
+<line x1="80" y1="104" x2="440" y2="104" stroke="#2f3235" stroke-width="2"/>
+<text x="86" y="159" fill="#d8d8d8" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="26">K</text><path d="M104 140 l7 -3 v6 z" fill="#d8d8d8"/>
+<g class="part" data-part="pi" tabindex="0" role="button" aria-label="Raspberry Pi 5">
+<rect x="128" y="124" width="150" height="48" rx="3" fill="#060606"/>
+<rect x="136" y="128" width="42" height="40" rx="2" fill="#8d8f86" stroke="#b5b7ad"/><rect x="141" y="133" width="32" height="20" fill="#121212"/>
+<rect x="137" y="157" width="7" height="6" fill="#5cff3a" filter="url(#glow)" class="light led fast"/>
+<rect x="170" y="157" width="7" height="6" fill="#ffb21a" filter="url(#glow)" class="light led slow"/>
+<rect x="186" y="128" width="38" height="18" rx="2" fill="#a7a9a2" stroke="#c8cac2"/><rect x="191" y="131" width="28" height="7" fill="#1e6fe0"/><rect x="191" y="139" width="28" height="5" fill="#0a0a0a"/>
+<rect x="186" y="149" width="38" height="18" rx="2" fill="#a7a9a2" stroke="#c8cac2"/><rect x="191" y="152" width="28" height="7" fill="#1e6fe0"/><rect x="191" y="160" width="28" height="5" fill="#0a0a0a"/>
+<rect x="232" y="128" width="38" height="18" rx="2" fill="#a7a9a2" stroke="#c8cac2"/><rect x="237" y="131" width="28" height="7" fill="#111"/><rect x="237" y="139" width="28" height="5" fill="#0a0a0a"/>
+<rect x="232" y="149" width="38" height="18" rx="2" fill="#a7a9a2" stroke="#c8cac2"/><rect x="237" y="152" width="28" height="7" fill="#111"/><rect x="237" y="160" width="28" height="5" fill="#0a0a0a"/>
+<rect class="hit" x="124" y="118" width="158" height="60" rx="6"/></g>
+<g class="part" data-part="spare" tabindex="0" role="button" aria-label="Spare Pi slot">
+<rect x="318" y="122" width="118" height="40" rx="2" fill="#020202" stroke="#2a2c2e"/><rect x="322" y="126" width="110" height="6" fill="#141516"/>
+<rect class="hit" x="312" y="116" width="130" height="52" rx="6"/></g>
+<rect x="68" y="200" width="384" height="98" fill="#070707"/>
+<rect x="318" y="212" width="12" height="4" rx="2" fill="#1d1f21" transform="rotate(-20 324 214)"/>
+<rect x="340" y="212" width="12" height="4" rx="2" fill="#1d1f21" transform="rotate(-20 346 214)"/>
+<rect x="362" y="212" width="12" height="4" rx="2" fill="#1d1f21" transform="rotate(-20 368 214)"/>
+<rect x="384" y="212" width="12" height="4" rx="2" fill="#1d1f21" transform="rotate(-20 390 214)"/>
+<rect x="406" y="212" width="12" height="4" rx="2" fill="#1d1f21" transform="rotate(-20 412 214)"/>
+<rect x="428" y="212" width="12" height="4" rx="2" fill="#1d1f21" transform="rotate(-20 434 214)"/>
+<path d="M300 228 l140 -6 v60 l-140 6z" fill="#0d0e0f"/>
+<g class="part" data-part="switch" tabindex="0" role="button" aria-label="TP-Link switch">
+<rect x="76" y="226" width="226" height="56" rx="3" fill="#131415" stroke="#2c2e30"/>
+<text x="84" y="236" fill="#8c8f92" font-family="Arial, sans-serif" font-size="7">tp-link   5-Port Gigabit Easy Smart Switch</text><text x="294" y="236" text-anchor="end" fill="#8c8f92" font-family="Arial, sans-serif" font-size="7">TL-SG105E</text>
+<rect x="84" y="242" width="32" height="28" rx="2" fill="#a9aba4" stroke="#c6c8c0"/><rect x="88" y="246" width="24" height="17" fill="#0c0c0c"/><rect x="94" y="263" width="12" height="4" fill="#0c0c0c"/>
+<text x="100" y="279" text-anchor="middle" fill="#6d7073" font-family="Arial, sans-serif" font-size="6">1</text>
+<rect x="122" y="242" width="32" height="28" rx="2" fill="#a9aba4" stroke="#c6c8c0"/><rect x="126" y="246" width="24" height="17" fill="#0c0c0c"/><rect x="132" y="263" width="12" height="4" fill="#0c0c0c"/>
+<text x="138" y="279" text-anchor="middle" fill="#6d7073" font-family="Arial, sans-serif" font-size="6">2</text>
+<rect x="160" y="242" width="32" height="28" rx="2" fill="#a9aba4" stroke="#c6c8c0"/><rect x="164" y="246" width="24" height="17" fill="#0c0c0c"/><rect x="170" y="263" width="12" height="4" fill="#0c0c0c"/>
+<text x="176" y="279" text-anchor="middle" fill="#6d7073" font-family="Arial, sans-serif" font-size="6">3</text>
+<rect x="198" y="242" width="32" height="28" rx="2" fill="#a9aba4" stroke="#c6c8c0"/><rect x="202" y="246" width="24" height="17" fill="#0c0c0c"/><rect x="208" y="263" width="12" height="4" fill="#0c0c0c"/>
+<text x="214" y="279" text-anchor="middle" fill="#6d7073" font-family="Arial, sans-serif" font-size="6">4</text>
+<rect x="236" y="242" width="32" height="28" rx="2" fill="#a9aba4" stroke="#c6c8c0"/><rect x="240" y="246" width="24" height="17" fill="#0c0c0c"/><rect x="246" y="263" width="12" height="4" fill="#0c0c0c"/>
+<text x="252" y="279" text-anchor="middle" fill="#6d7073" font-family="Arial, sans-serif" font-size="6">5</text>
+<rect x="86" y="243" width="5" height="4" fill="#5cff3a" filter="url(#glow)" class="light led fast"/>
+<rect x="124" y="243" width="5" height="4" fill="#5cff3a" filter="url(#glow)" class="light led"/>
+<circle class="light" cx="284" cy="256" r="4" fill="#5cff3a" filter="url(#glow)"/><text x="284" y="270" text-anchor="middle" fill="#6d7073" font-family="Arial, sans-serif" font-size="6">Power</text>
+<rect class="hit" x="72" y="222" width="234" height="64" rx="6"/></g>
+<rect x="68" y="288" width="384" height="8" fill="#1b1c1e" stroke="#2a2c2e"/>
+<g class="part" data-part="blank" tabindex="0" role="button" aria-label="Blank panel">
+<rect x="68" y="302" width="384" height="98" rx="3" fill="url(#metal)" stroke="#2a2c2e"/><line x1="80" y1="308" x2="440" y2="308" stroke="#2a2d30" stroke-width="2"/>
+<rect class="hit" x="68" y="302" width="384" height="98" rx="6"/></g>
+<g class="part" data-part="empty" tabindex="0" role="button" aria-label="Empty space">
+<rect x="68" y="404" width="384" height="140" fill="#060606"/>
+<rect x="80" y="516" width="360" height="18" fill="#0f1011"/>
+<rect class="hit" x="68" y="404" width="384" height="140" rx="6"/></g>
+<ellipse class="light haze" cx="200" cy="200" rx="150" ry="90" fill="url(#haze)" pointer-events="none"/>
+<g pointer-events="none" fill="none" stroke-linecap="round">
+<path id="cable-pi" d="M157 168 C 157 200, 138 205, 138 250" stroke="#000" stroke-width="7"/><path d="M157 168 C 157 200, 138 205, 138 250" stroke="#2a3a2c" stroke-width="2.5" opacity=".7"/>
+<path id="cable-router" d="M100 268 C 100 340, 112 440, 96 585" stroke="#c9481f" stroke-width="7"/><path d="M100 268 C 100 340, 112 440, 96 585" stroke="#ff7a4a" stroke-width="2" opacity=".6"/>
+<g id="packets"></g>
+</g>
+      </svg>
+      <div class="tip">tap a part to zoom in</div>
+    </div>
+    <section class="card info" id="info" aria-live="polite" style="padding:22px"></section>
+  </div>
+
+  <section id="running" class="reveal">
+    <h3>What's running</h3>
+    <div class="services" id="services"><div class="card svc in"><span class="muted">Loading...</span></div></div>
+  </section>
+
+  <section id="graphs" class="reveal">
+    <h3>Last 24 hours</h3>
+    <div class="charts">
+      <div class="card chart wide" id="chart-dns"></div>
+      <div class="card chart" id="chart-temp"></div>
+      <div class="card chart" id="chart-mem"></div>
+    </div>
+  </section>
+
+  <section id="security" class="reveal">
+    <h3>Security</h3>
+    <div class="sec">
+      <div class="card"><b>No open ports on my router</b><p>This site reaches you through a Cloudflare Tunnel. The Pi connects out to Cloudflare, so nothing on my home network is open to the internet.</p></div>
+      <div class="card"><b>SSH keys only</b><p>Password logins are turned off. You can only log in with my key, and I tested that passwords get rejected.</p></div>
+      <div class="card"><b>Firewall blocks by default</b><p>UFW drops everything coming in, apart from the few things I've allowed from my home network and over Tailscale.</p></div>
+      <div class="card"><b>Private remote access</b><p>I manage the Pi from anywhere with Tailscale, an encrypted private network with 2FA on the account.</p></div>
+      <div class="card"><b>Automatic security updates</b><p>unattended-upgrades installs security fixes every day without me having to remember.</p></div>
+      <div class="card"><b>Only safe info on this page</b><p>No IP addresses, hostnames or software versions are shown here, because those help attackers.</p></div>
+    </div>
+    <div class="card scan">
+<pre><span class="f"># Nmap scan of every TCP port from another device on my network</span>
+$ sudo nmap -p- &lt;the pi&gt;
+Not shown: <span class="f">65531 filtered tcp ports (no-response)</span>
+PORT    STATE SERVICE
+22/tcp  <span class="o">open</span>  ssh
+53/tcp  <span class="o">open</span>  domain
+80/tcp  <span class="o">open</span>  http
+443/tcp <span class="o">open</span>  https
+<span class="f"># only what I opened in the firewall. Everything else gets no reply.</span></pre>
+    </div>
+  </section>
+
+  <footer>
+    Served from the Pi itself through a Cloudflare Tunnel. Stats refresh every minute.<br>
+    How it's built: <a href="https://github.com/haydncow/homelab-plan">github.com/haydncow/homelab-plan</a>
+  </footer>
+</div>
 
 <script>
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const $ = s => document.querySelector(s);
+let stats = null, current = "intro";
+
+/* ---------- boot screen ---------- */
+const BOOT = [
+  ["", "haydnhomelab boot sequence"],
+  ["", ""],
+  ["ok", "Powering on rack"],
+  ["ok", "Raspberry Pi 5 started"],
+  ["ok", "Firewall (UFW) active"],
+  ["ok", "Pi-hole answering DNS"],
+  ["ok", "Tailscale connected"],
+  ["ok", "Cloudflare Tunnel up"],
+  ["", ""],
+  ["", "welcome."],
+];
+let booted = false;
+function finishBoot() {
+  if (booted) return; booted = true;
+  $("#boot").classList.add("gone");
+  try { sessionStorage.setItem("booted", "1"); } catch (e) {}
+  powerOn();
+}
+async function runBoot() {
+  let seen = false;
+  try { seen = sessionStorage.getItem("booted") === "1"; } catch (e) {}
+  if (seen || reduceMotion) { $("#boot").remove(); booted = true; powerOn(); return; }
+  $("#skip").onclick = finishBoot;
+  addEventListener("keydown", finishBoot, { once: true });
+  const out = $("#boot-text");
+  for (const [kind, text] of BOOT) {
+    if (booted) return;
+    const line = document.createElement("div");
+    if (kind === "ok") line.innerHTML = `[ <span class="ok">OK</span> ] `;
+    out.appendChild(line);
+    for (const ch of text) { if (booted) return; line.append(ch); await sleep(14); }
+    await sleep(kind === "ok" ? 170 : 90);
+  }
+  out.insertAdjacentHTML("beforeend", '<span class="cursor"></span>');
+  await sleep(450);
+  finishBoot();
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+/* lights come on one by one, then data starts flowing */
+function powerOn() {
+  const rack = $("#rack");
+  const lights = [...rack.querySelectorAll(".light")];
+  rack.classList.remove("booting");
+  lights.forEach((l, i) => { l.style.opacity = 0; setTimeout(() => (l.style.opacity = ""), reduceMotion ? 0 : 250 + i * 220); });
+  setTimeout(startPackets, reduceMotion ? 0 : 250 + lights.length * 220);
+}
+
+/* ---------- data packets along the cables ---------- */
+function packetSpeed() {
+  // busier Pi-hole = faster packets. Uses the last 10 minutes of DNS queries.
+  const h = stats && stats.dns_history;
+  const recent = h && h.length ? h[h.length - 1][1] : 0;
+  return Math.max(0.9, 3.2 - Math.min(recent, 600) / 260);
+}
+function startPackets() {
+  if (reduceMotion) return;
+  const g = $("#packets");
+  g.innerHTML = "";
+  const dur = packetSpeed();
+  const make = (path, colour, begin, back) => {
+    const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    c.setAttribute("r", "2.6"); c.setAttribute("fill", colour); c.setAttribute("filter", "url(#glow)");
+    const m = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
+    m.setAttribute("dur", dur + "s"); m.setAttribute("repeatCount", "indefinite"); m.setAttribute("begin", begin + "s");
+    if (back) { m.setAttribute("keyPoints", "1;0"); m.setAttribute("keyTimes", "0;1"); m.setAttribute("calcMode", "linear"); }
+    const mp = document.createElementNS("http://www.w3.org/2000/svg", "mpath");
+    mp.setAttribute("href", path);
+    m.appendChild(mp); c.appendChild(m); g.appendChild(c);
+  };
+  for (let i = 0; i < 3; i++) {
+    make("#cable-pi", "#5cff3a", i * dur / 3, false);
+    make("#cable-pi", "#e8eae6", i * dur / 3 + dur / 6, true);
+    make("#cable-router", "#ffb38f", i * dur / 3, false);
+    make("#cable-router", "#5cff3a", i * dur / 3 + dur / 6, true);
+  }
+}
+
+/* ---------- zoom into a part ---------- */
+const FULL = [30, 0, 460, 590];
+let view = FULL.slice(), anim = null;
+function setView(v) { view = v; $("#rack").setAttribute("viewBox", v.map(n => n.toFixed(1)).join(" ")); }
+function zoomTo(target) {
+  cancelAnimationFrame(anim);
+  if (reduceMotion) return setView(target);
+  const from = view.slice(), t0 = performance.now(), D = 650;
+  const step = now => {
+    const t = Math.min(1, (now - t0) / D), e = t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    setView(from.map((f, i) => f + (target[i] - f) * e));
+    if (t < 1) anim = requestAnimationFrame(step);
+  };
+  anim = requestAnimationFrame(step);
+}
+function boxFor(el) {
+  const b = el.querySelector(".hit").getBBox(), ratio = FULL[2] / FULL[3], pad = 34;
+  let w = b.width + pad * 2, h = b.height + pad * 2;
+  if (w / h > ratio) h = w / ratio; else w = h * ratio;
+  w = Math.min(w, FULL[2]); h = Math.min(h, FULL[3]);
+  let x = b.x + b.width / 2 - w / 2, y = b.y + b.height / 2 - h / 2;
+  x = Math.max(FULL[0], Math.min(x, FULL[0] + FULL[2] - w));
+  y = Math.max(FULL[1], Math.min(y, FULL[1] + FULL[3] - h));
+  return [x, y, w, h];
+}
+
+/* ---------- info panel ---------- */
 const PARTS = {
   intro: () => `
-    <h2>Welcome</h2>
-    <p class="tag">Click a part of the rack</p>
-    <p>This is my homelab. It's a small server I built to learn networking and cyber security hands-on.</p>
-    <p>Start with the <b>Raspberry Pi</b> (green box) to see live stats from the server this page is running on.</p>`,
+    <p class="kicker">welcome</p>
+    <h2>My homelab</h2>
+    <p class="tag">A small server I built to learn networking and security</p>
+    <p>Everything you see here is real and live. This page is running on the Raspberry Pi in the top left of the rack.</p>
+    <p>Click a part to zoom in, or jump straight to one:</p>
+    <div class="chips">
+      <button class="chip" data-go="pi">Raspberry Pi</button>
+      <button class="chip" data-go="switch">Switch</button>
+      <button class="chip" data-go="spare">Spare slot</button>
+      <button class="chip" data-go="blank">Blank panel</button>
+      <button class="chip" data-go="empty">Open space</button>
+    </div>
+    ${stats ? `<div class="stats" style="margin-top:18px">${tile("Ads blocked (24h)", stats.blocked)}${tile("Uptime", stats.uptime)}</div>` : ""}`,
   pi: () => `
+    <p class="kicker">u1 &middot; kksb panel</p>
     <h2>Raspberry Pi 5 (2GB)</h2>
     <p class="tag">The server. This page is running on it right now.</p>
     ${statsHtml()}
-    <p><b>What it runs</b></p>
+    <p><b>What it does</b></p>
     <ul>
-      <li><b>Pi-hole</b>: blocks ads and trackers for my network by answering DNS lookups</li>
-      <li><b>Tailscale</b>: lets me reach it securely from anywhere, without opening ports</li>
-      <li><b>UFW firewall</b>: blocks everything coming in except what I've allowed</li>
+      <li><b>Pi-hole</b> blocks ads and trackers by answering DNS lookups</li>
+      <li><b>Tailscale</b> lets me manage it from anywhere, privately</li>
+      <li><b>Cloudflare Tunnel</b> puts this page online without opening ports</li>
+      <li><b>UFW</b> blocks everything coming in that I haven't allowed</li>
     </ul>`,
   switch: () => `
+    <p class="kicker">u2 &middot; shelf</p>
     <h2>TP-Link TL-SG105E</h2>
     <p class="tag">5 port gigabit managed switch</p>
-    <p>Connects the Pi to my router with short 0.3m Cat6 cables. Port 1 goes to the Pi, port 2 goes to the router.</p>
+    <p>Connects the Pi to the rest of my network with short Cat6 cables. The black one goes to the Pi and the orange one goes out to the router.</p>
+    <p>The dots moving along the cables show traffic. They speed up when Pi-hole is busier.</p>
     <p>It's a <b>managed</b> switch, so it supports <b>VLANs</b>. Next I want to use them to keep the lab separate from the rest of my home devices.</p>`,
   spare: () => `
+    <p class="kicker">u1 &middot; kksb panel</p>
     <h2>Spare slot</h2>
-    <p class="tag">KKSB 10" 1U rack panel</p>
-    <p>The panel holds two Pis with their ports at the front. This side is empty for now, ready for a second Pi to run more services later.</p>`,
+    <p class="tag">Room for a second Pi</p>
+    <p>The KKSB panel holds two Pis with their ports at the front. This cut-out is empty for now, ready for another Pi to run more services later.</p>`,
   blank: () => `
+    <p class="kicker">u3</p>
     <h2>Blank panel</h2>
     <p class="tag">Came with the rack</p>
-    <p>Covers a gap so the rack looks tidy and the cables stay hidden behind it.</p>`,
+    <p>Covers the gap under the switch so the rack looks tidy.</p>`,
   empty: () => `
-    <h2>Empty space</h2>
+    <p class="kicker">u4</p>
+    <h2>Open space</h2>
     <p class="tag">Room to grow</p>
-    <p>Space for future upgrades, like an SSD or a patch panel.</p>`,
+    <p>The bottom of the rack is open for now. Space for future upgrades, like an SSD or a patch panel.</p>`,
 };
-
-let stats = null, current = "intro";
-
 function tile(label, value, extra = "", big = false) {
   return `<div class="stat${big ? " big" : ""}"><span>${label}</span><b>${value ?? "n/a"}</b>${extra}</div>`;
 }
-
 function statsHtml() {
   if (!stats) return `<p class="muted">Loading live stats...</p>`;
   const pct = parseFloat(stats.percent) || 0;
   return `<div class="stats">
-    ${tile("Uptime", stats.uptime)}
-    ${tile("CPU temp", stats.temp)}
-    ${tile("CPU load", stats.load)}
-    ${tile("Memory used", stats.memory)}
-    ${tile("Ads blocked (24h)", stats.blocked)}
-    ${tile("DNS queries (24h)", stats.queries)}
-    ${tile("Requests blocked", stats.percent, `<div class="bar"><i style="width:${Math.min(pct, 100)}%"></i></div>`, true)}
-  </div>
-  <p class="muted">Updated ${stats.updated_text}</p>`;
+    ${tile("Uptime", stats.uptime)}${tile("CPU temp", stats.temp)}
+    ${tile("CPU load", stats.load)}${tile("Memory used", stats.memory)}
+    ${tile("Ads blocked (24h)", stats.blocked)}${tile("DNS queries (24h)", stats.queries)}
+    ${tile("Requests blocked", stats.percent, `<div class="bar"><i data-w="${Math.min(pct, 100)}"></i></div>`, true)}
+  </div><p class="muted">Updated ${stats.updated_text}</p>`;
 }
-
-function show(part) {
+function show(part, animate = true) {
   current = part;
-  document.getElementById("info").innerHTML = PARTS[part]();
+  const info = $("#info");
+  info.innerHTML = PARTS[part]();
+  if (animate) { info.classList.remove("swap"); void info.offsetWidth; info.classList.add("swap"); }
+  requestAnimationFrame(() => info.querySelectorAll(".bar i").forEach(b => (b.style.width = b.dataset.w + "%")));
+  info.querySelectorAll("[data-go]").forEach(c => c.onclick = () => select(c.dataset.go));
   document.querySelectorAll(".part").forEach(p => p.classList.toggle("active", p.dataset.part === part));
 }
-
+function select(part) {
+  show(part);
+  const card = $(".rack-card");
+  if (part === "intro") { zoomTo(FULL); $("#back").classList.remove("show"); card.classList.remove("zoomed"); return; }
+  card.classList.add("zoomed");
+  zoomTo(boxFor(document.querySelector(`.part[data-part="${part}"]`)));
+  $("#back").classList.add("show");
+  if (matchMedia("(max-width: 820px)").matches) $("#info").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
+}
 document.querySelectorAll(".part").forEach(p => {
-  p.addEventListener("click", () => show(p.dataset.part));
-  p.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); show(p.dataset.part); } });
+  p.addEventListener("click", () => select(p.dataset.part));
+  p.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(p.dataset.part); } });
 });
+$("#back").onclick = () => select("intro");
+addEventListener("keydown", e => { if (e.key === "Escape" && current !== "intro") select("intro"); });
 
-async function load() {
-  const box = document.getElementById("status"), text = document.getElementById("status-text");
-  try {
-    const r = await fetch("stats.json", { cache: "no-store" });
-    stats = await r.json();
-    const ageMin = (Date.now() / 1000 - stats.updated) / 60;
-    const fresh = ageMin < 15;
-    box.className = "status " + (fresh ? "online" : "offline");
-    text.textContent = fresh ? "online" : "last seen " + stats.updated_text;
-  } catch (e) {
-    box.className = "status offline";
-    text.textContent = "stats unavailable";
-  }
-  if (current === "pi") show("pi");
+/* ---------- services ---------- */
+const ABOUT = {
+  "Pi-hole": "Network-wide ad blocking",
+  "Tailscale": "Private remote access",
+  "Cloudflare Tunnel": "Puts this site online",
+  "Web server": "Serves this page",
+  "Auto updates": "Daily security fixes",
+  "Firewall (UFW)": "Blocks unwanted traffic",
+};
+let servicesDrawn = false;
+function drawServices() {
+  const list = (stats && stats.services) || [];
+  const box = $("#services");
+  if (!list.length) { box.innerHTML = `<div class="card svc in"><span class="muted">Service status not available yet.</span></div>`; return; }
+  box.innerHTML = list.map(s => `
+    <div class="card svc ${s.up ? "up" : "down"}${servicesDrawn ? " in" : ""}">
+      <i class="dot" aria-hidden="true"></i>
+      <div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span></div>
+      <span class="state">${s.up ? "running" : "down"}</span>
+    </div>`).join("");
+  if (!servicesDrawn) watchReveal(box, () => box.querySelectorAll(".svc").forEach((el, i) => setTimeout(() => el.classList.add("in"), i * 90)));
+  servicesDrawn = true;
 }
 
-show("intro");
+/* ---------- charts (hand-drawn SVG, crosshair + tooltip) ---------- */
+const fmtTime = t => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v }) {
+  const pts = series[0].data;
+  const legend = series.length > 1
+    ? `<div class="legend">${series.map(s => `<span><i style="background:${s.colour}"></i>${s.name}</span>`).join("")}</div>` : "";
+  if (!pts || pts.length < 2) { el.innerHTML = `<h4>${title}</h4><p class="sub">${sub}</p><div class="empty">Collecting data, check back soon.</div>`; return; }
+  const W = Math.max(280, el.clientWidth - 32), H = series.length > 1 ? 220 : 170, L = 44, R = 64, T = 10, B = 24;
+  const xs = pts.map(p => p[0]), x0 = xs[0], x1 = xs[xs.length - 1];
+  const all = series.flatMap(s => s.data.map(p => p[1]));
+  let lo = min ?? Math.floor(Math.min(...all) - 2), hi = Math.max(...all);
+  hi = hi === lo ? lo + 1 : hi + (hi - lo) * .08;
+  const X = t => L + (t - x0) / (x1 - x0 || 1) * (W - L - R);
+  const Y = v => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+  const ticks = [0, .5, 1].map(f => lo + (hi - lo) * f);
+  let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${title}, ${sub}">`;
+  ticks.forEach(v => svg += `<line class="grid" x1="${L}" x2="${W - R}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${fmt(Math.round(v))}</text>`);
+  [x0, (x0 + x1) / 2, x1].forEach((t, i) => svg += `<text class="axis" x="${X(t)}" y="${H - 4}" text-anchor="${["start", "middle", "end"][i]}">${fmtTime(t)}</text>`);
+  series.forEach(s => {
+    const d = s.data.map((p, i) => `${i ? "L" : "M"}${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join("");
+    svg += `<path class="ln draw" d="${d}" stroke="${s.colour}"/>`;
+    const last = s.data[s.data.length - 1];
+    svg += `<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="4" fill="${s.colour}" stroke="var(--panel)" stroke-width="2"/>`;
+    svg += `<text class="axis" x="${X(last[0]) + 9}" y="${Y(last[1]) + 4}" style="fill:var(--text)">${fmt(last[1])}${unit}</text>`;
+  });
+  svg += `<line class="xh" y1="${T}" y2="${H - B}" style="opacity:0"/>`;
+  series.forEach(s => svg += `<circle class="hv" r="4" fill="${s.colour}" stroke="var(--panel)" stroke-width="2" style="opacity:0"/>`);
+  svg += `<rect x="${L}" y="0" width="${W - L - R}" height="${H}" fill="transparent" class="hitbox"/></svg>`;
+  el.innerHTML = `<h4>${title}</h4><p class="sub">${sub}</p>${legend}${svg}<div class="ttip"></div>`;
+  el.querySelectorAll(".draw").forEach(p => p.style.setProperty("--len", Math.ceil(p.getTotalLength())));
+  const s = el.querySelector("svg"), xh = s.querySelector(".xh"), hv = s.querySelectorAll(".hv"), tip = el.querySelector(".ttip");
+  const move = e => {
+    const r = s.getBoundingClientRect(), mx = (e.clientX - r.left) / r.width * W;
+    let i = 0, best = Infinity;
+    xs.forEach((t, k) => { const d = Math.abs(X(t) - mx); if (d < best) { best = d; i = k; } });
+    const x = X(xs[i]);
+    xh.setAttribute("x1", x); xh.setAttribute("x2", x); xh.style.opacity = 1;
+    series.forEach((sr, k) => { const p = sr.data[i]; if (!p) return; hv[k].setAttribute("cx", x); hv[k].setAttribute("cy", Y(p[1])); hv[k].style.opacity = 1; });
+    tip.innerHTML = `<div class="muted">${fmtTime(xs[i])}</div>` + series.map(sr => sr.data[i] ? `<div><i style="background:${sr.colour}"></i>${sr.name}: <b>${fmt(sr.data[i][1])}${unit}</b></div>` : "").join("");
+    tip.style.opacity = 1;
+    const er = el.getBoundingClientRect(), px = x / W * r.width + (r.left - er.left);
+    tip.style.left = Math.min(px + 12, er.width - tip.offsetWidth - 8) + "px";
+    tip.style.top = (r.top - er.top + 8) + "px";
+  };
+  const leave = () => { xh.style.opacity = 0; hv.forEach(h => h.style.opacity = 0); tip.style.opacity = 0; };
+  s.addEventListener("pointermove", move); s.addEventListener("pointerdown", move); s.addEventListener("pointerleave", leave);
+}
+function drawCharts() {
+  const dns = (stats && stats.dns_history) || [], pi = (stats && stats.pi_history) || [];
+  const n = v => Number(v).toLocaleString();
+  lineChart($("#chart-dns"), {
+    title: "DNS queries", sub: "Every 10 minutes. How many lookups Pi-hole answered, and how many it blocked.",
+    series: [
+      { name: "Total", colour: "var(--s-total)", data: dns.map(d => [d[0], d[1]]) },
+      { name: "Blocked", colour: "var(--s-blocked)", data: dns.map(d => [d[0], d[2]]) },
+    ], min: 0, fmt: n,
+  });
+  lineChart($("#chart-temp"), { title: "CPU temperature", sub: "Every 5 minutes", unit: "°C", series: [{ name: "CPU temp", colour: "var(--s-blocked)", data: pi.map(p => [p[0], p[1]]) }] });
+  lineChart($("#chart-mem"), { title: "Memory used", sub: "Every 5 minutes", unit: "%", min: 0, series: [{ name: "Memory used", colour: "var(--s-blocked)", data: pi.map(p => [p[0], p[2]]) }] });
+}
+
+/* ---------- scroll reveal ---------- */
+function watchReveal(el, fn) {
+  if (!("IntersectionObserver" in window) || reduceMotion) { el.classList.add("in"); fn && fn(); return; }
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { el.classList.add("in"); fn && fn(); io.disconnect(); } }), { threshold: .15 });
+  io.observe(el);
+}
+document.querySelectorAll(".reveal").forEach(el => el.id !== "graphs" && watchReveal(el));
+let chartsShown = false, rz;
+addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => chartsShown && drawCharts(), 200); });
+watchReveal($("#graphs"), () => { chartsShown = true; drawCharts(); });
+
+/* ---------- live data ---------- */
+async function load() {
+  const pill = $("#status"), text = $("#status-text");
+  try {
+    const r = await fetch("stats.json", { cache: "no-store" });
+    const fresh = !stats;
+    stats = await r.json();
+    const ageMin = (Date.now() / 1000 - stats.updated) / 60, live = ageMin < 15;
+    pill.className = "pill " + (live ? "online" : "offline");
+    text.textContent = live ? "online" : "last seen " + stats.updated_text;
+    drawServices();
+    if (chartsShown) drawCharts();
+    if (booted && !reduceMotion && fresh) startPackets();
+    show(current, false);
+  } catch (e) {
+    pill.className = "pill offline"; text.textContent = "stats unavailable";
+  }
+}
+
+show("intro", false);
+runBoot();
 load();
 setInterval(load, 60000);
 </script>

@@ -1,9 +1,12 @@
 # Status page
 
-A small public page showing my homelab is up, with a few live stats (uptime, CPU temp, memory, ads blocked by Pi-hole).
+Live at **[haydnhomelab.com](https://haydnhomelab.com)**. A public page showing my homelab is up, with live stats.
 
-- `index.html` is an interactive drawing of my rack. Click a part to see what it does, or click the Pi to see live stats.
-- `homelab-status.py` runs every minute from cron and saves the stats to `/srv/status/stats.json`, which the page reads.
-- Tailscale Funnel shares that folder on the internet over HTTPS, so I didn't need to open any ports on my router.
+- `index.html` is the page. It has a boot screen, a drawing of my rack where you can click a part to zoom in, little packets moving along the cables (faster when Pi-hole is busier), which services are running, graphs of the last 24 hours and a security section.
+- `homelab-status.py` runs every minute from cron (as root) and saves everything to `/srv/status/stats.json`, which the page reads. It checks each service with `systemctl is-active`, gets DNS history from Pi-hole's API, and keeps 24 hours of temperature and memory readings in `/var/lib/homelab-status/`.
+- A small Python web server (`status-web` systemd service) serves `/srv/status`, but only on `127.0.0.1:8080`, so it isn't reachable from my network.
+- A **Cloudflare Tunnel** (`cloudflared`) connects out from the Pi to Cloudflare and puts the page on my domain. Nothing is port forwarded on my router.
 - It logs in to Pi-hole's API with an app password stored in a root-only file, then logs out again.
-- It only shows harmless numbers. No IP addresses, hostnames or software versions, because those would help an attacker.
+- It only shows harmless info. No IP addresses, hostnames or software versions, because those would help an attacker.
+
+I used Tailscale Funnel for this at first, but switched to Cloudflare Tunnel so I could use my own domain.

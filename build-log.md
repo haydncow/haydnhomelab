@@ -2,6 +2,18 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
+## 18 October 2026
+
+- Fitted the Pi and switch in the rack. The Pi is in the KKSB panel at the top, the switch is on the shelf under it.
+- Updated the rack layout diagram to match how it actually looks.
+- Bought my own domain, haydnhomelab.com, from Cloudflare. I nearly bought it on Wix, but Wix doesn't let you move the domain's nameservers to Cloudflare, which the tunnel needs.
+- Set up a Cloudflare Tunnel so the status page is on my domain. The Pi connects out to Cloudflare, so I still haven't opened any ports on my router.
+- Made a small web server (`status-web`) that only listens on the Pi itself, for the tunnel to use.
+- Problem: the site worked on my Mac but nowhere else. The DNS record was called `http.haydnhomelab.com` because I'd typed "http" in the subdomain box. Fixed it, added `www` too, then cleared the old "not found" answers my devices had saved.
+- Rebuilt the status page with a boot screen, clickable zoom, live service status, 24 hour graphs and a security section.
+
+**Next:** use Pi-hole for the whole house, back up Pi-hole with Teleporter, and set up Fail2ban.
+
 ## 17 October 2026
 
 - Plugged the Pi in through a TP-Link instead of straight into the router. It still worked, but SSH said `Permission denied (publickey)` again.
