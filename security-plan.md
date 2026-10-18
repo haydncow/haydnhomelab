@@ -81,6 +81,7 @@ learn more.
 - [x] Password login over SSH is blocked. `ssh -o PubkeyAuthentication=no` gets `Permission denied (publickey)`
 - [x] Nmap scan from my Mac on the home network (17 October 2026)
 - [x] Nmap scan over Tailscale (17 October 2026)
+- [x] Fail2ban: 5 fake logins from my Kali VM got its IP banned straight away (18 October 2026)
 
 ### Nmap results (home network)
 
