@@ -22,14 +22,19 @@ STATE_DIR = "/var/lib/homelab-status"  # keeps 24 hours of temp/memory readings
 PASS_FILE = "/etc/homelab-status/pihole-app-password"  # root-only (chmod 600)
 API = "http://127.0.0.1/api"  # Pi-hole's API, only asked from the Pi itself
 
-# What shows in the "What's running" panel: (name on the page, systemd service)
+# What shows in the "What's running" panel:
+# (name on the page, systemd service(s) to check, extra detail function name)
 SERVICES = [
-    ("Pi-hole", "pihole-FTL"),
-    ("Tailscale", "tailscaled"),
-    ("Cloudflare Tunnel", "cloudflared"),
-    ("Web server", "status-web"),
-    ("Auto updates", "unattended-upgrades"),
+    ("Pi-hole", ["pihole-FTL"], "pihole"),
+    ("Tailscale", ["tailscaled"], "tailscale"),
+    ("Cloudflare Tunnel", ["cloudflared"], None),
+    ("Web server (Caddy)", ["caddy", "status-web"], None),
+    ("Live stats", ["status-live"], None),
+    ("SSH", ["ssh"], None),
+    ("Fail2ban", ["fail2ban"], "fail2ban"),
+    ("Auto updates", ["unattended-upgrades"], "updates"),
 ]
+
 # Power cost estimate. The Pi only measures its own board, so add a rough
 # figure for the switch and the power supply's losses.
 EXTRA_WATTS = 2.0
@@ -83,13 +88,81 @@ def power_watts():
     return sum(amps[k] * volts[k] for k in amps if k in volts)
 
 
-def services():
+def run(*cmd):
+    return subprocess.run(cmd, capture_output=True, text=True, timeout=15).stdout
+
+
+def ago(secs):
+    # 200000 -> "2d 7h", 4000 -> "1h 6m", 300 -> "5m"
+    secs = int(max(0, secs))
+    d, rem = divmod(secs, 86400)
+    h, rem = divmod(rem, 3600)
+    m = rem // 60
+    if d:
+        return f"{d}d {h}h"
+    if h:
+        return f"{h}h {m}m"
+    return f"{m}m"
+
+
+def running_for(unit):
+    # How long the service has been running, using time since boot so
+    # time zones don't matter
+    mono = run("systemctl", "show", unit, "-p", "ActiveEnterTimestampMonotonic", "--value").strip()
+    boot_secs = float(read("/proc/uptime").split()[0])
+    if not mono or mono == "0":
+        return None
+    return ago(boot_secs - int(mono) / 1e6)
+
+
+def detail_tailscale():
+    # Count how many of my devices are online, without showing their names or IPs
+    status = json.loads(run("tailscale", "status", "--json"))
+    peers = list((status.get("Peer") or {}).values())
+    online = 1 + sum(1 for p in peers if p.get("Online"))
+    return f"{online} of {len(peers) + 1} devices online"
+
+
+def detail_fail2ban():
+    out = run("fail2ban-client", "status", "sshd")
+    nums = {}
+    for line in out.splitlines():
+        for key in ("Currently banned", "Total banned"):
+            if key in line:
+                nums[key] = int(line.split(":")[-1].strip())
+    return f"{nums.get('Currently banned', 0)} banned now, {nums.get('Total banned', 0)} in total"
+
+
+def detail_updates():
+    stamp = "/var/lib/apt/periodic/unattended-upgrades-stamp"
+    return f"last checked {ago(time.time() - os.path.getmtime(stamp))} ago"
+
+
+def detail_firewall():
+    rules = [l for l in run("ufw", "status", "numbered").splitlines() if l.strip().startswith("[")]
+    return f"{len(rules)} rules"
+
+
+def services(gravity=None):
+    details = {
+        "tailscale": detail_tailscale,
+        "fail2ban": detail_fail2ban,
+        "updates": detail_updates,
+        "pihole": lambda: f"blocking {gravity:,} domains" if gravity else None,
+    }
     out = []
-    for name, unit in SERVICES:
-        r = subprocess.run(["systemctl", "is-active", unit], capture_output=True, text=True)
-        out.append({"name": name, "up": r.stdout.strip() == "active"})
-    r = subprocess.run(["ufw", "status"], capture_output=True, text=True)
-    out.append({"name": "Firewall (UFW)", "up": "Status: active" in r.stdout})
+    for name, units, extra in SERVICES:
+        # use the first unit that's running (the web server could be Caddy or the old one)
+        unit = next((u for u in units if run("systemctl", "is-active", u).strip() == "active"), None)
+        out.append({
+            "name": name,
+            "up": unit is not None,
+            "detail": safe(details[extra]) if (extra and unit) else None,
+            "for": safe(lambda: running_for(unit)) if unit else None,
+        })
+    fw = run("ufw", "status")
+    out.append({"name": "Firewall (UFW)", "up": "Status: active" in fw,
+                "detail": safe(detail_firewall), "for": None})
     return out
 
 
@@ -108,7 +181,8 @@ def pihole():
     # so old sessions don't build up.
     sid = api("POST", "/auth", body={"password": read(PASS_FILE)})["session"]["sid"]
     try:
-        q = api("GET", "/stats/summary", sid=sid)["queries"]
+        summary = api("GET", "/stats/summary", sid=sid)
+        q = summary["queries"]
         hist = api("GET", "/history", sid=sid).get("history", [])
         # 10 minute buckets for the last 24 hours: [time, total, blocked]
         dns = [[h["timestamp"], h["total"], h["blocked"]] for h in hist]
@@ -117,6 +191,7 @@ def pihole():
             "queries": f"{q['total']:,}",
             "percent": f"{q['percent_blocked']:.1f}%",
             "dns_history": dns,
+            "gravity": summary.get("gravity", {}).get("domains_being_blocked"),
         }
     finally:
         try:
@@ -158,7 +233,7 @@ def main():
     if not ph:
         # Pi-hole didn't answer this time, so keep the last numbers it gave
         old = safe(lambda: json.load(open(os.path.join(OUT_DIR, "stats.json"))), {})
-        ph = {k: old.get(k) for k in ("blocked", "queries", "percent", "dns_history")}
+        ph = {k: old.get(k) for k in ("blocked", "queries", "percent", "dns_history", "gravity")}
         ph["dns_history"] = ph["dns_history"] or []
     data = {
         "updated": int(now),
@@ -172,7 +247,8 @@ def main():
         "blocked": ph.get("blocked"),
         "queries": ph.get("queries"),
         "percent": ph.get("percent"),
-        "services": safe(services, []),
+        "gravity": ph.get("gravity"),
+        "services": safe(lambda: services(ph.get("gravity")), []),
         "dns_history": ph.get("dns_history", []),
         "pi_history": safe(lambda: history(now, temp, mem, watts), []),
     }

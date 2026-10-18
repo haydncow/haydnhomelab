@@ -25,6 +25,9 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Measured how much power the Pi uses with `vcgencmd pmic_read_adc`: about 1.7 W. With the switch and power supply losses the whole rack is about 3.7 W, which is roughly £8 a year. Added power use and the cost to the status page.
 - Redesigned the status page as a one-screen dashboard with tiles you can click to expand, instead of one long scrolling page.
 - Made the stats live. Cron can only run once a minute, so I added a small service that takes a reading every 3 seconds and keeps the last 5 minutes. It's sandboxed with systemd so it can only write to the status folder and has no network access.
+- Problem: the site kept showing Cloudflare's "bad gateway" error. Python's simple web server couldn't keep up with the page asking for new data every 3 seconds, so I swapped it for Caddy.
+- Problem: ads blocked and DNS queries kept dropping to 0. When Pi-hole didn't answer in time, the script saved nothing and the page counted down to 0. Now it keeps the last numbers and writes the error to a log.
+- Added Fail2ban, SSH, Caddy and the live stats service to "What's running", with extra details for each.
 
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
