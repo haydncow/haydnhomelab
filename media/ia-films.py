@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
-"""Adds free classic films from the Internet Archive to Jellyfin.
+"""Adds free, legal films from the Internet Archive to Jellyfin.
 
-The Internet Archive's "Feature Films" collection is old films that are in
-the public domain (free to share) and the Archive lets you download them.
-Each run this picks the most popular ones I don't have yet, downloads a
-couple, and names them the way Jellyfin likes:
+By default it gets newer films that their makers released under Creative
+Commons (free to share), from the list in MODERN below. It checks each one
+really has a Creative Commons licence on the Archive before downloading.
 
-    /mnt/media/classics/Night of the Living Dead (1968)/Night of the Living Dead (1968).mp4
+With --classics it gets old public domain films from the Archive's
+"Feature Films" collection instead (mostly 1920s to 1960s).
+
+Films are named the way Jellyfin likes:
+    /mnt/media/free-films/Sintel (2010)/Sintel (2010).mp4
 
 Run it weekly from cron. To grab more on the first run:
     python3 ia-films.py --count 5
@@ -22,12 +25,22 @@ import urllib.parse
 import urllib.request
 
 MOUNT = "/mnt/media"
-DEST = os.path.join(MOUNT, "classics")
+DEST = os.path.join(MOUNT, "free-films")
 STATE = os.path.join(DEST, ".downloaded.json")   # films already got, so they aren't downloaded twice
 KEEP_FREE_GB = 100      # stop if the drive has less than this free
 MAX_FILM_GB = 4         # skip anything bigger than this
 SEARCH = "https://archive.org/advancedsearch.php"
 UA = {"User-Agent": "haydnhomelab-ia-films/1.0 (personal Jellyfin library)"}
+
+# Newer films released under Creative Commons, (title, year)
+MODERN = [
+    ("Sintel", 2010), ("Tears of Steel", 2012), ("Big Buck Bunny", 2008),
+    ("Elephants Dream", 2006), ("Cosmos Laundromat", 2015), ("Spring", 2019),
+    ("Sprite Fright", 2021), ("Agent 327", 2017), ("Charge", 2022),
+    ("Sita Sings the Blues", 2008), ("The Internet's Own Boy", 2014),
+    ("Star Wreck: In the Pirkinning", 2005), ("RiP!: A Remix Manifesto", 2008),
+    ("Steal This Film", 2006),
+]
 
 # Best video formats first. All of these play on the Pi without converting.
 FORMATS = ["h.264 HD", "h.264", "MPEG4", "512Kb MPEG4"]
@@ -51,6 +64,33 @@ def popular_films(rows=200):
         ("sort[]", "downloads desc"), ("rows", rows), ("output", "json"),
     ])
     return get_json(f"{SEARCH}?{params}")["response"]["docs"]
+
+
+def find_modern(title, year):
+    # Look the film up on the Archive, but only accept a copy that has a
+    # Creative Commons licence (or public domain mark) attached
+    q = f'title:("{title}") AND mediatype:movies AND licenseurl:*creativecommons.org*'
+    params = urllib.parse.urlencode([
+        ("q", q), ("fl[]", "identifier"), ("fl[]", "title"), ("fl[]", "year"),
+        ("fl[]", "licenseurl"), ("sort[]", "downloads desc"), ("rows", 5), ("output", "json"),
+    ])
+    for doc in get_json(f"{SEARCH}?{params}")["response"]["docs"]:
+        if "creativecommons.org" in str(doc.get("licenseurl", "")):
+            return {"identifier": doc["identifier"], "title": title, "year": year}
+    return None
+
+
+def modern_films():
+    for title, year in MODERN:
+        try:
+            film = find_modern(title, year)
+        except Exception as e:
+            log(f"Couldn't search for {title}: {e}")
+            continue
+        if film:
+            yield film
+        else:
+            log(f"Skipping {title}: no Creative Commons copy found on the Archive")
 
 
 def best_file(identifier):
@@ -80,6 +120,7 @@ def download(url, path):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--count", type=int, default=2, help="how many films to add this run")
+    ap.add_argument("--classics", action="store_true", help="get old public domain films instead")
     args = ap.parse_args()
 
     # If the drive isn't plugged in, /mnt/media is just an empty folder on the
@@ -96,7 +137,8 @@ def main():
         done = set()
 
     added = 0
-    for film in popular_films():
+    films = popular_films() if args.classics else modern_films()
+    for film in films:
         if added >= args.count:
             break
         ident = film.get("identifier")

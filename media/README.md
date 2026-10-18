@@ -3,16 +3,22 @@
 Jellyfin runs on the Pi with a 1TB WD My Passport plugged in, mounted at `/mnt/media`.
 
 - `movies/` and `tv/` are for my own films and shows
-- `classics/` fills itself with free films from the Internet Archive (below)
+- `free-films/` fills itself with free, legal films from the Internet Archive (below)
 - It's only reachable from my home network and over Tailscale, not on my public domain
 - A Samba share lets me drag films in from Finder or File Explorer
 
-## Free classic films (`ia-films.py`)
+## Free films (`ia-films.py`)
 
-The Internet Archive has a "Feature Films" collection of old films that are in the public domain, so they're free to share and the Archive lets you download them. This script runs once a week, picks the most popular ones I don't have yet, downloads two, and names them so Jellyfin finds the poster and info:
+Runs once a week and downloads two free, legal films from the Internet Archive into a "Free films" library.
+
+By default it gets **newer films that their makers released under Creative Commons**, so they're free to share: Blender Studio's films (Sintel, Tears of Steel, Cosmos Laundromat, Sprite Fright and more), Sita Sings the Blues, The Internet's Own Boy, Star Wreck and a few documentaries. Before downloading it checks the Archive's copy actually has a Creative Commons licence, and skips it if not.
+
+With `--classics` it gets old public domain films from the Archive's Feature Films collection instead.
+
+Films are named so Jellyfin finds the poster and info:
 
 ```
-/mnt/media/classics/Night of the Living Dead (1968)/Night of the Living Dead (1968).mp4
+/mnt/media/free-films/Sintel (2010)/Sintel (2010).mp4
 ```
 
 - Remembers what it's already downloaded, so nothing comes down twice
