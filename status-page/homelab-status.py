@@ -17,6 +17,10 @@ import time
 import traceback
 import urllib.request
 
+# Cron runs with a very short PATH that doesn't include /usr/sbin, where
+# ufw lives, so set the full one here instead of relying on cron
+os.environ["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
 OUT_DIR = "/srv/status"
 STATE_DIR = "/var/lib/homelab-status"  # keeps 24 hours of temp/memory readings
 PASS_FILE = "/etc/homelab-status/pihole-app-password"  # root-only (chmod 600)
