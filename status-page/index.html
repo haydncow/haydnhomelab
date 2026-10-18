@@ -24,17 +24,38 @@
   .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 16px; }
   a { color: var(--led); }
 
-  /* boot screen */
-  #boot { position: fixed; inset: 0; z-index: 50; background: #050505; display: flex; align-items: center; justify-content: center;
-          transition: opacity .6s, visibility .6s; }
-  #boot.gone { opacity: 0; visibility: hidden; }
-  #boot pre { margin: 0; padding: 16px; font: inherit; font-size: 13px; color: #b9beb7; min-width: min(520px, 100%); white-space: pre-wrap; }
-  #boot .ok { color: var(--led); }
-  #boot .cursor { display: inline-block; width: 8px; height: 15px; background: var(--led); vertical-align: -2px; animation: blink 1s steps(1) infinite; }
-  #skip { position: absolute; bottom: 24px; right: 24px; background: none; border: 1px solid var(--line); color: var(--muted);
-          font: inherit; font-size: 12px; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
-  #skip:hover { color: var(--text); border-color: var(--muted); }
-  @keyframes blink { 50% { opacity: 0; } }
+  /* power-on intro */
+  #boot { position: fixed; inset: 0; z-index: 50; background: #000; display: grid; place-items: center; cursor: pointer;
+          transition: background .35s .15s; }
+  #boot.open { background: transparent; pointer-events: none; }
+  #boot.gone { display: none; }
+  .beam { width: 10px; height: 10px; border-radius: 50%; background: var(--led);
+          box-shadow: 0 0 18px 6px #5cff3a99, 0 0 60px 20px #5cff3a33; animation: standby .45s ease-in-out 2 alternate; }
+  @keyframes standby { from { opacity: .15; transform: scale(.7); } }
+  .beam.line { animation: none; width: 100vw; height: 2px; border-radius: 0; background: #e9ffe2;
+               transition: width .28s cubic-bezier(.8,0,.2,1), height .28s, border-radius .1s; }
+  .beam.open { height: 100vh; opacity: 0; transition: height .24s cubic-bezier(.7,0,.9,.5), opacity .45s .12s; }
+  #boot .hint { position: absolute; bottom: 24px; left: 0; right: 0; text-align: center; font-size: 11px; color: #3b3f3b; letter-spacing: 2px; }
+  #boot.open .hint { opacity: 0; }
+  body.crt::after { content: ""; position: fixed; inset: 0; z-index: 40; pointer-events: none;
+    background: repeating-linear-gradient(0deg, #00000055 0 1px, transparent 1px 3px); animation: scan 1.1s ease-out forwards; }
+  @keyframes scan { from { opacity: 1; } to { opacity: 0; } }
+  body.crt .wrap { animation: crton .7s ease-out; }
+  @keyframes crton { 0% { filter: brightness(3) saturate(0); transform: scaleY(.96); } 100% { filter: none; transform: none; } }
+  .intro .later { opacity: 0; transform: translateY(10px); }
+  .later { transition: opacity .7s, transform .7s; }
+  /* the rack draws itself in green outlines, then fills in */
+  #rack.tracing :is(rect, path, circle, ellipse):not(.hit):not(.light),
+  #rack.fillin :is(rect, path, circle, ellipse):not(.hit):not(.light) {
+    stroke: #5cff3a !important; stroke-width: .8px !important; stroke-dasharray: 1; stroke-dashoffset: 1; fill-opacity: 0;
+    filter: drop-shadow(0 0 2px #5cff3a); animation: trace 1s ease-out forwards; animation-delay: var(--d, 0s); }
+  #rack.fillin :is(rect, path, circle, ellipse):not(.hit):not(.light) {
+    stroke-dashoffset: 0; animation: none; fill-opacity: 1; stroke-opacity: 0; filter: none;
+    transition: fill-opacity .7s, stroke-opacity .9s .2s; }
+  #rack.tracing text, #rack.fillin text { opacity: 0; transition: opacity .6s .3s; }
+  #rack.fillin text { opacity: 1; }
+  @keyframes trace { to { stroke-dashoffset: 0; } }
+  #rack.paused * { animation-play-state: paused !important; }
 
   header { padding: 32px 0 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
   h1 { font-size: clamp(20px, 3.4vw, 28px); margin: 0; font-weight: 800; letter-spacing: -.5px; }
@@ -151,20 +172,20 @@
   }
 </style>
 </head>
-<body>
+<body class="intro">
 
 <div id="boot" aria-hidden="true">
-  <pre id="boot-text"></pre>
-  <button id="skip">skip &rarr;</button>
+  <div class="beam"></div>
+  <div class="hint">click to skip</div>
 </div>
 
 <div class="wrap">
   <header>
-    <h1><span class="p">&gt;</span> haydnhomelab</h1>
-    <span id="status" class="pill"><span class="dot"></span><span id="status-text">checking</span></span>
-    <nav><a href="#running">running</a><a href="#graphs">graphs</a><a href="#security">security</a></nav>
+    <h1><span class="p">&gt;</span> <span id="title">haydnhomelab</span></h1>
+    <span id="status" class="pill later"><span class="dot"></span><span id="status-text">checking</span></span>
+    <nav class="later"><a href="#running">running</a><a href="#graphs">graphs</a><a href="#security">security</a></nav>
   </header>
-  <p class="lead">A Raspberry Pi 5 in a 10 inch rack, built to learn networking and cyber security hands-on. Click any part of the rack to zoom in.</p>
+  <p class="lead later">A Raspberry Pi 5 in a 10 inch rack, built to learn networking and cyber security hands-on. Click any part of the rack to zoom in.</p>
 
   <div class="hero">
     <div class="card rack-card">
@@ -294,7 +315,7 @@
       </svg>
       <div class="tip">tap a part to zoom in</div>
     </div>
-    <section class="card info" id="info" aria-live="polite" style="padding:22px"></section>
+    <section class="card info later" id="info" aria-live="polite" style="padding:22px"></section>
   </div>
 
   <section id="running" class="reveal">
@@ -345,54 +366,79 @@ const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = s => document.querySelector(s);
 let stats = null, current = "intro";
 
-/* ---------- boot screen ---------- */
-const BOOT = [
-  ["", "haydnhomelab boot sequence"],
-  ["", ""],
-  ["ok", "Powering on rack"],
-  ["ok", "Raspberry Pi 5 started"],
-  ["ok", "Firewall (UFW) active"],
-  ["ok", "Pi-hole answering DNS"],
-  ["ok", "Tailscale connected"],
-  ["ok", "Cloudflare Tunnel up"],
-  ["", ""],
-  ["", "welcome."],
-];
-let booted = false;
+/* ---------- power-on intro ---------- */
+// standby light blinks, the screen switches on like an old CRT monitor,
+// the rack draws itself in green outlines, fills in, then the lights come on.
+let booted = false, timers = [];
+const sleep = ms => new Promise(r => timers.push(setTimeout(r, ms)));
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+function prepTrace() {
+  const shapes = [...$("#rack").querySelectorAll("rect, path, circle, ellipse")].filter(e => !e.matches(".hit, .light"));
+  shapes.forEach(e => {
+    e.setAttribute("pathLength", "1");
+    let y = 0; try { y = e.getBBox().y; } catch (err) {}
+    e.style.setProperty("--d", (Math.max(0, y) / 590 * 0.9 + Math.random() * 0.15).toFixed(2) + "s");
+  });
+}
+function decrypt(el, text, ms) {
+  const chars = "!<>-_\\/[]{}=+*^?#01";
+  const t0 = performance.now();
+  const step = now => {
+    const p = Math.min(1, (now - t0) / ms), done = Math.floor(p * text.length);
+    el.textContent = text.slice(0, done) + [...text.slice(done)].map(() => chars[Math.random() * chars.length | 0]).join("");
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+function showRest() {
+  document.body.classList.remove("intro");
+}
 function finishBoot() {
   if (booted) return; booted = true;
-  $("#boot").classList.add("gone");
+  timers.forEach(clearTimeout);
+  const boot = $("#boot"); if (boot) boot.classList.add("gone");
+  const rack = $("#rack"); rack.classList.remove("tracing", "fillin", "paused");
+  $("#title").textContent = "haydnhomelab";
+  showRest();
   try { sessionStorage.setItem("booted", "1"); } catch (e) {}
   powerOn();
 }
 async function runBoot() {
   let seen = false;
   try { seen = sessionStorage.getItem("booted") === "1"; } catch (e) {}
-  if (seen || reduceMotion) { $("#boot").remove(); booted = true; powerOn(); return; }
-  $("#skip").onclick = finishBoot;
+  if (seen || reduceMotion) { $("#boot").remove(); booted = true; showRest(); powerOn(); return; }
+  const boot = $("#boot"), beam = boot.querySelector(".beam"), rack = $("#rack");
+  boot.addEventListener("click", finishBoot);
   addEventListener("keydown", finishBoot, { once: true });
-  const out = $("#boot-text");
-  for (const [kind, text] of BOOT) {
-    if (booted) return;
-    const line = document.createElement("div");
-    if (kind === "ok") line.innerHTML = `[ <span class="ok">OK</span> ] `;
-    out.appendChild(line);
-    for (const ch of text) { if (booted) return; line.append(ch); await sleep(14); }
-    await sleep(kind === "ok" ? 170 : 90);
-  }
-  out.insertAdjacentHTML("beforeend", '<span class="cursor"></span>');
-  await sleep(450);
-  finishBoot();
+  prepTrace();
+  rack.classList.add("tracing", "paused");
+  $("#title").textContent = "";
+  await sleep(950);                                   // standby light blinks
+  beam.classList.add("line");                         // stretches into a line
+  await sleep(300);
+  beam.classList.add("open"); boot.classList.add("open");   // screen switches on
+  rack.classList.remove("paused");
+  document.body.classList.add("crt");
+  later(() => document.body.classList.remove("crt"), 1200);
+  later(() => boot.classList.add("gone"), 700);
+  decrypt($("#title"), "haydnhomelab", 900);
+  await sleep(1900);                                  // rack draws itself
+  rack.classList.replace("tracing", "fillin");
+  await sleep(900);
+  rack.classList.remove("fillin");
+  showRest();
+  booted = true;
+  try { sessionStorage.setItem("booted", "1"); } catch (e) {}
+  powerOn();
 }
-const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 /* lights come on one by one, then data starts flowing */
 function powerOn() {
   const rack = $("#rack");
   const lights = [...rack.querySelectorAll(".light")];
   rack.classList.remove("booting");
-  lights.forEach((l, i) => { l.style.opacity = 0; setTimeout(() => (l.style.opacity = ""), reduceMotion ? 0 : 250 + i * 220); });
-  setTimeout(startPackets, reduceMotion ? 0 : 250 + lights.length * 220);
+  lights.forEach((l, i) => { l.style.opacity = 0; setTimeout(() => (l.style.opacity = ""), reduceMotion ? 0 : 150 + i * 180); });
+  setTimeout(startPackets, reduceMotion ? 0 : 150 + lights.length * 180);
 }
 
 /* ---------- data packets along the cables ---------- */
@@ -644,14 +690,14 @@ async function load() {
     const fresh = !stats;
     stats = await r.json();
     const ageMin = (Date.now() / 1000 - stats.updated) / 60, live = ageMin < 15;
-    pill.className = "pill " + (live ? "online" : "offline");
+    pill.classList.remove("online", "offline"); pill.classList.add(live ? "online" : "offline");
     text.textContent = live ? "online" : "last seen " + stats.updated_text;
     drawServices();
     if (chartsShown) drawCharts();
     if (booted && !reduceMotion && fresh) startPackets();
     show(current, false);
   } catch (e) {
-    pill.className = "pill offline"; text.textContent = "stats unavailable";
+    pill.classList.remove("online"); pill.classList.add("offline"); text.textContent = "stats unavailable";
   }
 }
 
