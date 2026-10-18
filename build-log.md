@@ -36,6 +36,8 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Problem: "What's running" was empty, but worked when I ran the script by hand. The error log showed `No such file or directory: 'ufw'`. Cron runs scripts with a much shorter PATH that doesn't include `/usr/sbin`, where `ufw` lives. Fixed it by setting the full PATH at the top of the script.
 - Set up a Samba share so I can drag films onto the drive from my Mac or PC. Only my user can log in, only from home or Tailscale, and new files automatically get the jellyfin group.
 - Added a script that downloads free public domain films from the Internet Archive every week into a "Classics" library. See [media](media/).
+- Problem: the film script said only 25 GB was free. That's the SD card, so the drive wasn't mounted. The Pi had restarted and the drive had vanished. `lsusb` could still see the My Passport, so the cable and power were fine, but the USB storage driver hadn't loaded, so there was no `sda`. Loading it with `modprobe usb-storage` brought the drive back, and I added it to `/etc/modules-load.d/` so it loads on every boot.
+- Changed the film script so it refuses to run if the drive isn't mounted, so it can never fill up the SD card.
 
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
