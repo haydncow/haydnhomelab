@@ -10,19 +10,20 @@
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0a; --panel: #111213; --panel2: #161718; --line: #24272a; --text: #e8eae6; --muted: #8d928c;
+    --bg: #070707; --panel: #101112; --panel2: #151617; --line: #222528; --line2: #2e3236; --text: #e8eae6; --muted: #8d928c;
     --led: #5cff3a; --amber: #ffb21a; --bad: #ff5a4a;
     --s-total: #5a86e6; --s-blocked: #35a822;
+    --gap: 12px; --r: 16px;
   }
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-         font: 14px/1.6 "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; overflow-x: hidden; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden;
+         font: 13px/1.5 "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace; }
   body::before { content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
-    background-image: linear-gradient(#ffffff06 1px, transparent 1px), linear-gradient(90deg, #ffffff06 1px, transparent 1px);
-    background-size: 32px 32px; mask-image: radial-gradient(ellipse at 50% 20%, #000 30%, transparent 75%); }
-  .wrap { position: relative; z-index: 1; max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+    background-image: linear-gradient(#ffffff05 1px, transparent 1px), linear-gradient(90deg, #ffffff05 1px, transparent 1px);
+    background-size: 28px 28px; mask-image: radial-gradient(ellipse at 30% 30%, #000 20%, transparent 75%); }
   a { color: var(--led); }
+  button { font: inherit; color: inherit; }
 
   /* power-on intro */
   #boot { position: fixed; inset: 0; z-index: 50; background: #000; display: grid; place-items: center; cursor: pointer;
@@ -57,33 +58,69 @@
   @keyframes trace { to { stroke-dashoffset: 0; } }
   #rack.paused * { animation-play-state: paused !important; }
 
-  header { padding: 32px 0 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
-  h1 { font-size: clamp(20px, 3.4vw, 28px); margin: 0; font-weight: 800; letter-spacing: -.5px; }
+  /* ---------- layout: one screen of tiles ---------- */
+  .app { position: relative; z-index: 1; height: 100vh; min-height: 680px; display: flex; flex-direction: column;
+         padding: 16px clamp(12px, 2vw, 24px) 14px; max-width: 1500px; margin: 0 auto; }
+  header { display: flex; align-items: center; gap: 12px 16px; flex-wrap: wrap; padding: 0 2px 12px; }
+  h1 { font-size: 20px; margin: 0; font-weight: 800; letter-spacing: -.5px; }
   h1 .p { color: var(--led); text-shadow: 0 0 14px #5cff3a66; }
   .pill { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 999px;
-          padding: 4px 12px; font-size: 12px; color: var(--muted); background: var(--panel); }
-  .pill .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+          padding: 3px 11px; font-size: 11px; color: var(--muted); background: var(--panel); }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
   .pill.online { color: var(--led); } .pill.online .dot { background: var(--led); box-shadow: 0 0 10px var(--led); animation: pulse 2s infinite; }
   .pill.offline { color: var(--amber); } .pill.offline .dot { background: var(--amber); }
   @keyframes pulse { 50% { box-shadow: 0 0 2px var(--led); } }
-  .lead { color: var(--muted); margin: 0 0 20px; max-width: 60ch; }
-  nav { display: flex; gap: 18px; margin-left: auto; font-size: 13px; }
-  nav a { color: var(--muted); text-decoration: none; } nav a:hover { color: var(--text); }
+  header .sub { color: var(--muted); font-size: 12px; }
+  header .right { margin-left: auto; display: flex; gap: 14px; align-items: center; font-size: 11px; color: var(--muted); }
+  header .right a { color: var(--muted); text-decoration: none; border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; }
+  header .right a:hover { color: var(--text); border-color: var(--line2); }
+  kbd { border: 1px solid var(--line2); border-bottom-width: 2px; border-radius: 4px; padding: 0 5px; font: inherit; font-size: 10px; }
 
-  .hero { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; align-items: start; }
-  @media (max-width: 820px) { .hero { grid-template-columns: 1fr; } nav { margin-left: 0; width: 100%; } }
-  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
-  .rack-card { position: relative; padding: 10px; overflow: hidden;
-    background: radial-gradient(ellipse at 38% 30%, #0f2110 0%, var(--panel) 62%); }
-  .rack-card svg { width: 100%; height: auto; display: block; aspect-ratio: 460 / 590; }
-  #back { position: absolute; top: 12px; left: 12px; z-index: 2; font: inherit; font-size: 12px; color: var(--text);
-          background: #000a; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; cursor: pointer;
-          opacity: 0; pointer-events: none; transition: opacity .3s; }
+  .bento { flex: 1; min-height: 0; display: grid; gap: var(--gap);
+          grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(6, minmax(0, 1fr)); }
+  .t-rack { grid-column: 1 / 5; grid-row: 1 / 7; }
+  .t-info { grid-column: 5 / 9; grid-row: 1 / 3; }
+  .t-dns  { grid-column: 5 / 9; grid-row: 3 / 5; }
+  .t-sec  { grid-column: 5 / 9; grid-row: 5 / 7; }
+  .t-ads  { grid-column: 9 / 11; grid-row: 1 / 3; }
+  .t-up   { grid-column: 11 / 13; grid-row: 1 / 3; }
+  .t-temp { grid-column: 9 / 11; grid-row: 3 / 5; }
+  .t-pow  { grid-column: 11 / 13; grid-row: 3 / 5; }
+  .t-svc  { grid-column: 9 / 13; grid-row: 5 / 7; }
+
+  /* ---------- tiles ---------- */
+  .tile { position: relative; background: var(--panel); border: 1px solid var(--line); border-radius: var(--r);
+          padding: 14px 16px; overflow: hidden; min-height: 0; display: flex; flex-direction: column;
+          transition: transform .25s, border-color .25s, box-shadow .25s, opacity .6s; outline: none; }
+  .tile::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s;
+          background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), #5cff3a14, transparent 45%); }
+  .tile:hover::before { opacity: 1; }
+  .tile.click { cursor: pointer; }
+  .tile.click:hover, .tile.click:focus-visible { transform: translateY(-2px); border-color: #3a4a3a; box-shadow: 0 10px 30px -12px #5cff3a33; }
+  .tile.click:active { transform: translateY(0) scale(.99); }
+  .label { font-size: 10px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .label .ex { margin-left: auto; opacity: 0; transition: opacity .2s; font-size: 12px; letter-spacing: 0; color: var(--led); }
+  .tile.click:hover .ex, .tile.click:focus-visible .ex { opacity: 1; }
+  .big { font-size: clamp(22px, 2.3vw, 34px); font-weight: 800; letter-spacing: -1px; line-height: 1.1; font-variant-numeric: tabular-nums; margin-top: 6px; }
+  .big small { font-size: .45em; font-weight: 500; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
+  .note { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .spark { margin-top: auto; height: 34%; min-height: 26px; width: 100%; }
+  .spark path.l { fill: none; stroke-width: 1.6; stroke-linejoin: round; }
+  .spark path.a { opacity: .16; }
+
+  /* intro: tiles drop in one by one */
+  .intro .tile { opacity: 0; transform: translateY(14px) scale(.98); }
+  .tile { transition-delay: calc(var(--i, 0) * 70ms); }
+  .tile:hover { transition-delay: 0s; }
+
+  /* rack tile */
+  .t-rack { padding: 10px; background: radial-gradient(ellipse at 40% 32%, #0f2110 0%, var(--panel) 62%); }
+  .t-rack svg { flex: 1; min-height: 0; width: 100%; height: 100%; display: block; }
+  #back { position: absolute; top: 12px; left: 12px; z-index: 2; font-size: 11px; background: #000b;
+          border: 1px solid var(--line2); border-radius: 8px; padding: 5px 10px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity .3s; }
   #back.show { opacity: 1; pointer-events: auto; }
-  .zoomed .tip { opacity: 0; }
-  .tip { transition: opacity .3s; }
-  .tip { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; font-size: 11px; color: var(--muted); pointer-events: none; }
-
+  .rack-tip { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 10px; color: var(--muted); pointer-events: none; transition: opacity .3s; }
+  .zoomed .rack-tip { opacity: 0; }
   .part { cursor: pointer; outline: none; }
   .part .hit { fill: transparent; stroke: transparent; stroke-width: 2; transition: stroke .2s, fill .2s; }
   .part:hover .hit, .part:focus-visible .hit { stroke: #ffffff70; fill: #ffffff08; }
@@ -95,79 +132,126 @@
   @keyframes flick { 0%, 60% { opacity: 1; } 70%, 100% { opacity: .3; } }
   .booting .led { animation: none; }
 
-  .info { padding: 22px; min-height: 420px; }
-  .info .kicker { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--led); margin: 0 0 6px; }
-  .info h2 { font-size: 20px; margin: 0 0 4px; }
-  .info .tag { color: var(--muted); font-size: 13px; margin: 0 0 16px; }
-  .info p { margin: 0 0 12px; }
-  .info ul { margin: 0 0 12px; padding-left: 18px; }
-  .info li { margin-bottom: 4px; }
+  /* info tile */
+  .t-info .body { overflow: auto; margin-top: 6px; padding-right: 4px; scrollbar-width: thin; }
+  .t-info h2 { font-size: 17px; margin: 0 0 2px; }
+  .t-info .tag { color: var(--muted); font-size: 11px; margin: 0 0 8px; }
+  .t-info p { margin: 0 0 8px; }
+  .t-info ul { margin: 0 0 6px; padding-left: 16px; } .t-info li { margin-bottom: 2px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { border: 1px solid var(--line2); border-radius: 8px; padding: 4px 9px; font-size: 11px; background: var(--bg); cursor: pointer; }
+  .chip:hover, .chip:focus-visible { border-color: var(--led); color: var(--led); outline: none; }
   .swap { animation: rise .35s ease-out; }
-  @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
-  .stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 4px 0 14px; }
-  .stat { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
-  .stat span { display: block; color: var(--muted); font-size: 11px; }
-  .stat b { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
-  .stat.big { grid-column: span 2; }
-  .bar { height: 6px; border-radius: 3px; background: var(--line); margin-top: 8px; overflow: hidden; }
-  .bar i { display: block; height: 100%; background: var(--s-blocked); width: 0; transition: width 1s ease-out; border-radius: 3px; }
-  .muted { color: var(--muted); font-size: 12px; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-  .chip { border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 12px; background: var(--bg); cursor: pointer; color: var(--text); font-family: inherit; }
-  .chip:hover { border-color: var(--led); }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
 
-  section { padding: 44px 0 8px; }
-  section h3 { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin: 0 0 14px; font-weight: 500; }
-  section h3::before { content: "## "; color: var(--led); }
-  .services { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-  .svc { padding: 14px 16px; display: flex; align-items: center; gap: 12px; opacity: 0; transform: translateY(10px);
-         transition: opacity .5s, transform .5s, border-color .3s; }
-  .svc.in { opacity: 1; transform: none; }
-  .svc:hover { border-color: #3a3e42; }
-  .svc .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--muted); }
-  .svc.up .dot { background: var(--led); box-shadow: 0 0 10px var(--led); animation: pulse 2.4s infinite; }
-  .svc.down .dot { background: var(--bad); }
-  .svc b { display: block; font-size: 14px; }
-  .svc span { font-size: 12px; color: var(--muted); }
-  .svc .state { margin-left: auto; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-  .svc.up .state { color: var(--led); } .svc.down .state { color: var(--bad); }
+  /* ads ring */
+  .ring-wrap { display: flex; align-items: center; gap: 12px; margin-top: auto; }
+  .ring { width: clamp(52px, 5vw, 72px); height: auto; flex: none; transform: rotate(-90deg); }
+  .ring circle { fill: none; stroke-width: 7; }
+  .ring .bg { stroke: var(--line); } .ring .fg { stroke: var(--s-blocked); stroke-linecap: round; transition: stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1); }
+  .ring-wrap b { font-size: 18px; } .ring-wrap span { display: block; color: var(--muted); font-size: 10px; }
 
-  .charts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .charts .wide { grid-column: span 2; }
-  @media (max-width: 820px) { .charts { grid-template-columns: 1fr; } .charts .wide { grid-column: auto; } }
-  .chart { padding: 16px 16px 10px; position: relative; }
-  .chart h4 { margin: 0; font-size: 14px; }
-  .chart .sub { color: var(--muted); font-size: 12px; margin: 2px 0 8px; }
-  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-  .legend i { display: inline-block; width: 12px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  /* temp gauge */
+  .gauge { width: 100%; max-width: 160px; margin: auto auto 0; display: block; }
+  .gauge .bg { stroke: var(--line); } .gauge path { fill: none; stroke-width: 10; stroke-linecap: round; }
+  .gauge .fg { transition: stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1), stroke .6s; }
+  .gauge text { fill: var(--text); font: 800 22px "JetBrains Mono", monospace; text-anchor: middle; }
+  .gauge .u { fill: var(--muted); font-size: 10px; font-weight: 400; }
+
+  /* services */
+  .svc-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 12px; margin-top: 10px; overflow: auto; }
+  .svc { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line);
+         font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .svc i { width: 7px; height: 7px; border-radius: 50%; flex: none; background: var(--muted); }
+  .svc.up i { background: var(--led); box-shadow: 0 0 8px var(--led); animation: pulse 2.4s infinite; }
+  .svc.down i { background: var(--bad); }
+  .count { margin-left: auto; color: var(--led); letter-spacing: 0; font-size: 11px; text-transform: none; }
+
+  /* security */
+  .sec-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; margin-top: 10px; }
+  .sec-list div { font-size: 11.5px; display: flex; gap: 8px; align-items: baseline; }
+  .sec-list div::before { content: "\2713"; color: var(--led); }
+  .scanline { margin-top: auto; font-size: 11px; color: var(--muted); border-top: 1px dashed var(--line2); padding-top: 8px; }
+  .scanline b { color: var(--led); font-weight: 500; }
+
+  /* dns tile */
+  .legend { display: flex; gap: 14px; font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .legend i { display: inline-block; width: 10px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 5px; }
+  .t-dns .spark { height: 58%; }
+  .dns-nums { display: flex; gap: 22px; align-items: baseline; }
+
+  /* ---------- expanded view ---------- */
+  #modal { position: fixed; inset: 0; z-index: 30; display: none; place-items: center; padding: 16px; }
+  #modal.open { display: grid; }
+  #modal .scrim { position: absolute; inset: 0; background: #000b; backdrop-filter: blur(4px); animation: fade .25s; }
+  @keyframes fade { from { opacity: 0; } }
+  #modal .sheet { position: relative; width: min(920px, 100%); max-height: calc(100vh - 32px); overflow: auto;
+          background: var(--panel); border: 1px solid var(--line2); border-radius: 20px; padding: 22px 24px 20px;
+          box-shadow: 0 30px 80px -20px #000, 0 0 0 1px #5cff3a14; }
+  #modal h2 { margin: 0 0 2px; font-size: 20px; }
+  #modal .tag { color: var(--muted); margin: 0 0 16px; }
+  #close { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--line2);
+           background: var(--bg); cursor: pointer; font-size: 16px; line-height: 1; }
+  #close:hover { border-color: var(--led); color: var(--led); }
+  .mgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .stat { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+  .stat span { display: block; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .stat b { font-size: 18px; font-variant-numeric: tabular-nums; }
+  .chart { position: relative; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px 8px; margin-bottom: 12px; }
+  .chart h4 { margin: 0; font-size: 13px; }
+  .chart .sub { color: var(--muted); font-size: 11px; margin: 2px 0 8px; }
+  .chart .legend { margin-bottom: 4px; }
   .chart svg { width: 100%; height: auto; display: block; overflow: visible; touch-action: pan-y; }
   .chart .grid { stroke: #ffffff10; stroke-width: 1; }
   .chart .axis { fill: var(--muted); font-size: 11px; font-family: inherit; }
   .chart .ln { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-  .chart .draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 1.6s ease-out forwards; }
+  .chart .draw { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: draw 1.4s ease-out forwards; }
   @keyframes draw { to { stroke-dashoffset: 0; } }
   .chart .xh { stroke: #ffffff55; stroke-width: 1; }
-  .ttip { position: absolute; pointer-events: none; background: #050505ee; border: 1px solid var(--line); border-radius: 8px;
+  .ttip { position: absolute; pointer-events: none; background: #050505ee; border: 1px solid var(--line2); border-radius: 8px;
           padding: 6px 10px; font-size: 12px; white-space: nowrap; opacity: 0; transition: opacity .15s; z-index: 3; }
   .ttip i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; }
-  .empty { color: var(--muted); font-size: 12px; padding: 40px 0; text-align: center; }
+  .empty { color: var(--muted); font-size: 12px; padding: 30px 0; text-align: center; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .cards div { background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .cards b { display: block; margin-bottom: 4px; } .cards b::before { content: "\2713  "; color: var(--led); }
+  .cards p, .cards span { margin: 0; color: var(--muted); font-size: 12px; }
+  pre.scan { margin: 0; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 14px; overflow-x: auto; font: inherit; font-size: 12px; color: #b9beb7; }
+  pre.scan .o { color: var(--led); } pre.scan .f { color: var(--muted); }
+  .svc-big { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+  .svc-big div { display: flex; gap: 12px; align-items: center; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .svc-big i { width: 10px; height: 10px; border-radius: 50%; background: var(--bad); flex: none; }
+  .svc-big .up i { background: var(--led); box-shadow: 0 0 10px var(--led); }
+  .svc-big b { display: block; } .svc-big span { color: var(--muted); font-size: 12px; }
+  .svc-big em { margin-left: auto; font-style: normal; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--bad); }
+  .svc-big .up em { color: var(--led); }
 
-  .sec { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
-  .sec .card { padding: 16px; }
-  .sec b { display: block; margin-bottom: 4px; }
-  .sec b::before { content: "\2713  "; color: var(--led); }
-  .sec p { margin: 0; color: var(--muted); font-size: 13px; }
-  .scan { padding: 16px; margin-top: 12px; overflow-x: auto; }
-  .scan pre { margin: 0; font: inherit; font-size: 12px; color: #b9beb7; }
-  .scan .o { color: var(--led); } .scan .f { color: var(--muted); }
+  footer { padding: 10px 2px 0; font-size: 10.5px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
 
-  footer { padding: 40px 0 48px; color: var(--muted); font-size: 12px; }
-  .reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s, transform .7s; }
-  .reveal.in { opacity: 1; transform: none; }
-
+  /* ---------- smaller screens: stack the tiles ---------- */
+  @media (max-width: 1100px) {
+    .app { height: auto; min-height: 0; }
+    .bento { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: none; grid-auto-rows: minmax(170px, auto); }
+    .t-rack { grid-column: 1 / 3; grid-row: 1 / 4; }
+    .t-info { grid-column: 3 / 5; grid-row: 1; }
+    .t-ads  { grid-column: 3 / 4; grid-row: 2; } .t-up  { grid-column: 4 / 5; grid-row: 2; }
+    .t-temp { grid-column: 3 / 4; grid-row: 3; } .t-pow { grid-column: 4 / 5; grid-row: 3; }
+    .t-dns  { grid-column: 1 / 3; grid-row: 4; min-height: 210px; } .t-sec { grid-column: 3 / 5; grid-row: 4; }
+    .t-svc  { grid-column: 1 / 5; grid-row: 5; }
+  }
+  @media (max-width: 700px) {
+    .bento { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: auto; }
+    .bento > .tile { grid-row: auto; min-height: 160px; }
+    .t-rack { grid-column: 1 / 3; aspect-ratio: 460 / 600; }
+    .t-info, .t-dns, .t-sec, .t-svc { grid-column: 1 / 3; }
+    .t-ads, .t-temp { grid-column: 1 / 2; } .t-up, .t-pow { grid-column: 2 / 3; }
+    .t-info { min-height: 0; }
+    .svc-list, .sec-list { grid-template-columns: 1fr; }
+    header .right .keys { display: none; }
+  }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
-    .reveal, .svc { opacity: 1; transform: none; }
+    .intro .tile { opacity: 1; transform: none; }
     .chart .draw { stroke-dashoffset: 0; }
   }
 </style>
@@ -179,16 +263,19 @@
   <div class="hint">click to skip</div>
 </div>
 
-<div class="wrap">
+<div class="app">
   <header>
     <h1><span class="p">&gt;</span> <span id="title">haydnhomelab</span></h1>
-    <span id="status" class="pill later"><span class="dot"></span><span id="status-text">checking</span></span>
-    <nav class="later"><a href="#running">running</a><a href="#graphs">graphs</a><a href="#security">security</a></nav>
+    <span id="status" class="pill"><span class="dot"></span><span id="status-text">checking</span></span>
+    <span class="sub">Raspberry Pi 5 in a 10" rack. Everything here is live.</span>
+    <div class="right">
+      <span class="keys">click any tile &middot; <kbd>esc</kbd> to close</span>
+      <a href="https://github.com/haydncow/homelab-plan">github</a>
+    </div>
   </header>
-  <p class="lead later">A Raspberry Pi 5 in a 10 inch rack, built to learn networking and cyber security hands-on. Click any part of the rack to zoom in.</p>
 
-  <div class="hero">
-    <div class="card rack-card">
+  <main class="bento">
+    <section class="tile t-rack" style="--i:0" aria-label="My rack. Click a part to zoom in.">
       <button id="back">&larr; whole rack</button>
       <svg id="rack" class="booting" viewBox="30 0 460 590" role="img" aria-label="Drawing of my 10 inch rack. Each part can be clicked.">
 <defs>
@@ -313,53 +400,85 @@
 <g id="packets"></g>
 </g>
       </svg>
-      <div class="tip">tap a part to zoom in</div>
-    </div>
-    <section class="card info later" id="info" aria-live="polite" style="padding:22px"></section>
-  </div>
+      <div class="rack-tip">tap a part to zoom in</div>
+    </section>
 
-  <section id="running" class="reveal">
-    <h3>What's running</h3>
-    <div class="services" id="services"><div class="card svc in"><span class="muted">Loading...</span></div></div>
-  </section>
+    <section class="tile t-info" style="--i:1" aria-live="polite">
+      <div class="label" id="info-label">welcome</div>
+      <div class="body" id="info"></div>
+    </section>
 
-  <section id="graphs" class="reveal">
-    <h3>Last 24 hours</h3>
-    <div class="charts">
-      <div class="card chart wide" id="chart-dns"></div>
-      <div class="card chart" id="chart-temp"></div>
-      <div class="card chart" id="chart-mem"></div>
-      <div class="card chart wide" id="chart-power"></div>
-    </div>
-  </section>
+    <section class="tile t-ads click" style="--i:2" tabindex="0" role="button" data-open="dns" aria-label="Ads blocked. Open DNS details.">
+      <div class="label">ads blocked <span class="ex">&#8599;</span></div>
+      <div class="big" data-count="blocked">0</div>
+      <div class="note">in the last 24 hours</div>
+      <div class="ring-wrap">
+        <svg class="ring" viewBox="0 0 80 80" aria-hidden="true"><circle class="bg" cx="40" cy="40" r="33"/><circle class="fg" id="ring" cx="40" cy="40" r="33" stroke-dasharray="207.3" stroke-dashoffset="207.3"/></svg>
+        <div><b id="pct">0%</b><span>of all lookups</span></div>
+      </div>
+    </section>
 
-  <section id="security" class="reveal">
-    <h3>Security</h3>
-    <div class="sec">
-      <div class="card"><b>No open ports on my router</b><p>This site reaches you through a Cloudflare Tunnel. The Pi connects out to Cloudflare, so nothing on my home network is open to the internet.</p></div>
-      <div class="card"><b>SSH keys only</b><p>Password logins are turned off. You can only log in with my key, and I tested that passwords get rejected.</p></div>
-      <div class="card"><b>Firewall blocks by default</b><p>UFW drops everything coming in, apart from the few things I've allowed from my home network and over Tailscale.</p></div>
-      <div class="card"><b>Private remote access</b><p>I manage the Pi from anywhere with Tailscale, an encrypted private network with 2FA on the account.</p></div>
-      <div class="card"><b>Automatic security updates</b><p>unattended-upgrades installs security fixes every day without me having to remember.</p></div>
-      <div class="card"><b>Only safe info on this page</b><p>No IP addresses, hostnames or software versions are shown here, because those help attackers.</p></div>
-    </div>
-    <div class="card scan">
-<pre><span class="f"># Nmap scan of every TCP port from another device on my network</span>
-$ sudo nmap -p- &lt;the pi&gt;
-Not shown: <span class="f">65531 filtered tcp ports (no-response)</span>
-PORT    STATE SERVICE
-22/tcp  <span class="o">open</span>  ssh
-53/tcp  <span class="o">open</span>  domain
-80/tcp  <span class="o">open</span>  http
-443/tcp <span class="o">open</span>  https
-<span class="f"># only what I opened in the firewall. Everything else gets no reply.</span></pre>
-    </div>
-  </section>
+    <section class="tile t-up click" style="--i:3" tabindex="0" role="button" data-open="pi" aria-label="Uptime. Open Pi details.">
+      <div class="label">uptime <span class="ex">&#8599;</span></div>
+      <div class="big" id="uptime">-</div>
+      <div class="note">since the Pi last restarted</div>
+      <div class="note" style="margin-top:auto">load <b id="load" style="color:var(--text)">-</b> &middot; memory <b id="mem" style="color:var(--text)">-</b></div>
+      <svg class="spark" id="spark-mem" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </section>
+
+    <section class="tile t-temp click" style="--i:4" tabindex="0" role="button" data-open="temp" aria-label="CPU temperature. Open graph.">
+      <div class="label">cpu temp <span class="ex">&#8599;</span></div>
+      <svg class="gauge" viewBox="0 0 120 74" aria-hidden="true">
+        <path class="bg" d="M12 64 A48 48 0 0 1 108 64"/>
+        <path class="fg" id="gauge" d="M12 64 A48 48 0 0 1 108 64" stroke="var(--led)" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
+        <text x="60" y="60" id="gauge-t">--</text><text class="u" x="60" y="72">°C</text>
+      </svg>
+    </section>
+
+    <section class="tile t-pow click" style="--i:5" tabindex="0" role="button" data-open="power" aria-label="Power use. Open graph.">
+      <div class="label">power <span class="ex">&#8599;</span></div>
+      <div class="big"><span data-count="power" data-dec="1">0</span><small>W</small></div>
+      <div class="note">about <b id="cost" style="color:var(--text)">-</b> a year</div>
+      <svg class="spark" id="spark-pow" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </section>
+
+    <section class="tile t-dns click" style="--i:6" tabindex="0" role="button" data-open="dns" aria-label="DNS queries in the last 24 hours. Open graph.">
+      <div class="label">dns queries &middot; 24h <span class="ex">&#8599;</span></div>
+      <div class="dns-nums">
+        <div class="big" data-count="queries">0</div>
+        <div class="legend"><span><i style="background:var(--s-total)"></i>total</span><span><i style="background:var(--s-blocked)"></i>blocked</span></div>
+      </div>
+      <svg class="spark" id="spark-dns" preserveAspectRatio="none" aria-hidden="true"></svg>
+    </section>
+
+    <section class="tile t-sec click" style="--i:7" tabindex="0" role="button" data-open="security" aria-label="Security. Open details.">
+      <div class="label">security <span class="ex">&#8599;</span></div>
+      <div class="sec-list">
+        <div>No open router ports</div><div>SSH keys only</div>
+        <div>Firewall, deny by default</div><div>Fail2ban</div>
+        <div>Auto security updates</div><div>Lynis score 75</div>
+      </div>
+      <div class="scanline">nmap: <b>4 open</b> / 65,531 filtered &middot; only what I allowed</div>
+    </section>
+
+    <section class="tile t-svc click" style="--i:8" tabindex="0" role="button" data-open="services" aria-label="Running services. Open details.">
+      <div class="label">what's running <span class="count" id="svc-count"></span><span class="ex">&#8599;</span></div>
+      <div class="svc-list" id="svc"></div>
+    </section>
+  </main>
 
   <footer>
-    Served from the Pi itself through a Cloudflare Tunnel. Stats refresh every minute.<br>
-    How it's built: <a href="https://github.com/haydncow/homelab-plan">github.com/haydncow/homelab-plan</a>
+    <span>Served from the Pi itself through a Cloudflare Tunnel. Updates every minute.</span>
+    <span>Code written by Claude (AI), built and run by me. <a href="https://github.com/haydncow/homelab-plan">How it's built</a></span>
   </footer>
+</div>
+
+<div id="modal" aria-hidden="true">
+  <div class="scrim"></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="m-title">
+    <button id="close" aria-label="Close">&times;</button>
+    <div id="m-body"></div>
+  </div>
 </div>
 
 <script>
@@ -498,121 +617,116 @@ function boxFor(el) {
   return [x, y, w, h];
 }
 
-/* ---------- info panel ---------- */
+
+
+/* ---------- info tile: what each rack part is ---------- */
 const PARTS = {
-  intro: () => `
-    <p class="kicker">welcome</p>
+  intro: ["welcome", () => `
     <h2>My homelab</h2>
     <p class="tag">A small server I built to learn networking and security</p>
-    <p>Everything you see here is real and live. This page is running on the Raspberry Pi in the top left of the rack.</p>
-    <p>Click a part to zoom in, or jump straight to one:</p>
+    <p>Click a part of the rack to zoom in, or click any tile for more.</p>
     <div class="chips">
-      <button class="chip" data-go="pi">Raspberry Pi</button>
-      <button class="chip" data-go="switch">Switch</button>
-      <button class="chip" data-go="spare">Spare slot</button>
-      <button class="chip" data-go="blank">Blank panel</button>
+      <button class="chip" data-go="pi">Raspberry Pi</button><button class="chip" data-go="switch">Switch</button>
+      <button class="chip" data-go="spare">Spare slot</button><button class="chip" data-go="blank">Blank panel</button>
       <button class="chip" data-go="empty">Open space</button>
-    </div>
-    ${stats ? `<div class="stats" style="margin-top:18px">${tile("Ads blocked (24h)", stats.blocked)}${tile("Uptime", stats.uptime)}</div>` : ""}`,
-  pi: () => `
-    <p class="kicker">u1 &middot; kksb panel</p>
+    </div>`],
+  pi: ["u1 &middot; kksb panel", () => `
     <h2>Raspberry Pi 5 (2GB)</h2>
     <p class="tag">The server. This page is running on it right now.</p>
-    ${statsHtml()}
-    <p><b>What it does</b></p>
     <ul>
-      <li><b>Pi-hole</b> blocks ads and trackers by answering DNS lookups</li>
-      <li><b>Tailscale</b> lets me manage it from anywhere, privately</li>
-      <li><b>Cloudflare Tunnel</b> puts this page online without opening ports</li>
-      <li><b>UFW</b> blocks everything coming in that I haven't allowed</li>
-    </ul>`,
-  switch: () => `
-    <p class="kicker">u2 &middot; shelf</p>
+      <li><b>Pi-hole</b> blocks ads and trackers</li>
+      <li><b>Tailscale</b> lets me manage it from anywhere</li>
+      <li><b>Cloudflare Tunnel</b> puts this page online</li>
+      <li><b>UFW + Fail2ban</b> keep everything else out</li>
+    </ul>
+    <div class="chips"><button class="chip" data-open="pi">All live stats &#8599;</button></div>`],
+  switch: ["u2 &middot; shelf", () => `
     <h2>TP-Link TL-SG105E</h2>
     <p class="tag">5 port gigabit managed switch</p>
-    <p>Connects the Pi to the rest of my network with short Cat6 cables. The black one goes to the Pi and the orange one goes out to the router.</p>
-    <p>The dots moving along the cables show traffic. They speed up when Pi-hole is busier.</p>
-    <p>It's a <b>managed</b> switch, so it supports <b>VLANs</b>. Next I want to use them to keep the lab separate from the rest of my home devices.</p>`,
-  spare: () => `
-    <p class="kicker">u1 &middot; kksb panel</p>
+    <p>The black cable goes to the Pi, the orange one out to the router. The moving dots are traffic, and they speed up when Pi-hole is busier.</p>
+    <p>It's managed, so it can do <b>VLANs</b>. That's next on my list.</p>`],
+  spare: ["u1 &middot; kksb panel", () => `
     <h2>Spare slot</h2>
     <p class="tag">Room for a second Pi</p>
-    <p>The KKSB panel holds two Pis with their ports at the front. This cut-out is empty for now, ready for another Pi to run more services later.</p>`,
-  blank: () => `
-    <p class="kicker">u3</p>
-    <h2>Blank panel</h2>
-    <p class="tag">Came with the rack</p>
-    <p>Covers the gap under the switch so the rack looks tidy.</p>`,
-  empty: () => `
-    <p class="kicker">u4</p>
-    <h2>Open space</h2>
-    <p class="tag">Room to grow</p>
-    <p>The bottom of the rack is open for now. Space for future upgrades, like an SSD or a patch panel.</p>`,
+    <p>The panel holds two Pis. This one's empty for now, ready for a backup Pi-hole or a media server.</p>`],
+  blank: ["u3", () => `<h2>Blank panel</h2><p class="tag">Came with the rack</p><p>Covers the gap under the switch so it looks tidy.</p>`],
+  empty: ["u4", () => `<h2>Open space</h2><p class="tag">Room to grow</p><p>Space for an SSD, a patch panel or whatever comes next.</p>`],
 };
-function tile(label, value, extra = "", big = false) {
-  return `<div class="stat${big ? " big" : ""}"><span>${label}</span><b>${value ?? "n/a"}</b>${extra}</div>`;
-}
-function statsHtml() {
-  if (!stats) return `<p class="muted">Loading live stats...</p>`;
-  const pct = parseFloat(stats.percent) || 0;
-  return `<div class="stats">
-    ${tile("Uptime", stats.uptime)}${tile("CPU temp", stats.temp)}
-    ${tile("CPU load", stats.load)}${tile("Memory used", stats.memory)}
-    ${tile("Power", stats.power)}${tile("Cost per year (est.)", stats.cost_year)}
-    ${tile("Ads blocked (24h)", stats.blocked)}${tile("DNS queries (24h)", stats.queries)}
-    ${tile("Requests blocked", stats.percent, `<div class="bar"><i data-w="${Math.min(pct, 100)}"></i></div>`, true)}
-  </div><p class="muted">Updated ${stats.updated_text}</p>`;
-}
 function show(part, animate = true) {
   current = part;
+  const [label, html] = PARTS[part];
+  $("#info-label").innerHTML = label;
   const info = $("#info");
-  info.innerHTML = PARTS[part]();
+  info.innerHTML = html();
   if (animate) { info.classList.remove("swap"); void info.offsetWidth; info.classList.add("swap"); }
-  requestAnimationFrame(() => info.querySelectorAll(".bar i").forEach(b => (b.style.width = b.dataset.w + "%")));
   info.querySelectorAll("[data-go]").forEach(c => c.onclick = () => select(c.dataset.go));
+  info.querySelectorAll("[data-open]").forEach(c => c.onclick = e => { e.stopPropagation(); openModal(c.dataset.open, c); });
   document.querySelectorAll(".part").forEach(p => p.classList.toggle("active", p.dataset.part === part));
 }
 function select(part) {
   show(part);
-  const card = $(".rack-card");
-  if (part === "intro") { zoomTo(FULL); $("#back").classList.remove("show"); card.classList.remove("zoomed"); return; }
-  card.classList.add("zoomed");
+  const tile = $(".t-rack");
+  if (part === "intro") { zoomTo(FULL); $("#back").classList.remove("show"); tile.classList.remove("zoomed"); return; }
+  tile.classList.add("zoomed");
   zoomTo(boxFor(document.querySelector(`.part[data-part="${part}"]`)));
   $("#back").classList.add("show");
-  if (matchMedia("(max-width: 820px)").matches) $("#info").scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "nearest" });
 }
 document.querySelectorAll(".part").forEach(p => {
   p.addEventListener("click", () => select(p.dataset.part));
   p.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(p.dataset.part); } });
 });
 $("#back").onclick = () => select("intro");
-addEventListener("keydown", e => { if (e.key === "Escape" && current !== "intro") select("intro"); });
 
-/* ---------- services ---------- */
-const ABOUT = {
-  "Pi-hole": "Network-wide ad blocking",
-  "Tailscale": "Private remote access",
-  "Cloudflare Tunnel": "Puts this site online",
-  "Web server": "Serves this page",
-  "Auto updates": "Daily security fixes",
-  "Firewall (UFW)": "Blocks unwanted traffic",
-};
-let servicesDrawn = false;
-function drawServices() {
-  const list = (stats && stats.services) || [];
-  const box = $("#services");
-  if (!list.length) { box.innerHTML = `<div class="card svc in"><span class="muted">Service status not available yet.</span></div>`; return; }
-  box.innerHTML = list.map(s => `
-    <div class="card svc ${s.up ? "up" : "down"}${servicesDrawn ? " in" : ""}">
-      <i class="dot" aria-hidden="true"></i>
-      <div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span></div>
-      <span class="state">${s.up ? "running" : "down"}</span>
-    </div>`).join("");
-  if (!servicesDrawn) watchReveal(box, () => box.querySelectorAll(".svc").forEach((el, i) => setTimeout(() => el.classList.add("in"), i * 90)));
-  servicesDrawn = true;
+/* ---------- tiles: mouse glow, counting numbers, mini graphs ---------- */
+document.querySelectorAll(".tile").forEach(t => t.addEventListener("pointermove", e => {
+  const r = t.getBoundingClientRect();
+  t.style.setProperty("--mx", (e.clientX - r.left) + "px"); t.style.setProperty("--my", (e.clientY - r.top) + "px");
+}));
+const num = v => parseFloat(String(v ?? "").replace(/[^0-9.]/g, "")) || 0;
+const shown = {};
+function countTo(el, target, dec = 0) {
+  const key = el.dataset.count, from = shown[key] ?? 0; shown[key] = target;
+  const fmt = v => dec ? v.toFixed(dec) : Math.round(v).toLocaleString();
+  if (reduceMotion || from === target) { el.textContent = fmt(target); return; }
+  const t0 = performance.now(), D = 1400;
+  const step = now => { const p = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - p, 3);
+    el.textContent = fmt(from + (target - from) * e); if (p < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function spark(svg, series) {
+  const w = 200, h = 50; svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  const all = series.flatMap(s => s.data); if (all.length < 2) { svg.innerHTML = ""; return; }
+  const lo = Math.min(...all), hi = Math.max(...all), n = series[0].data.length;
+  const X = i => i / (n - 1) * w, Y = v => h - 3 - (v - lo) / (hi - lo || 1) * (h - 6);
+  svg.innerHTML = series.map(s => {
+    const d = s.data.map((v, i) => `${i ? "L" : "M"}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join("");
+    return `<path class="a" d="${d}L${w} ${h}L0 ${h}Z" fill="${s.colour}"/><path class="l" d="${d}" stroke="${s.colour}" vector-effect="non-scaling-stroke"/>`;
+  }).join("");
+}
+function render() {
+  if (!stats) return;
+  document.querySelectorAll("[data-count]").forEach(el => countTo(el, num(stats[el.dataset.count]), +el.dataset.dec || 0));
+  const pct = num(stats.percent);
+  $("#pct").textContent = (stats.percent ?? "n/a");
+  $("#ring").style.strokeDashoffset = 207.3 * (1 - Math.min(pct, 100) / 100);
+  $("#uptime").textContent = stats.uptime ?? "n/a";
+  $("#load").textContent = stats.load ?? "-"; $("#mem").textContent = stats.memory ?? "-";
+  $("#cost").textContent = stats.cost_year ?? "n/a";
+  const t = num(stats.temp), g = $("#gauge");
+  $("#gauge-t").textContent = stats.temp ? t.toFixed(1) : "--";
+  g.style.strokeDashoffset = 100 - Math.max(0, Math.min(1, (t - 30) / 55)) * 100;
+  g.setAttribute("stroke", t >= 75 ? "var(--bad)" : t >= 62 ? "var(--amber)" : "var(--led)");
+  const pi = stats.pi_history || [], dns = stats.dns_history || [];
+  spark($("#spark-dns"), [{ colour: "var(--s-total)", data: dns.map(d => d[1]) }, { colour: "var(--s-blocked)", data: dns.map(d => d[2]) }]);
+  spark($("#spark-mem"), [{ colour: "var(--s-blocked)", data: pi.map(p => p[2]) }]);
+  spark($("#spark-pow"), [{ colour: "var(--s-blocked)", data: pi.filter(p => p[3] > 0).map(p => p[3]) }]);
+  const svc = stats.services || [], up = svc.filter(s => s.up).length;
+  $("#svc-count").textContent = svc.length ? `${up}/${svc.length} up` : "";
+  $("#svc").innerHTML = svc.length ? svc.map(s => `<div class="svc ${s.up ? "up" : "down"}"><i></i>${s.name}</div>`).join("") : `<span class="note">not available yet</span>`;
+  if (modalOpen) drawModal(modalOpen, false);
 }
 
-/* ---------- charts (hand-drawn SVG, crosshair + tooltip) ---------- */
+/* ---------- expanded views ---------- */
 const fmtTime = t => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v, tickFmt = null }) {
   const pts = series[0].data;
@@ -659,51 +773,109 @@ function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v
   const leave = () => { xh.style.opacity = 0; hv.forEach(h => h.style.opacity = 0); tip.style.opacity = 0; };
   s.addEventListener("pointermove", move); s.addEventListener("pointerdown", move); s.addEventListener("pointerleave", leave);
 }
-function drawCharts() {
-  const dns = (stats && stats.dns_history) || [], pi = (stats && stats.pi_history) || [];
-  const n = v => Number(v).toLocaleString();
-  lineChart($("#chart-dns"), {
-    title: "DNS queries", sub: "Every 10 minutes. How many lookups Pi-hole answered, and how many it blocked.",
-    series: [
-      { name: "Total", colour: "var(--s-total)", data: dns.map(d => [d[0], d[1]]) },
-      { name: "Blocked", colour: "var(--s-blocked)", data: dns.map(d => [d[0], d[2]]) },
-    ], min: 0, fmt: n,
-  });
-  lineChart($("#chart-temp"), { title: "CPU temperature", sub: "Every 5 minutes", unit: "°C", series: [{ name: "CPU temp", colour: "var(--s-blocked)", data: pi.map(p => [p[0], p[1]]) }] });
-  const pw = pi.filter(p => p.length > 3 && p[3] > 0);
-  lineChart($("#chart-power"), { title: "Power use", sub: `The Pi's own reading, every 5 minutes. The whole rack (with the switch) costs about ${stats && stats.cost_year ? stats.cost_year : "£8"} a year to run.`, unit: " W", min: 0, fmt: v => Number(v).toFixed(1), tickFmt: v => v.toFixed(1), series: [{ name: "Power", colour: "var(--s-blocked)", data: pw.map(p => [p[0], p[3]]) }] });
-  lineChart($("#chart-mem"), { title: "Memory used", sub: "Every 5 minutes", unit: "%", min: 0, series: [{ name: "Memory used", colour: "var(--s-blocked)", data: pi.map(p => [p[0], p[2]]) }] });
-}
 
-/* ---------- scroll reveal ---------- */
-function watchReveal(el, fn) {
-  if (!("IntersectionObserver" in window) || reduceMotion) { el.classList.add("in"); fn && fn(); return; }
-  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { el.classList.add("in"); fn && fn(); io.disconnect(); } }), { threshold: .15 });
-  io.observe(el);
+const ABOUT = {
+  "Pi-hole": "Network-wide ad blocking", "Tailscale": "Private remote access", "Cloudflare Tunnel": "Puts this site online",
+  "Web server": "Serves this page", "Auto updates": "Daily security fixes", "Firewall (UFW)": "Blocks unwanted traffic",
+};
+const MODALS = {
+  dns: () => `<h2 id="m-title">Pi-hole &middot; DNS</h2><p class="tag">Every website lookup my devices make goes through Pi-hole. Ads and trackers get blocked.</p>
+    <div class="mgrid">${st("Queries (24h)", stats.queries)}${st("Blocked (24h)", stats.blocked)}${st("Blocked %", stats.percent)}</div>
+    <div class="chart" id="mc-dns"></div>`,
+  pi: () => `<h2 id="m-title">Raspberry Pi 5</h2><p class="tag">Live stats from the server this page runs on.</p>
+    <div class="mgrid">${st("Uptime", stats.uptime)}${st("CPU temp", stats.temp)}${st("CPU load", stats.load)}${st("Memory used", stats.memory)}${st("Power", stats.power)}${st("Cost per year (est.)", stats.cost_year)}</div>
+    <div class="chart" id="mc-mem"></div>`,
+  temp: () => `<h2 id="m-title">CPU temperature</h2><p class="tag">The Pi has an active cooler. Under 60°C is comfortable, it slows down at 85°C.</p>
+    <div class="mgrid">${st("Right now", stats.temp)}${st("CPU load", stats.load)}</div><div class="chart" id="mc-temp"></div>`,
+  power: () => `<h2 id="m-title">Power use</h2><p class="tag">Measured by the Pi 5's own power chip (volts x amps on each rail). The yearly cost adds about 2 W for the switch and power supply, at about 25p per kWh.</p>
+    <div class="mgrid">${st("Pi right now", stats.power)}${st("Whole rack per year (est.)", stats.cost_year)}</div><div class="chart" id="mc-pow"></div>`,
+  services: () => `<h2 id="m-title">What's running</h2><p class="tag">Checked every minute with systemd.</p>
+    <div class="svc-big">${(stats.services || []).map(s => `<div class="${s.up ? "up" : ""}"><i></i><div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span></div><em>${s.up ? "running" : "down"}</em></div>`).join("")}</div>`,
+  security: () => `<h2 id="m-title">Security</h2><p class="tag">How the Pi is locked down, and how I tested it.</p>
+    <div class="cards">
+      <div><b>No open ports on my router</b><p>This site comes through a Cloudflare Tunnel. The Pi connects out, so nothing at home is open to the internet.</p></div>
+      <div><b>SSH keys only</b><p>Password logins are off, root can't log in, and only my user is allowed. I tested that passwords get rejected.</p></div>
+      <div><b>Firewall blocks by default</b><p>UFW drops everything coming in apart from what I allowed from my home network and over Tailscale.</p></div>
+      <div><b>Fail2ban</b><p>5 wrong SSH logins and that IP gets banned. I tested it from my Kali VM.</p></div>
+      <div><b>Lynis audit: 63 to 75</b><p>Hardened SSH, kernel network settings and file permissions. Checked two warnings and found they were false positives.</p></div>
+      <div><b>Only safe info here</b><p>No IP addresses, hostnames or software versions on this page.</p></div>
+    </div>
+    <pre class="scan"><span class="f"># every TCP port, scanned from another device on my network</span>
+$ sudo nmap -p- &lt;the pi&gt;
+Not shown: <span class="f">65531 filtered tcp ports (no-response)</span>
+PORT    STATE SERVICE
+22/tcp  <span class="o">open</span>  ssh
+53/tcp  <span class="o">open</span>  domain
+80/tcp  <span class="o">open</span>  http
+443/tcp <span class="o">open</span>  https</pre>`,
+};
+const st = (l, v) => `<div class="stat"><span>${l}</span><b>${v ?? "n/a"}</b></div>`;
+function drawModal(kind, animate = true) {
+  if (!stats) { $("#m-body").innerHTML = `<p class="empty">Loading live stats...</p>`; return; }
+  $("#m-body").innerHTML = MODALS[kind]();
+  const dns = stats.dns_history || [], pi = stats.pi_history || [], n = v => Number(v).toLocaleString();
+  const C = (id, o) => { const el = document.getElementById(id); if (el) lineChart(el, o); };
+  C("mc-dns", { title: "DNS queries, last 24 hours", sub: "Every 10 minutes", min: 0, fmt: n,
+    series: [{ name: "Total", colour: "var(--s-total)", data: dns.map(d => [d[0], d[1]]) }, { name: "Blocked", colour: "var(--s-blocked)", data: dns.map(d => [d[0], d[2]]) }] });
+  C("mc-temp", { title: "CPU temperature, last 24 hours", sub: "Every 5 minutes", unit: "°C", series: [{ name: "CPU temp", colour: "var(--s-blocked)", data: pi.map(p => [p[0], p[1]]) }] });
+  C("mc-mem", { title: "Memory used, last 24 hours", sub: "Every 5 minutes", unit: "%", min: 0, series: [{ name: "Memory used", colour: "var(--s-blocked)", data: pi.map(p => [p[0], p[2]]) }] });
+  const pw = pi.filter(p => p.length > 3 && p[3] > 0);
+  C("mc-pow", { title: "Power, last 24 hours", sub: "Every 5 minutes", unit: " W", min: 0, fmt: v => Number(v).toFixed(1), tickFmt: v => v.toFixed(1),
+    series: [{ name: "Power", colour: "var(--s-blocked)", data: pw.map(p => [p[0], p[3]]) }] });
+  if (!animate) document.querySelectorAll("#m-body .draw").forEach(p => p.classList.remove("draw"));
 }
-document.querySelectorAll(".reveal").forEach(el => el.id !== "graphs" && watchReveal(el));
-let chartsShown = false, rz;
-addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => chartsShown && drawCharts(), 200); });
-watchReveal($("#graphs"), () => { chartsShown = true; drawCharts(); });
+let modalOpen = null, opener = null;
+function openModal(kind, from) {
+  modalOpen = kind; opener = from;
+  const m = $("#modal"), sheet = m.querySelector(".sheet");
+  m.classList.add("open"); m.setAttribute("aria-hidden", "false");
+  drawModal(kind);
+  $("#close").focus({ preventScroll: true });
+  if (reduceMotion || !from) return;
+  // grow out of the tile that was clicked
+  const a = from.getBoundingClientRect(), b = sheet.getBoundingClientRect();
+  sheet.animate([
+    { transform: `translate(${a.left + a.width / 2 - (b.left + b.width / 2)}px, ${a.top + a.height / 2 - (b.top + b.height / 2)}px) scale(${a.width / b.width}, ${a.height / b.height})`, opacity: .4, borderRadius: "16px" },
+    { transform: "none", opacity: 1, borderRadius: "20px" },
+  ], { duration: 380, easing: "cubic-bezier(.2,.8,.2,1)" });
+}
+function closeModal() {
+  if (!modalOpen) return;
+  const m = $("#modal"), sheet = m.querySelector(".sheet");
+  const done = () => { m.classList.remove("open"); m.setAttribute("aria-hidden", "true"); modalOpen = null; opener && opener.focus({ preventScroll: true }); };
+  if (reduceMotion) return done();
+  sheet.animate([{ opacity: 1, transform: "none" }, { opacity: 0, transform: "scale(.96)" }], { duration: 160, easing: "ease-in" }).onfinish = done;
+}
+document.querySelectorAll("[data-open]").forEach(t => {
+  t.addEventListener("click", () => openModal(t.dataset.open, t));
+  t.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openModal(t.dataset.open, t); } });
+});
+$("#close").onclick = closeModal;
+$("#modal .scrim").onclick = closeModal;
+addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  if (modalOpen) closeModal(); else if (current !== "intro") select("intro");
+});
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && drawModal(modalOpen, false), 200); });
 
 /* ---------- live data ---------- */
 async function load() {
   const pill = $("#status"), text = $("#status-text");
   try {
     const r = await fetch("stats.json", { cache: "no-store" });
-    const fresh = !stats;
+    const first = !stats;
     stats = await r.json();
-    const ageMin = (Date.now() / 1000 - stats.updated) / 60, live = ageMin < 15;
+    const live = (Date.now() / 1000 - stats.updated) / 60 < 15;
     pill.classList.remove("online", "offline"); pill.classList.add(live ? "online" : "offline");
     text.textContent = live ? "online" : "last seen " + stats.updated_text;
-    drawServices();
-    if (chartsShown) drawCharts();
-    if (booted && !reduceMotion && fresh) startPackets();
-    show(current, false);
+    if (booted) render();
+    if (booted && !reduceMotion && first) startPackets();
   } catch (e) {
     pill.classList.remove("online"); pill.classList.add("offline"); text.textContent = "stats unavailable";
   }
 }
+const _showRest = showRest;
+showRest = function () { _showRest(); setTimeout(render, 300); };
 
 show("intro", false);
 runBoot();

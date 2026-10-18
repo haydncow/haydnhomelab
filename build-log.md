@@ -23,6 +23,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Two Lynis warnings were false positives. It said I had no security updates repository, but `trixie-security` is there (Lynis doesn't read Debian 13's newer file format). It also said I needed a reboot, but `needrestart -k -b` showed I'm running the Pi 5 build of the latest kernel, and it was just seeing the build for older Pis.
 
 - Measured how much power the Pi uses with `vcgencmd pmic_read_adc`: about 1.7 W. With the switch and power supply losses the whole rack is about 3.7 W, which is roughly £8 a year. Added power use and the cost to the status page.
+- Redesigned the status page as a one-screen dashboard with tiles you can click to expand, instead of one long scrolling page.
 
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 

@@ -4,7 +4,7 @@ Live at **[haydnhomelab.com](https://haydnhomelab.com)**. A public page showing 
 
 **Claude (an AI assistant) wrote all the code in this folder.** I described what I wanted, checked how it looked and set it up on the Pi with Claude's instructions.
 
-- `index.html` is the page. It starts with a power-on intro (a standby light, a CRT-style screen switching on and the rack drawing itself), then shows a drawing of my rack where you can click a part to zoom in, little packets moving along the cables (faster when Pi-hole is busier), which services are running, graphs of the last 24 hours and a security section.
+- `index.html` is the page. It starts with a power-on intro (a standby light, a CRT-style screen switching on and the rack drawing itself), then shows a one-screen dashboard of tiles: the rack (click a part to zoom in), ads blocked, uptime, a CPU temperature gauge, power and cost, DNS queries, security and what's running. Clicking a tile expands it into a full view with interactive graphs.
 - `homelab-status.py` runs every minute from cron (as root) and saves everything to `/srv/status/stats.json`, which the page reads. It checks each service with `systemctl is-active`, gets DNS history from Pi-hole's API, and keeps 24 hours of temperature, memory and power readings in `/var/lib/homelab-status/`.
 - Power comes from the Pi 5's power chip (`vcgencmd pmic_read_adc`), which reports the volts and amps on each supply rail. Watts = volts x amps, added up. The yearly cost adds about 2 W for the switch and power supply losses, at about 25p per kWh.
 - A small Python web server (`status-web` systemd service) serves `/srv/status`, but only on `127.0.0.1:8080`, so it isn't reachable from my network.
