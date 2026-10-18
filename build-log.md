@@ -16,7 +16,9 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Tested it by trying to log in as a fake user from my Kali VM. After 5 tries the VM's IP was banned, then I unbanned it with `fail2ban-client`.
 - Backed up Pi-hole with Teleporter and saved the zip off the Pi. It has my password hashes in, so it doesn't go on GitHub.
 
-**Next:** set up VLANs on the switch, and use Pi-hole for the whole house.
+- Decided to only use Pi-hole on my own devices (PC and Mac) instead of the whole house. With one Pi, if it goes down every device using it loses DNS, so this way the rest of the house isn't affected. A second Pi-hole in the spare slot would fix that later.
+
+**Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
 ## 17 October 2026
 
