@@ -38,6 +38,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Added a script that downloads free public domain films from the Internet Archive every week into a "Classics" library. See [media](media/).
 - Problem: the film script said only 25 GB was free. That's the SD card, so the drive wasn't mounted. The Pi had restarted and the drive had vanished. `lsusb` could still see the My Passport, so the cable and power were fine, but the USB storage driver hadn't loaded, so there was no `sda`. Loading it with `modprobe usb-storage` brought the drive back, and I added it to `/etc/modules-load.d/` so it loads on every boot.
 - Changed the film script so it refuses to run if the drive isn't mounted, so it can never fill up the SD card.
+- Removed the free films script in the end. The films available legally for free weren't really what I wanted to watch.
 
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
