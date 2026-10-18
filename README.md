@@ -39,6 +39,7 @@ The DeskPi RackMate T0 with the shelf and blank panel in. The Pi and switch go i
 - [Research notes](research-notes.md) - what I've learned while planning
 - [Build log](build-log.md) - how the build is going, problems and fixes
 - [Photos](photos/) - photos of the build as it goes
+- [Media](media/) - Jellyfin, and a script that adds free classic films every week
 - [Diagrams](diagrams/) - network diagram and rack layout
 - [Status page](status-page/) - live at [haydnhomelab.com](https://haydnhomelab.com), served from the Pi through a Cloudflare Tunnel
 

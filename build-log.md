@@ -34,6 +34,8 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Problem: Jellyfin couldn't open the films folder. My stricter default permissions from the Lynis fixes meant other users couldn't read it. Fixed it by giving the folders to the jellyfin group, with the setgid bit (`2775`) so new files get the right group too.
 - Jellyfin is only open to my home network and Tailscale in UFW, not on my public domain.
 - Problem: "What's running" was empty, but worked when I ran the script by hand. The error log showed `No such file or directory: 'ufw'`. Cron runs scripts with a much shorter PATH that doesn't include `/usr/sbin`, where `ufw` lives. Fixed it by setting the full PATH at the top of the script.
+- Set up a Samba share so I can drag films onto the drive from my Mac or PC. Only my user can log in, only from home or Tailscale, and new files automatically get the jellyfin group.
+- Added a script that downloads free public domain films from the Internet Archive every week into a "Classics" library. See [media](media/).
 
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
