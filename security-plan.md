@@ -113,11 +113,11 @@ What I fixed:
 | NETW-3200 | Turned off network protocols I don't use (dccp, sctp, rds, tipc) and firewire |
 | KRNL-6000 | Kernel hardening with sysctl: ignore ICMP redirects and source routing, log suspicious packets, hide kernel pointers. I left the settings Tailscale needs alone |
 | DEB / PKGS / ACCT | Installed libpam-tmpdir, needrestart, debsums, apt-show-versions, sysstat and process accounting |
-| KRNL-5830 | Rebooted to load the updated kernel |
 
 What I checked and didn't change, and why:
 
 - **PKGS-7388 "no security repository":** false positive. My Pi does get `trixie-security` updates, but Debian 13 uses a newer sources file format that this version of Lynis doesn't read.
+- **KRNL-5830 "reboot needed":** also a false positive. Raspberry Pi OS installs two builds of the same kernel (`6.18.50`): one for the Pi 5 (`rpi-2712`) and a general one for older Pis (`rpi-v8`). My Pi 5 is running the right one, but Lynis and needrestart see the other build and think it's newer. I checked with `needrestart -k -b`.
 - **Changing the SSH port:** hiding SSH on another port doesn't make it more secure. It's already key-only, firewalled and protected by Fail2ban.
 - **Password age, strength and expiry rules:** I only log in with SSH keys, so passwords aren't used for SSH.
 - **Separate /home and /var partitions:** would mean rebuilding the SD card, not worth it on a Pi.

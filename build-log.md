@@ -20,7 +20,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 - Problem: my Mac couldn't reach the Pi (ping timed out) but the website still worked. The website works because the Pi connects out to Cloudflare, so the Pi was fine. Restarting the TP-Link wireless box between my switch and the router fixed it. If it happens again, that's the first thing to restart.
 - Ran a Lynis security audit. Score was 63. Hardened SSH, added a login banner, turned off unused network protocols, tightened file permissions and kernel network settings, then rebooted. New score: 75. Full list of what I fixed and what I skipped (and why) is in the [security plan](security-plan.md#lynis-audit-18-october-2026).
-- One Lynis warning was a false positive: it said I had no security updates repository, but I checked and `trixie-security` is there. Lynis just doesn't read Debian 13's newer file format.
+- Two Lynis warnings were false positives. It said I had no security updates repository, but `trixie-security` is there (Lynis doesn't read Debian 13's newer file format). It also said I needed a reboot, but `needrestart -k -b` showed I'm running the Pi 5 build of the latest kernel, and it was just seeing the build for older Pis.
 
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
