@@ -5,6 +5,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 ## 20 October 2026
 
 - Added a hidden terminal to the status page (press T) and an animated network map (press N).
+- Set up nightly backups of all my settings, scripts, Jellyfin and Pi-hole to the media drive, keeping 14 days. See [backup](backup/).
 
 ## 18 October 2026
 

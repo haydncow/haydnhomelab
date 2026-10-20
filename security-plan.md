@@ -68,6 +68,7 @@ learn more.
 ## Backups
 
 - Back up Pi-hole settings using its built-in Teleporter feature
+- Nightly backups of the whole Pi config to the media drive, root-only, kept for 14 days (see [backup](backup/))
 - Keep a copy of my setup notes in this repo so I can rebuild it
 
 ## Future improvements

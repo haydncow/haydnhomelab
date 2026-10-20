@@ -40,6 +40,7 @@ The DeskPi RackMate T0 with the shelf and blank panel in. The Pi and switch go i
 - [Build log](build-log.md) - how the build is going, problems and fixes
 - [Photos](photos/) - photos of the build as it goes
 - [Media](media/) - Jellyfin media server
+- [Backup](backup/) - nightly backups and how to restore
 - [Diagrams](diagrams/) - network diagram and rack layout
 - [Status page](status-page/) - live at [haydnhomelab.com](https://haydnhomelab.com), served from the Pi through a Cloudflare Tunnel
 
@@ -76,6 +77,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Fail2ban
 - [x] Lynis security audit (hardening score 63 to 75)
 - [x] Jellyfin media server with a 1TB drive
+- [x] Nightly backups
 - [ ] Fit everything in the rack
       
 I'll keep this updated as I go.

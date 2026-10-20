@@ -148,6 +148,15 @@ def detail_firewall():
     return f"{len(rules)} rules"
 
 
+def backup_status():
+    # Written by homelab-backup.sh after each nightly backup
+    last = json.load(open("/var/lib/homelab-backup/last.json"))
+    age = time.time() - last["time"]
+    ok = last.get("ok") and age < 36 * 3600   # counts as down if it's missed a night
+    detail = f"last ran {ago(age)} ago" + (f", {last['size']}, keeping {last['count']}" if last.get("ok") else ", failed")
+    return {"name": "Nightly backup", "up": bool(ok), "detail": detail, "for": None}
+
+
 def services(gravity=None):
     details = {
         "tailscale": detail_tailscale,
@@ -168,6 +177,9 @@ def services(gravity=None):
     fw = run("ufw", "status")
     out.append({"name": "Firewall (UFW)", "up": "Status: active" in fw,
                 "detail": safe(detail_firewall), "for": None})
+    backup = safe(backup_status)
+    if backup:
+        out.append(backup)
     return out
 
 

@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the homelab backup every night at 4am
+
+[Timer]
+OnCalendar=*-*-* 04:00:00
+RandomizedDelaySec=10min
+# If the Pi was off at 4am, run it as soon as it's back on
+Persistent=true
+
+[Install]
+WantedBy=timers.target
