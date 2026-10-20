@@ -50,4 +50,8 @@ sudo tar -xzpf /mnt/media/backups/homelab-YYYY-MM-DD.tar.gz -C / etc/ufw
 
 The backups are on a drive plugged into the same Pi, so a fire, theft or power surge could take out both. The next step is copying them somewhere else as well (the 3-2-1 rule: 3 copies, 2 different devices, 1 off-site).
 
+## Tested
+
+20 October 2026: restored `etc/ufw/user.rules` from the first backup into a temporary folder and compared it with the real file using `diff`. Identical.
+
 Claude (AI) wrote this script. I set it up and tested restoring from it.

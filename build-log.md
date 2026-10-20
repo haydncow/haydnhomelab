@@ -6,6 +6,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 - Added a hidden terminal to the status page (press T) and an animated network map (press N).
 - Set up nightly backups of all my settings, scripts, Jellyfin and Pi-hole to the media drive, keeping 14 days. See [backup](backup/).
+- First backup was 31 MB. Tested restoring my UFW rules from it into a temporary folder and compared them with `diff`: identical, so the backups actually work.
 
 ## 18 October 2026
 
