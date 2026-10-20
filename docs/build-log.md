@@ -4,6 +4,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 20 October 2026
 
+- Added a honeypot attack map to the status page (press A). It replays the last 7 days of honeypot hits, then watches live. Still never shows IPs or passwords, and test hits are clearly marked as not real.
 - Installed the Jellyfin app on our LG TV from the LG Content Store. It uses the Pi's IP, not `jellyfin.lan`, because the TV doesn't use my Pi-hole.
 - Problem: video and audio froze for about a second every few seconds. The playback quality was set higher than my connection could keep up with (the Pi reaches the router through a wireless link). Lowering the quality in the player fixed it.
 - Gave my private services proper names: `jellyfin.lan`, `dashboard.lan`, `speed.lan` and `pihole.lan`. Pi-hole's local DNS points them all at the Pi, and Caddy on port 80 sends each one to the right service. I moved Pi-hole's own web page to 8090 (not 8081, the honeypot uses that) so Caddy could have port 80. For my phone away from home, the Pi advertises a Tailscale route to just `192.168.1.5`. See the [Caddyfile](../setup/caddy/Caddyfile).
