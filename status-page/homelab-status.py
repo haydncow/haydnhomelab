@@ -166,7 +166,7 @@ def sd_health():
     # Work out GB written per day by comparing with a reading from a while ago
     path = os.path.join(STATE_DIR, "sd.json")
     now = time.time()
-    first = safe(lambda: json.load(open(path)))
+    first = safe(lambda: json.load(open(path))) if os.path.exists(path) else None
     if not first:
         first = {"time": now, "gb": written_gb}
         os.makedirs(STATE_DIR, exist_ok=True)
