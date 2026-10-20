@@ -4,6 +4,8 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 20 October 2026
 
+- Installed the Jellyfin app on our LG TV from the LG Content Store. It uses the Pi's IP, not `jellyfin.lan`, because the TV doesn't use my Pi-hole.
+- Problem: video and audio froze for about a second every few seconds. The playback quality was set higher than my connection could keep up with (the Pi reaches the router through a wireless link). Lowering the quality in the player fixed it.
 - Gave my private services proper names: `jellyfin.lan`, `dashboard.lan`, `speed.lan` and `pihole.lan`. Pi-hole's local DNS points them all at the Pi, and Caddy on port 80 sends each one to the right service. I moved Pi-hole's own web page to 8090 (not 8081, the honeypot uses that) so Caddy could have port 80. For my phone away from home, the Pi advertises a Tailscale route to just `192.168.1.5`. See the [Caddyfile](../setup/caddy/Caddyfile).
 - Added the Speedtest Tracker tile to Homepage with a read-only API token.
 - Set up Speedtest Tracker in Docker to test my broadband every 2 hours. Its port clashed with Pi-hole, so it only listens on the Pi itself and Caddy passes it through on 8766, with UFW allowing that from home and Tailscale only. Changed the default admin login straight away. See [speedtest](../setup/speedtest/).
