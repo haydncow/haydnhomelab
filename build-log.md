@@ -4,6 +4,8 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 20 October 2026
 
+- Gave my private services proper names: `jellyfin.lan`, `dashboard.lan`, `speed.lan` and `pihole.lan`. Pi-hole's local DNS points them all at the Pi, and Caddy on port 80 sends each one to the right service. I moved Pi-hole's own web page to 8090 (not 8081, the honeypot uses that) so Caddy could have port 80. For my phone away from home, the Pi advertises a Tailscale route to just `192.168.1.5`. See the [Caddyfile](Caddyfile).
+- Added the Speedtest Tracker tile to Homepage with a read-only API token.
 - Set up Speedtest Tracker in Docker to test my broadband every 2 hours. Its port clashed with Pi-hole, so it only listens on the Pi itself and Caddy passes it through on 8766, with UFW allowing that from home and Tailscale only. Changed the default admin login straight away. See [speedtest](speedtest/).
 - Problem: Caddy wouldn't reload. I'd lost the closing `}` on the first block, so Caddy read the new site as a setting inside it. `caddy validate` showed the line. The old config kept running, so the website stayed up.
 - Added an animated network map to the status page (press N). I tried a hidden terminal too but took it out, it didn't fit the look I wanted.
