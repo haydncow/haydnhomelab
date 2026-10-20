@@ -7,7 +7,7 @@
 <meta name="description" content="A Raspberry Pi 5 homelab in a 10 inch rack, with live stats.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #070707; --panel: #101112; --panel2: #151617; --line: #222528; --line2: #2e3236; --text: #e8eae6; --muted: #8d928c;
@@ -241,38 +241,12 @@
                 radial-gradient(30% 25% at 60% 20%, #5cff3a0a, transparent 70%);
     animation: drift 26s ease-in-out infinite alternate; }
   @keyframes drift { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(4%, -3%) rotate(6deg); } }
-  @property --ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
-  .tile.click::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0;
-    background: conic-gradient(from var(--ang), transparent 0 70%, #5cff3a 80%, #b6ffa0 85%, transparent 95%);
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
-    transition: opacity .3s; animation: spin 3s linear infinite; }
-  .tile.click:hover::after, .tile.click:focus-visible::after { opacity: 1; }
-  @keyframes spin { to { --ang: 360deg; } }
   .t-rack svg { transition: transform .4s ease-out; transform-style: preserve-3d; will-change: transform; }
   .hbtn { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); background: var(--panel);
           border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
   .hbtn:hover, .hbtn:focus-visible { color: var(--led); border-color: #5cff3a66; outline: none; }
   .hbtn kbd { font-size: 9px; padding: 0 4px; }
   #ago { font-variant-numeric: tabular-nums; }
-
-  /* ---------- terminal ---------- */
-  #term { position: fixed; left: 50%; top: 0; z-index: 40; width: min(900px, calc(100% - 24px)); height: min(62vh, 560px);
-          transform: translate(-50%, -105%); transition: transform .38s cubic-bezier(.2,.8,.2,1);
-          background: #030503f2; border: 1px solid #5cff3a44; border-top: 0; border-radius: 0 0 16px 16px;
-          box-shadow: 0 30px 80px -10px #000, 0 0 40px -10px #5cff3a33; display: flex; flex-direction: column; overflow: hidden; }
-  #term.open { transform: translate(-50%, 0); }
-  #term .bar { display: flex; align-items: center; gap: 7px; padding: 9px 14px; border-bottom: 1px solid #5cff3a22; font-size: 11px; color: var(--muted); }
-  #term .bar i { width: 10px; height: 10px; border-radius: 50%; background: #333; } #term .bar i:nth-child(1) { background: #ff5f57; }
-  #term .bar i:nth-child(2) { background: #febc2e; } #term .bar i:nth-child(3) { background: #28c840; }
-  #term .bar span { margin-left: 8px; } #term .bar button { margin-left: auto; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 11px; }
-  #term-out { flex: 1; overflow: auto; padding: 12px 16px 4px; font-size: 13px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; color: #c9d1c7; }
-  #term-out .p, #term-line .p { color: var(--led); } #term-out .dim { color: var(--muted); } #term-out .ok { color: var(--led); }
-  #term-out .warn { color: var(--amber); } #term-out .bad { color: var(--bad); } #term-out .b { color: #fff; font-weight: 700; }
-  #term-out a { color: var(--led); }
-  #term-line { display: flex; gap: 8px; padding: 6px 16px 14px; font-size: 13px; }
-  #term-in { flex: 1; background: none; border: 0; outline: none; color: #fff; font: inherit; caret-color: var(--led); }
-  #matrix { position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: 0; transition: opacity .5s; }
-  #matrix.on { opacity: 1; }
 
   /* ---------- network map ---------- */
   .netmap { width: 100%; height: auto; display: block; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; }
@@ -287,6 +261,64 @@
   .netmap .lbl { font: 10px "JetBrains Mono", monospace; fill: var(--muted); }
   .netkey { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; color: var(--muted); margin: 12px 0 4px; }
   .netkey i { display: inline-block; width: 18px; height: 0; border-top: 2px dashed; vertical-align: middle; margin-right: 6px; }
+
+
+  /* =========================================================
+     Sleeker look: Inter for text, mono only for technical bits
+     ========================================================= */
+  :root { --panel: #0f1110; --line: #1c201e; --line2: #2a302c; --muted: #8a918b; --r: 20px; --gap: 14px; }
+  body { font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; letter-spacing: -0.005em;
+         background: radial-gradient(1200px 700px at 18% -10%, #0f1f10 0%, transparent 60%), #060706; }
+  body::before { display: none; }
+  body::after { opacity: .35; }
+  .gauge text { font-family: Inter, sans-serif; font-weight: 700; letter-spacing: -0.03em; }
+  .mono, .scanline, .chart .axis, pre.scan, .netmap text, kbd { font-family: "JetBrains Mono", ui-monospace, monospace; }
+
+  header { padding-bottom: 16px; }
+  h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; display: flex; align-items: center; gap: 10px; }
+  h1 .p { display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: var(--led); color: transparent; overflow: hidden;
+          box-shadow: 0 0 0 4px #5cff3a1f, 0 0 18px #5cff3a99; font-size: 0; }
+  #title { background: linear-gradient(180deg, #ffffff, #b9c2ba); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  header .sub { font-size: 13px; }
+  .pill { font-size: 11.5px; font-weight: 500; padding: 4px 12px; background: #0c0e0d; }
+  header .right a, .hbtn { font-family: inherit; font-size: 12px; font-weight: 500; border-radius: 10px; padding: 6px 12px; background: #0c0e0d; }
+
+  .tile { border-radius: var(--r); padding: 18px 20px;
+          background: linear-gradient(180deg, #121513 0%, #0d0f0e 100%); border: 1px solid var(--line);
+          box-shadow: inset 0 1px 0 #ffffff0a, 0 1px 2px #0008, 0 12px 32px -18px #000; }
+  .tile::before { background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), #5cff3a0e, transparent 50%); }
+  .tile.click:hover, .tile.click:focus-visible { transform: translateY(-3px); border-color: #2b3a2d;
+          box-shadow: inset 0 1px 0 #ffffff12, 0 18px 40px -16px #000, 0 0 0 1px #5cff3a14, 0 10px 40px -20px #5cff3a40; }
+  .label { font-size: 11px; font-weight: 600; letter-spacing: .08em; color: #9aa29b; }
+  .label .ex { font-size: 14px; }
+  .big { font-family: Inter, sans-serif; font-weight: 700; letter-spacing: -0.04em; font-size: clamp(26px, 2.6vw, 40px); }
+  .big small { letter-spacing: 0; font-weight: 500; }
+  .note { font-size: 12px; }
+  .livetag { font-family: inherit; font-weight: 600; letter-spacing: .06em; border-radius: 999px; padding: 1px 7px; background: #5cff3a14; border-color: #5cff3a33; }
+  .spark path.a { opacity: .12; }
+  .chip { font-family: inherit; font-weight: 500; border-radius: 999px; padding: 6px 12px; }
+  .t-info h2 { font-size: 20px; letter-spacing: -0.02em; }
+  .svc, .sec-list div { font-size: 12.5px; }
+  .svc { border-radius: 10px; padding: 8px 10px; background: #0a0c0b; }
+  .count { font-weight: 600; }
+
+  /* the rack as a showpiece: spotlight behind, reflection underneath */
+  .t-rack { background:
+      radial-gradient(60% 45% at 50% 38%, #163a1688 0%, transparent 70%),
+      radial-gradient(70% 12% at 50% 96%, #00000099 0%, transparent 70%),
+      linear-gradient(180deg, #111412 0%, #0a0b0a 100%); }
+  .t-rack::after { content: ""; position: absolute; left: 18%; right: 18%; bottom: 7%; height: 22px; border-radius: 50%;
+      background: radial-gradient(closest-side, #5cff3a26, transparent); filter: blur(6px); pointer-events: none; }
+  .rack-tip { font-size: 11px; letter-spacing: .02em; }
+  #back { font-family: inherit; font-weight: 500; border-radius: 10px; }
+
+  /* modals */
+  #modal .sheet { border-radius: 24px; background: linear-gradient(180deg, #121513, #0c0e0d); box-shadow: inset 0 1px 0 #ffffff0d, 0 40px 100px -20px #000; }
+  #modal h2 { font-size: 22px; letter-spacing: -0.02em; }
+  .stat { border-radius: 14px; background: #0a0c0b; } .stat span { font-family: inherit; font-weight: 600; letter-spacing: .06em; }
+  .chart { border-radius: 16px; background: #0a0c0b; } .chart h4 { font-size: 14px; }
+  .cards div, .svc-big > div { border-radius: 14px; background: #0a0c0b; }
+  footer { font-size: 11.5px; }
 
   /* ---------- smaller screens: stack the tiles ---------- */
   @media (max-width: 1100px) {
@@ -309,8 +341,6 @@
     .svc-list, .sec-list { grid-template-columns: 1fr; }
     header .right .keys { display: none; }
     .hbtn kbd { display: none; }
-    #term { height: 70vh; } #term-out, #term-line { font-size: 12px; }
-    .nf-art { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -334,7 +364,6 @@
     <div class="right">
       <span class="keys">updated <span id="ago">-</span></span>
       <button class="hbtn" id="open-net" title="Network map (N)">network map <kbd>N</kbd></button>
-      <button class="hbtn" id="open-term" title="Terminal (T)">&gt;_ terminal <kbd>T</kbd></button>
       <a href="https://github.com/haydncow/homelab-plan">github</a>
     </div>
   </header>
@@ -537,13 +566,6 @@
     <span>Code written by Claude (AI), built and run by me. <a href="https://github.com/haydncow/homelab-plan">How it's built</a></span>
   </footer>
 </div>
-
-<div id="term" role="dialog" aria-label="Terminal" aria-hidden="true">
-  <div class="bar"><i></i><i></i><i></i><span>guest@haydnhomelab: ~</span><button id="term-x">esc to close</button></div>
-  <div id="term-out" aria-live="polite"></div>
-  <label id="term-line"><span class="p">guest@homelab:~$</span><input id="term-in" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type a command"></label>
-</div>
-<canvas id="matrix" aria-hidden="true"></canvas>
 
 <div id="modal" aria-hidden="true">
   <div class="scrim"></div>
@@ -946,7 +968,7 @@ $("#close").onclick = closeModal;
 $("#modal .scrim").onclick = closeModal;
 addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
-  if (term.classList.contains("open")) closeTerm(); else if (modalOpen) closeModal(); else if (current !== "intro") select("intro");
+  if (modalOpen) closeModal(); else if (current !== "intro") select("intro");
 });
 
 /* ---------- network map ---------- */
@@ -977,144 +999,11 @@ function netmap() {
   </svg>`;
 }
 
-/* ---------- hidden terminal ---------- */
-const term = $("#term"), tout = $("#term-out"), tin = $("#term-in");
-const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const say = html => { tout.insertAdjacentHTML("beforeend", html + "\n"); tout.scrollTop = tout.scrollHeight; };
-const hist = []; let hi = 0, termOpened = false;
-const v = k => (stats && stats[k]) ?? "n/a";
-const lastLive = () => liveOk && live.points.length ? live.points[live.points.length - 1] : null;
-const CMDS = {
-  help: () => `<span class="b">commands</span>
-  <span class="ok">neofetch</span>   system info          <span class="ok">uptime</span>     how long it's been up
-  <span class="ok">services</span>   what's running       <span class="ok">pihole</span>     ad blocking stats
-  <span class="ok">temp</span>       cpu temperature      <span class="ok">power</span>      watts and running cost
-  <span class="ok">nmap</span>       my last port scan    <span class="ok">security</span>   how it's locked down
-  <span class="ok">network</span>    open the network map <span class="ok">ping</span>       time a request to the pi
-  <span class="ok">whoami</span>     who are you          <span class="ok">about</span>      what this is
-  <span class="ok">sdcard</span>     sd card health
-  <span class="ok">ls</span>  <span class="ok">date</span>  <span class="ok">history</span>  <span class="ok">clear</span>  <span class="ok">exit</span>  <span class="ok">matrix</span>  <span class="dim">...and a few secrets</span>`,
-  neofetch: () => {
-    const L = lastLive();
-    const art = ["   <span class='ok'>.~~.   .~~.</span>", "  <span class='ok'>'. \\ ' ' / .'</span>", "   <span class='bad'>.~ .~~~..~.</span>", "  <span class='bad'>: .~.'~'.~. :</span>", " <span class='bad'>~ (   ) (   ) ~</span>", "<span class='bad'>( : '~'.~.'~' : )</span>", " <span class='bad'>~ .~ (   ) ~. ~</span>", "  <span class='bad'>(  : '~' :  )</span>", "   <span class='bad'>'~ .~~~. ~'</span>", "       <span class='bad'>'~'</span>"];
-    const info = [`<span class="ok">guest</span>@<span class="ok">haydnhomelab</span>`, "-----------------", `<span class="ok">Host</span>: Raspberry Pi 5 (2GB)`, `<span class="ok">Rack</span>: DeskPi RackMate T0, 10"`,
-      `<span class="ok">OS</span>: Raspberry Pi OS Lite (Debian)`, `<span class="ok">Uptime</span>: ${v("uptime")}`, `<span class="ok">CPU</span>: ${L ? Math.round(L[1]) + "%" : "load " + v("load")}, ${L && L[2] != null ? L[2].toFixed(1) + "°C" : v("temp")}`,
-      `<span class="ok">Memory</span>: ${L && L[4] != null ? Math.round(L[4]) + "%" : v("memory")} used`, `<span class="ok">Power</span>: ${L && L[3] != null ? L[3].toFixed(2) + " W" : v("power")}`,
-      `<span class="ok">Ads blocked</span>: ${v("blocked")} today`];
-    return `<span style="display:inline-flex;gap:28px;align-items:flex-start;white-space:pre"><span class="nf-art">${art.join("\n")}</span><span>${info.join("\n")}</span></span>`;
-  },
-  uptime: () => `up ${v("uptime")}`,
-  temp: () => { const L = lastLive(); return `cpu temperature: <span class="b">${L && L[2] != null ? L[2].toFixed(1) + "°C" : v("temp")}</span> <span class="dim">(comfortable under 60°C, throttles at 85°C)</span>`; },
-  power: () => { const L = lastLive(); return `pi is using <span class="b">${L && L[3] != null ? L[3].toFixed(2) + " W" : v("power")}</span>. whole rack costs about <span class="b">${v("cost_year")}</span> a year.`; },
-  pihole: () => `dns queries today: <span class="b">${v("queries")}</span>\nblocked:           <span class="b">${v("blocked")}</span> (${v("percent")})\nblocklist:         <span class="b">${stats && stats.gravity ? Number(stats.gravity).toLocaleString() : "n/a"}</span> domains`,
-  services: () => (stats && stats.services || []).map(s => `${s.up ? '<span class="ok">● running</span>' : '<span class="bad">● down   </span>'}  ${s.name.padEnd(20)} <span class="dim">${s.detail || ""}</span>`).join("\n") || "not available yet",
-  nmap: () => `<span class="dim">$ sudo nmap -p- &lt;the pi&gt;   (from another device on my network)</span>
-Not shown: 65531 filtered tcp ports (no-response)
-PORT    STATE SERVICE
-22/tcp  <span class="ok">open</span>  ssh
-53/tcp  <span class="ok">open</span>  domain
-80/tcp  <span class="ok">open</span>  http
-443/tcp <span class="ok">open</span>  https
-<span class="dim">only what I allowed. everything else gets no reply.</span>`,
-  security: () => `<span class="ok">✓</span> no open ports on my router (cloudflare + tailscale tunnels)
-<span class="ok">✓</span> ssh: keys only, no root, max 3 tries
-<span class="ok">✓</span> ufw firewall: deny by default
-<span class="ok">✓</span> fail2ban: 5 wrong logins = banned
-<span class="ok">✓</span> automatic security updates
-<span class="ok">✓</span> lynis hardening score: 63 → 75`,
-  whoami: () => `guest <span class="dim">(you're on the public site. the real login needs an ssh key you don't have.)</span>`,
-  about: () => `a raspberry pi 5 homelab i built to learn networking and cyber security.
-code for this site written by claude (ai). built, run and broken by me.
-<a href="https://github.com/haydncow/homelab-plan" target="_blank" rel="noopener">github.com/haydncow/homelab-plan</a>`,
-  ls: () => `<span class="ok">about.txt</span>  <span class="ok">security.txt</span>  <span class="ok">rack.svg</span>  <span class="dim">secrets/</span>`,
-  "cat": a => ({ "about.txt": CMDS.about, "security.txt": CMDS.security, "rack.svg": () => "nice try, it's the drawing on the left" }[a]?.() ?? (a.startsWith("secrets") ? `<span class="bad">permission denied</span>` : `cat: ${esc(a)}: no such file`)),
-  "cd": a => a && a.startsWith("secrets") ? `<span class="bad">permission denied</span> <span class="dim">(this is a firewall joke)</span>` : "",
-  date: () => new Date().toString(),
-  history: () => hist.map((h, i) => `  ${String(i + 1).padStart(3)}  ${esc(h)}`).join("\n"),
-  network: () => { closeTerm(); setTimeout(() => openModal("network", $("#open-net")), 300); return "opening network map..."; },
-  ping: async () => {
-    const out = [];
-    for (let i = 0; i < 4; i++) {
-      const t0 = performance.now();
-      try { await fetch("stats.json?ping=" + Math.random(), { cache: "no-store" }); out.push(`reply from haydnhomelab.com: time=${Math.round(performance.now() - t0)}ms`); }
-      catch (e) { out.push('<span class="bad">request timed out</span>'); }
-    }
-    return out.join("\n");
-  },
-  sudo: a => /rm\s+-rf/.test(a) ? `<span class="bad">nice try.</span> fail2ban has been notified. <span class="dim">(not really)</span>` : `<span class="bad">guest is not in the sudoers file. this incident will be reported.</span>`,
-  rm: () => `<span class="bad">rm: read-only website</span>`,
-  hack: async () => { const steps = ["scanning ports", "bypassing firewall", "cracking ssh key", "accessing mainframe"]; let o = ""; for (const s of steps) { say(`<span class="dim">[*] ${s}...</span>`); await new Promise(r => setTimeout(r, 450)); } return `<span class="bad">ACCESS DENIED.</span> it's key-only ssh behind a firewall. go practise on tryhackme instead :)`; },
-  matrix: () => { matrix(); return `<span class="ok">wake up, neo...</span>`; },
-  coffee: () => `418 i'm a teapot`,
-  sdcard: () => {
-    const sd = (stats && stats.services || []).find(s => s.name === "SD card");
-    if (!sd || !sd.sd) return "sd card stats not available yet";
-    const d = sd.sd, flag = (bad, t) => bad ? `<span class="bad">${t}</span>` : `<span class="ok">${t}</span>`;
-    return `<span class="b">sd card health</span> <span class="dim">(sd cards can't report their own health, so these are the warning signs)</span>
-written in total:   <span class="b">${d.written_gb.toLocaleString()} GB</span>
-written per day:    <span class="b">${d.per_day == null ? "measuring..." : d.per_day + " GB"}</span>
-card errors:        ${flag(d.card_errors, d.card_errors + " since boot")}
-filesystem errors:  ${flag(d.fs_errors, d.fs_errors)}
-read-only:          ${flag(d.read_only, d.read_only ? "YES, replace the card" : "no")}
-status:             ${flag(!sd.up, sd.up ? "healthy" : "check it")}  <span class="dim">· backed up every night anyway</span>`;
-  },
-  clear: () => { tout.innerHTML = ""; return null; },
-  exit: () => { closeTerm(); return null; },
-};
-CMDS.ssh = () => `<span class="bad">permission denied (publickey).</span> <span class="dim">keys only, remember?</span>`;
-CMDS.neofetch.alias = ["fetch"];
-async function runCmd(line) {
-  const [cmd, ...rest] = line.trim().split(/\s+/), arg = rest.join(" ");
-  say(`<span class="p">guest@homelab:~$</span> ${esc(line)}`);
-  if (!cmd) return;
-  hist.push(line); hi = hist.length;
-  const fn = CMDS[cmd.toLowerCase()] || (cmd === "fetch" && CMDS.neofetch);
-  if (!fn) return say(`${esc(cmd)}: command not found. type <span class="ok">help</span>`);
-  const out = await fn(arg);
-  if (out != null && out !== "") say(out);
-}
-function openTerm() {
-  if (modalOpen) closeModal();
-  term.classList.add("open"); term.setAttribute("aria-hidden", "false");
-  if (!termOpened) {
-    termOpened = true;
-    say(`<span class="ok">haydnhomelab</span> <span class="dim">· raspberry pi 5 · live</span>\ntype <span class="ok">help</span> to see what you can do.\n`);
-  }
-  setTimeout(() => tin.focus({ preventScroll: true }), 50);
-}
-function closeTerm() { term.classList.remove("open"); term.setAttribute("aria-hidden", "true"); tin.blur(); }
-tin.addEventListener("keydown", async e => {
-  if (e.key === "Enter") { const l = tin.value; tin.value = ""; await runCmd(l); }
-  else if (e.key === "ArrowUp") { e.preventDefault(); if (hi > 0) tin.value = hist[--hi]; }
-  else if (e.key === "ArrowDown") { e.preventDefault(); hi = Math.min(hist.length, hi + 1); tin.value = hist[hi] || ""; }
-  else if (e.key === "Tab") { e.preventDefault(); const m = Object.keys(CMDS).filter(c => c.startsWith(tin.value)); if (m.length === 1) tin.value = m[0] + " "; else if (m.length) say(m.join("  ")); }
-  else if (e.key === "Escape") closeTerm();
-});
-$("#open-term").onclick = openTerm;
-$("#term-x").onclick = closeTerm;
 $("#open-net").onclick = e => openModal("network", e.currentTarget);
 addEventListener("keydown", e => {
   if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
-  if (e.key === "`" || e.key === "t" || e.key === "T") { e.preventDefault(); term.classList.contains("open") ? closeTerm() : openTerm(); }
-  else if ((e.key === "n" || e.key === "N") && !term.classList.contains("open")) openModal("network", $("#open-net"));
+  if (e.key === "n" || e.key === "N") openModal("network", $("#open-net"));
 });
-
-/* matrix rain */
-function matrix() {
-  if (reduceMotion) return;
-  const c = $("#matrix"), x = c.getContext("2d");
-  c.width = innerWidth; c.height = innerHeight; c.classList.add("on");
-  const cols = Math.floor(c.width / 16), y = Array(cols).fill(0).map(() => Math.random() * -50);
-  const chars = "アイウエオカキクケコサシスセソ01HAYDNHOMELAB";
-  const t0 = performance.now();
-  const step = now => {
-    x.fillStyle = "#00000018"; x.fillRect(0, 0, c.width, c.height);
-    x.fillStyle = "#5cff3a"; x.font = "15px JetBrains Mono, monospace";
-    y.forEach((v, i) => { x.fillText(chars[Math.random() * chars.length | 0], i * 16, v * 16); y[i] = v * 16 > c.height && Math.random() > .975 ? 0 : v + 1; });
-    if (now - t0 < 5000) requestAnimationFrame(step); else { c.classList.remove("on"); setTimeout(() => x.clearRect(0, 0, c.width, c.height), 600); }
-  };
-  requestAnimationFrame(step);
-}
 
 /* ---------- "updated 2s ago" ticker ---------- */
 setInterval(() => {
