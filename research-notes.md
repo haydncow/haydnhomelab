@@ -9,7 +9,7 @@ Things I've learned while planning my homelab.
 - **Router:** connects my home network to the internet. It usually also hands
   out IP addresses and acts as the firewall.
 - **Switch:** connects multiple wired devices together on the same network.
-  My Pis will plug into one.
+  My Pi plugs into one.
 - **DHCP:** automatically gives devices an IP address when they join the network.
 - **DNS:** turns website names (like google.com) into IP addresses. Without it
   you'd have to remember numbers for every site.
@@ -34,11 +34,11 @@ Things to know:
 - It needs a static IP address.
 - The router needs setting up to use Pi-hole as the DNS server.
 - It has a dashboard showing every DNS request, which is useful for seeing what devices on my network are contacting.
-- It can't block everything, e.g. Youtube ads come from the same domain as the videos.
+- It can't block everything, e.g. YouTube ads come from the same domain as the videos.
 
 ## Remote access
 
-I want to manage my homely from outside my house, but it needs doing safely.
+I want to manage my homelab from outside my house, but it needs doing safely.
 - **Port forwarding** opens a port on the router to the internet. This is
   risky because bots constantly scan the internet for open ports.
 - **VPN** creates an encrypted tunnel into my network, so services aren't

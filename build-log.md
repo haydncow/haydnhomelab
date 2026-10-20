@@ -20,7 +20,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Gave the status page a sleeker look: Inter font, calmer background, glassier tiles and a spotlight on the rack.
 - Set up nightly backups of all my settings, scripts, Jellyfin and Pi-hole to the media drive, keeping 14 days. See [backup](backup/).
 - First backup was 31 MB. Tested restoring my UFW rules from it into a temporary folder and compared them with `diff`: identical, so the backups actually work.
-- Added SD card health checks. Normal SD cards can't report their own health like hard drives do, so it watches the warning signs instead: total data written (from ext4's lifetime write counter), how much gets written per day, card errors in the kernel log, filesystem errors from `tune2fs`, and whether the card has gone read-only. It shows in "What's running" and with `sdcard` in the website's terminal.
+- Added SD card health checks. Normal SD cards can't report their own health like hard drives do, so it watches the warning signs instead: total data written (from ext4's lifetime write counter), how much gets written per day, card errors in the kernel log, filesystem errors from `tune2fs`, and whether the card has gone read-only. It shows in "What's running" on the status page.
 
 ## 18 October 2026
 
@@ -35,13 +35,10 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Set up Fail2ban. If an IP gets the SSH login wrong 5 times in 10 minutes it gets banned in UFW for an hour, and longer each time it comes back. It reads the logs from systemd's journal because that's where my Pi's OS keeps them.
 - Tested it by trying to log in as a fake user from my Kali VM. After 5 tries the VM's IP was banned, then I unbanned it with `fail2ban-client`.
 - Backed up Pi-hole with Teleporter and saved the zip off the Pi. It has my password hashes in, so it doesn't go on GitHub.
-
 - Decided to only use Pi-hole on my own devices (PC and Mac) instead of the whole house. With one Pi, if it goes down every device using it loses DNS, so this way the rest of the house isn't affected. A second Pi-hole in the spare slot would fix that later.
-
 - Problem: my Mac couldn't reach the Pi (ping timed out) but the website still worked. The website works because the Pi connects out to Cloudflare, so the Pi was fine. Restarting the TP-Link wireless box between my switch and the router fixed it. If it happens again, that's the first thing to restart.
 - Ran a Lynis security audit. Score was 63. Hardened SSH, added a login banner, turned off unused network protocols, tightened file permissions and kernel network settings, then rebooted. New score: 75. Full list of what I fixed and what I skipped (and why) is in the [security plan](security-plan.md#lynis-audit-18-october-2026).
 - Two Lynis warnings were false positives. It said I had no security updates repository, but `trixie-security` is there (Lynis doesn't read Debian 13's newer file format). It also said I needed a reboot, but `needrestart -k -b` showed I'm running the Pi 5 build of the latest kernel, and it was just seeing the build for older Pis.
-
 - Measured how much power the Pi uses with `vcgencmd pmic_read_adc`: about 1.7 W. With the switch and power supply losses the whole rack is about 3.7 W, which is roughly £8 a year. Added power use and the cost to the status page.
 - Redesigned the status page as a one-screen dashboard with tiles you can click to expand, instead of one long scrolling page.
 - Made the stats live. Cron can only run once a minute, so I added a small service that takes a reading every 3 seconds and keeps the last 5 minutes. It's sandboxed with systemd so it can only write to the status folder and has no network access.
@@ -59,7 +56,6 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Problem: the film script said only 25 GB was free. That's the SD card, so the drive wasn't mounted. The Pi had restarted and the drive had vanished. `lsusb` could still see the My Passport, so the cable and power were fine, but the USB storage driver hadn't loaded, so there was no `sda`. Loading it with `modprobe usb-storage` brought the drive back, and I added it to `/etc/modules-load.d/` so it loads on every boot.
 - Changed the film script so it refuses to run if the drive isn't mounted, so it can never fill up the SD card.
 - Removed the free films script in the end. The films available legally for free weren't really what I wanted to watch.
-
 
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 

@@ -1,24 +1,26 @@
 # Security Plan
 
-How I plan to keep my homelab secure. I'll update this as I build it and
-learn more.
+How I keep my homelab secure, and how I've tested it. I started this as a plan before building and keep it updated.
 
-## Status (17 October 2026)
+## Status (20 October 2026)
 
 - [x] Tailscale for remote access, with no port forwarding on my router
 - [x] SSH keys only, password login over SSH turned off and tested
 - [x] UFW blocks everything coming in except what's needed:
   - SSH from my home network and over Tailscale
-  - DNS (53) from my home network for Pi-hole
-  - Pi-hole admin page (80/443) from my home network and over Tailscale
+  - DNS (53) for Pi-hole from my home network and over Tailscale
+  - Pi-hole admin page (80/443), Jellyfin, Samba and Homepage from my home network and over Tailscale
+  - Honeypot ports from my home network only
 - [x] Pi-hole admin page has a password
 - [x] Automatic security updates (`unattended-upgrades`)
 - [x] Fixed IP for the Pi (`192.168.1.5`)
 - [x] Back up Pi-hole with Teleporter (kept off the Pi and off GitHub, because it has password hashes in it)
 - [x] Nmap scan from my Mac on the home network (results below)
-- [x] Honeypot on my home network (OpenCanary) to catch anything scanning or logging in where it shouldn't
-- [ ] VLANs on the managed switch
 - [x] Fail2ban: bans an IP in UFW after 5 failed SSH logins in 10 minutes (tested)
+- [x] Lynis audit and hardening (score 63 to 75)
+- [x] Honeypot on my home network (OpenCanary) to catch anything scanning or logging in where it shouldn't
+- [x] Nightly backups, with a restore tested
+- [ ] VLANs on the managed switch
 
 ## What I'm protecting against
 
@@ -29,57 +31,51 @@ learn more.
 
 ## Remote access
 
-- The Pi is a Tailscale exit node, so my devices can route their traffic through home on untrusted Wi-Fi. Forwarding is only allowed from `tailscale0` out to the internet (`ufw route allow in on tailscale0 out on eth0`), nothing else can be forwarded.
-
-- Use **Tailscale** to access the lab from outside my house
-- **No port forwarding** on my router, so nothing is exposed to the internet
-- Turn on two-factor authentication (2FA) on my Tailscale account
+- **Tailscale** to reach the lab from outside my house, with 2FA on the account
+- **No port forwarding** on my router. The public status page goes out through a Cloudflare Tunnel, which the Pi connects out to
+- The Pi is a Tailscale exit node, so my devices can route their traffic through home on untrusted Wi-Fi. Forwarding is only allowed from `tailscale0` out to the internet (`ufw route allow in on tailscale0 out on eth0`), nothing else can be forwarded
 
 ## Logging in to the Pi
 
-- Set my own username and a strong password when installing the OS
-  (using Raspberry Pi Imager)
-- Use **SSH keys** instead of passwords
-- Once keys work, turn off password login for SSH
-- Don't allow logging in directly as root
+- My own username, set in Raspberry Pi Imager (no default `pi` user)
+- **SSH keys** only, password login turned off once keys worked
+- No logging in directly as root, and only my user is allowed over SSH
 
 ## Pi-hole
 
-- Set a strong password for the Pi-hole admin page
-- Only access the admin page from my home network or through Tailscale
+- Strong password on the admin page
+- Admin page only reachable from my home network or over Tailscale
 - My phone uses Pi-hole over Tailscale, so ads and trackers are blocked even on mobile data. DNS is only allowed from my home network and `tailscale0`
-- Keep blocklists updated
+- Blocklists update automatically every week
 
 ## Firewall
 
-- Use **UFW** (Uncomplicated Firewall) on the Pi
-- Block everything by default and only allow what's needed:
-  - SSH
-  - DNS (port 53) for Pi-hole
-  - Pi-hole web admin page
+- **UFW** on the Pi blocks everything coming in by default, and only allows what's listed in the status section above
+- Docker would normally go around UFW, so Homepage uses `network_mode: host` to keep UFW in control
 
 ## Updates
 
-- Update the Pi regularly
-- Turn on automatic security updates (unattended-upgrades)
-- Keep Pi-hole and Tailscale updated
+- Automatic security updates with `unattended-upgrades`
+- Full updates by hand with `sudo apt update && sudo apt full-upgrade`, which also updates Tailscale
+- Pi-hole updated with `pihole -up`
 
 ## Router
 
-- Change the router's default admin password
-- Check the router firmware is up to date
+- Change the EE hub's default admin password
+- Keep the router firmware up to date (EE does this automatically)
 
 ## Backups
 
-- Back up Pi-hole settings using its built-in Teleporter feature
+- Pi-hole Teleporter export, kept off the Pi
 - Nightly backups of the whole Pi config to the media drive, root-only, kept for 14 days (see [backup](backup/))
-- Keep a copy of my setup notes in this repo so I can rebuild it
+- My setup notes are in this repo so I can rebuild it
 
-## Future improvements
+## Next
 
-- Get a managed switch and use **VLANs** to separate the lab from my
-  other home devices
-- Look at Pi-hole logs to see what my devices are contacting
+- Use **VLANs** on the managed switch to separate the lab from my other home devices
+- Copy backups off the Pi so a single failure can't lose everything
+- Send logs to another device, and alerts to my phone
+- Rerun the Nmap scans now that more services are running
 
 ## Testing
 
@@ -102,7 +98,7 @@ learn more.
 
 Only the ports I opened in UFW show up. Everything else is "filtered", which means the firewall drops it without replying, so a scan can't even tell if anything is there.
 
-Over Tailscale, DNS (53) doesn't show because I only allowed it from my home network.
+Over Tailscale, DNS (53) didn't show because at the time I'd only allowed it from my home network. I've since allowed it over Tailscale for Pi-hole on my phone, and added Jellyfin, Samba, Homepage and the honeypot, so these results are from before those.
 
 ### Lynis audit (18 October 2026)
 
@@ -128,7 +124,7 @@ What I checked and didn't change, and why:
 - **Changing the SSH port:** hiding SSH on another port doesn't make it more secure. It's already key-only, firewalled and protected by Fail2ban.
 - **Password age, strength and expiry rules:** I only log in with SSH keys, so passwords aren't used for SSH.
 - **Separate /home and /var partitions:** would mean rebuilding the SD card, not worth it on a Pi.
-- **Disabling USB storage:** I might plug in a drive for a media server later.
+- **Disabling USB storage:** I use a USB drive for Jellyfin and backups.
 - **Malware scanner, file integrity tool, auditd:** too heavy for a 2GB Pi running Pi-hole. Something to look at on bigger hardware.
 - **Remote logging:** a future project, sending logs to my NAS.
 
