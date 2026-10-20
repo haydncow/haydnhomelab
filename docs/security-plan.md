@@ -103,6 +103,17 @@ Only the ports I opened in UFW show up. Everything else is "filtered", which mea
 
 Over Tailscale, DNS (53) didn't show because at the time I'd only allowed it from my home network. I've since allowed it over Tailscale for Pi-hole on my phone, and added Jellyfin, Samba, Homepage and the honeypot, so these results are from before those.
 
+### Security headers (20 October 2026)
+
+Added security headers to haydnhomelab.com in Caddy. securityheaders.com went from **F to A**.
+
+<p>
+  <img src="../images/securityheaders-before.png" alt="Before: grade F, all headers missing" width="420">
+  <img src="../images/securityheaders-after.png" alt="After: grade A, all headers present" width="420">
+</p>
+
+It's capped at A rather than A+ because my Content Security Policy still allows inline scripts (`'unsafe-inline'`), since the page's code is all in one file. Moving the script into its own file would fix that.
+
 ### Lynis audit (18 October 2026)
 
 [Lynis](https://cisofy.com/lynis/) checks hundreds of security settings and gives a hardening score out of 100.
