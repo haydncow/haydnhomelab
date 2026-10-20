@@ -13,6 +13,7 @@ Live at **[haydnhomelab.com](https://haydnhomelab.com)**. A public page showing 
 - The "What's running" tile checks 10 services with systemd and shows extra details: how many domains Pi-hole blocks, how many of my Tailscale devices are online, Fail2ban bans, when updates last ran, how many firewall rules there are, and how long each service has been up. It also shows the nightly backup and SD card health (data written, writes per day, card and filesystem errors, and whether it's gone read-only).
 - A **Cloudflare Tunnel** (`cloudflared`) connects out from the Pi to Cloudflare and puts the page on my domain. Nothing is port forwarded on my router.
 - It logs in to Pi-hole's API with an app password stored in a root-only file, then logs out again.
+- It also writes tiny JSON files to `/srv/status/badges/` every minute. [shields.io](https://shields.io/badges/endpoint-badge) reads them from my domain to draw the live badges at the top of my GitHub README.
 - It only shows harmless info. No IP addresses, hostnames or software versions, because those would help an attacker.
 
 I used Tailscale Funnel for this at first, but switched to Cloudflare Tunnel so I could use my own domain.

@@ -333,6 +333,37 @@ def history(now, temp, mem, watts):
     return hist
 
 
+def write_badges(data):
+    """Small JSON files for the live badges on my GitHub README.
+
+    shields.io reads these from haydnhomelab.com/badges/ and draws the badge.
+    Same rule as the page: only harmless info.
+    """
+    svcs = data["services"] or []
+    up = sum(1 for x in svcs if x["up"])
+    temp = float(data["temp"][:-2]) if data["temp"] else None
+    badges = {
+        "status": ("homelab", "online", "brightgreen"),
+        "services": ("services", f"{up}/{len(svcs)} up",
+                     "brightgreen" if svcs and up == len(svcs) else "orange"),
+        "uptime": ("uptime", " ".join((data["uptime"] or "unknown").split()[:2]), "blue"),
+        "blocked": ("ads blocked (24h)", data["blocked"] or "unknown", "red"),
+        "temp": ("CPU temp", data["temp"] or "unknown",
+                 "lightgrey" if temp is None else "brightgreen" if temp < 60 else "orange" if temp < 75 else "red"),
+        "power": ("power", data["power"] or "unknown", "yellow"),
+    }
+    folder = os.path.join(OUT_DIR, "badges")
+    os.makedirs(folder, exist_ok=True)
+    os.chmod(folder, 0o755)
+    for name, (label, message, color) in badges.items():
+        tmp = os.path.join(folder, f".{name}.tmp")
+        with open(tmp, "w") as f:
+            json.dump({"schemaVersion": 1, "label": label, "message": message,
+                       "color": color, "cacheSeconds": 300}, f)
+        os.chmod(tmp, 0o644)
+        os.replace(tmp, os.path.join(folder, f"{name}.json"))
+
+
 def main():
     now = time.time()
     temp = safe(temp_c)
@@ -368,6 +399,7 @@ def main():
         json.dump(data, f)
     os.chmod(tmp, 0o644)
     os.replace(tmp, os.path.join(OUT_DIR, "stats.json"))  # swap in one go
+    safe(lambda: write_badges(data))
 
 
 if __name__ == "__main__":
