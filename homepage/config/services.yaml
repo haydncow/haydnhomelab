@@ -1,0 +1,51 @@
+- Homelab:
+    - Pi-hole:
+        icon: pi-hole.png
+        href: http://192.168.1.5/admin/
+        description: Network ad blocking
+        siteMonitor: http://127.0.0.1/admin/
+        widget:
+          type: pihole
+          url: http://127.0.0.1
+          version: 6
+          key: "{{HOMEPAGE_VAR_PIHOLE_KEY}}"
+
+    - Jellyfin:
+        icon: jellyfin.png
+        href: http://192.168.1.5:8096
+        description: My own Netflix
+        siteMonitor: http://127.0.0.1:8096
+        widget:
+          type: jellyfin
+          url: http://127.0.0.1:8096
+          key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
+          enableBlocks: true
+          enableNowPlaying: true
+
+    - Status page:
+        icon: mdi-rack-server
+        href: https://haydnhomelab.com
+        description: My public live dashboard
+        siteMonitor: https://haydnhomelab.com
+
+    - EE hub:
+        icon: mdi-router-wireless
+        href: http://192.168.1.254
+        description: Home router admin
+
+- Remote:
+    - Tailscale:
+        icon: tailscale.png
+        href: https://login.tailscale.com/admin/machines
+        description: My devices and exit node
+
+    - Cloudflare:
+        icon: cloudflare.png
+        href: https://dash.cloudflare.com
+        description: Domain and tunnel
+
+    - GitHub:
+        icon: github.png
+        href: https://github.com/haydncow/homelab-plan
+        description: This project
+

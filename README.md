@@ -42,6 +42,7 @@ The DeskPi RackMate T0 with the shelf and blank panel in. The Pi and switch go i
 - [Media](media/) - Jellyfin media server
 - [Backup](backup/) - nightly backups and how to restore
 - [Honeypot](honeypot/) - fake services that alert me if anything pokes around my network
+- [Homepage](homepage/) - my private dashboard, running in Docker
 - [Diagrams](diagrams/) - network diagram and rack layout
 - [Status page](status-page/) - live at [haydnhomelab.com](https://haydnhomelab.com), served from the Pi through a Cloudflare Tunnel
 

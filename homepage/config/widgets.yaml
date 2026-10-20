@@ -1,0 +1,27 @@
+- resources:
+    label: Raspberry Pi
+    cpu: true
+    memory: true
+    cputemp: true
+    uptime: true
+    tempmin: 30
+    tempmax: 85
+    units: metric
+
+- resources:
+    label: SD card
+    disk: /
+
+- resources:
+    label: Media drive
+    disk: /mnt/media
+
+- datetime:
+    text_size: md
+    format:
+      timeStyle: short
+      dateStyle: long
+
+- search:
+    provider: duckduckgo
+    target: _blank

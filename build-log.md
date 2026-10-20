@@ -5,6 +5,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 ## 20 October 2026
 
 - Added an animated network map to the status page (press N). I tried a hidden terminal too but took it out, it didn't fit the look I wanted.
+- Set up Homepage, a private dashboard for all my services, running in Docker. Used `network_mode: host` because Docker normally publishes ports with its own firewall rules that skip UFW. Secrets are in a `.env` file on the Pi, not on GitHub. See [homepage](homepage/).
 - Set up an OpenCanary honeypot on my home network: fake SSH, Telnet, FTP, MySQL, Remote Desktop, VNC, Redis and a NAS login page. Kept it home network only so nothing is open to the internet. See [honeypot](honeypot/).
 - Problem: `opencanaryd --copyconfig` couldn't find OpenCanary because it ran the system Python instead of the one in its virtual environment. Then my own user couldn't even read `/opt/opencanary`, because the stricter default permissions from the Lynis fixes made the install root-only. Fixed with `chmod -R a+rX` and copied the default config by hand.
 - Problem: the service kept crashing with "no new privileges flag is set, which prevents sudo". OpenCanary's start script tries to use sudo, and my systemd sandbox blocks that on purpose. Fixed it by running the twistd engine directly as the `canary` user, which doesn't need root at all.

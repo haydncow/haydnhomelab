@@ -1,0 +1,15 @@
+title: haydnhomelab
+description: My private homelab dashboard
+theme: dark
+color: neutral
+headerStyle: clean
+statusStyle: dot
+hideVersion: true
+target: _blank
+layout:
+  Homelab:
+    style: row
+    columns: 4
+  Remote:
+    style: row
+    columns: 4

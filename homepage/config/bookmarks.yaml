@@ -1,0 +1,15 @@
+- Learning:
+    - TryHackMe:
+        - icon: mdi-school
+          href: https://tryhackme.com
+    - OWASP Top 10:
+        - icon: mdi-shield-bug
+          href: https://owasp.org/www-project-top-ten/
+
+- Tools:
+    - Have I Been Pwned:
+        - icon: mdi-email-lock
+          href: https://haveibeenpwned.com
+    - Shodan:
+        - icon: mdi-radar
+          href: https://www.shodan.io
