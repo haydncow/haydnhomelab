@@ -125,6 +125,10 @@ Cloudflare checks every request before it reaches the Pi. My site is read-only a
 | Only GET and HEAD | The site never needs POST, PUT or DELETE | `curl -X POST https://haydnhomelab.com/` | 403 |
 | Too many requests | More than 100 requests in 10 seconds from one IP gets blocked | 1,000 requests, 50 at a time | 215 got through, 785 blocked with 429 |
 
+Cloudflare's security events during the rate limit test, all blocked within the same second:
+
+<img src="../images/cloudflare-waf-events.png" alt="Cloudflare security events showing lots of blocked requests at 20:30:21" width="520">
+
 Also turned on Always Use HTTPS and set the minimum TLS version to 1.2. I left Bot Fight Mode off because it could block shields.io, which draws my README badges.
 
 **Mistake I made:** the rate limit didn't work at first. I'd set the path to `wildcard "/"`, which only matches the homepage exactly, and my test was hitting `/stats.json`. Changing it to `/*` fixed it.
