@@ -467,6 +467,7 @@
   <filter id="glow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   <radialGradient id="haze" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#5cff3a" stop-opacity=".22"/><stop offset="1" stop-color="#5cff3a" stop-opacity="0"/></radialGradient>
   <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1b1d1f"/><stop offset="1" stop-color="#0f1011"/></linearGradient>
+  <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4d7db"/><stop offset=".55" stop-color="#9ea2a8"/><stop offset="1" stop-color="#6f7378"/></linearGradient>
   <linearGradient id="lid" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#202224"/><stop offset="1" stop-color="#121314"/></linearGradient>
 </defs>
 <path d="M62 76 v-46 q0-14 14-14 h32 q14 0 14 14 v46" fill="none" stroke="#1a1b1c" stroke-width="13" stroke-linejoin="round"/>
@@ -571,6 +572,12 @@
 <circle class="light" cx="284" cy="256" r="4" fill="#5cff3a" filter="url(#glow)"/><text x="284" y="270" text-anchor="middle" fill="#6d7073" font-family="Arial, sans-serif" font-size="6">Power</text>
 <rect class="hit" x="72" y="222" width="234" height="64" rx="6"/></g>
 <rect x="68" y="288" width="384" height="8" fill="#1b1c1e" stroke="#2a2c2e"/>
+<g class="part" data-part="drive" tabindex="0" role="button" aria-label="WD My Passport drive">
+<rect x="82" y="203" width="182" height="22" rx="9" fill="url(#silver)" stroke="#bfc3c8" stroke-width=".8"/>
+<path d="M91 203 h164 a9 9 0 0 1 9 9 v-1 h-182 v1 a9 9 0 0 1 9 -9z" fill="#2c63d8"/><path d="M91 203 h164 a9 9 0 0 1 8.5 6 h-181 a9 9 0 0 1 8.5 -6z" fill="#3d78f0"/>
+<rect x="96" y="216" width="150" height="1" fill="#ffffff" opacity=".35"/>
+<circle class="light" cx="250" cy="219" r="1.8" fill="#ffffff" filter="url(#glow)"/>
+<rect class="hit" x="78" y="199" width="190" height="30" rx="6"/></g>
 <g class="part" data-part="blank" tabindex="0" role="button" aria-label="Blank panel">
 <rect x="68" y="302" width="384" height="98" rx="3" fill="url(#metal)" stroke="#2a2c2e"/><line x1="80" y1="308" x2="440" y2="308" stroke="#2a2d30" stroke-width="2"/>
 <rect class="hit" x="68" y="302" width="384" height="98" rx="6"/></g>
@@ -582,6 +589,7 @@
 <g pointer-events="none" fill="none" stroke-linecap="round">
 <path id="cable-pi" d="M157 168 C 157 200, 138 205, 138 250" stroke="#000" stroke-width="7"/><path d="M157 168 C 157 200, 138 205, 138 250" stroke="#2a3a2c" stroke-width="2.5" opacity=".7"/>
 <path id="cable-router" d="M100 268 C 100 340, 112 440, 96 585" stroke="#c9481f" stroke-width="7"/><path d="M100 268 C 100 340, 112 440, 96 585" stroke="#ff7a4a" stroke-width="2" opacity=".6"/>
+<path d="M205 146 C 206 178, 282 176, 266 213" stroke="#000" stroke-width="6"/><path d="M205 146 C 206 178, 282 176, 266 213" stroke="#2c3550" stroke-width="2" opacity=".8"/>
 <g id="packets"></g>
 </g>
       </svg>
@@ -812,7 +820,7 @@ const PARTS = {
     <p class="tag">A small server I built to learn networking and security</p>
     <p>Click a part of the rack to zoom in, or click any tile for more.</p>
     <div class="chips">
-      <button class="chip" data-go="pi">Raspberry Pi</button><button class="chip" data-go="switch">Switch</button>
+      <button class="chip" data-go="pi">Raspberry Pi</button><button class="chip" data-go="switch">Switch</button><button class="chip" data-go="drive">Drive</button>
       <button class="chip" data-go="spare">Spare slot</button><button class="chip" data-go="blank">Blank panel</button>
       <button class="chip" data-go="empty">Open space</button>
     </div>`],
@@ -831,6 +839,14 @@ const PARTS = {
     <p class="tag">5 port gigabit managed switch</p>
     <p>The black cable goes to the Pi, the orange one out to the router. The moving dots are traffic, and they speed up when Pi-hole is busier.</p>
     <p>It's managed, so it can do <b>VLANs</b>. That's next on my list.</p>`],
+  drive: ["u2 &middot; on the switch", () => `
+    <h2>WD My Passport 1TB</h2>
+    <p class="tag">Storage, plugged into the Pi's blue USB 3 port</p>
+    <ul>
+      <li><b>Jellyfin</b> films and shows</li>
+      <li><b>Nightly backups</b> of the Pi, kept for 14 days</li>
+    </ul>
+    <p>It sits on top of the switch. If it's unplugged the Pi still boots, it just won't have the films.</p>`],
   spare: ["u1 &middot; kksb panel", () => `
     <h2>Spare slot</h2>
     <p class="tag">Room for a second Pi</p>
