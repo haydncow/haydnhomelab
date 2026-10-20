@@ -157,6 +157,48 @@ def backup_status():
     return {"name": "Nightly backup", "up": bool(ok), "detail": detail, "for": None}
 
 
+def sd_health():
+    # Normal SD cards can't report their own health, so watch the warning signs:
+    # how much has been written (cards wear out from writing), errors from the
+    # card, filesystem errors, and whether Linux has made it read-only.
+    written_gb = int(read("/sys/fs/ext4/mmcblk0p2/lifetime_write_kbytes")) / 1e6
+
+    # Work out GB written per day by comparing with a reading from a while ago
+    path = os.path.join(STATE_DIR, "sd.json")
+    now = time.time()
+    first = safe(lambda: json.load(open(path)))
+    if not first:
+        first = {"time": now, "gb": written_gb}
+        os.makedirs(STATE_DIR, exist_ok=True)
+        json.dump(first, open(path, "w"))
+    days = (now - first["time"]) / 86400
+    per_day = (written_gb - first["gb"]) / days if days >= 0.25 else None
+
+    card_errors = sum(1 for l in run("journalctl", "-k", "-b", "--no-pager", "-q").splitlines()
+                      if "mmc" in l and ("error" in l.lower() or "timeout" in l.lower()))
+    fs_errors = 0
+    for line in run("tune2fs", "-l", "/dev/mmcblk0p2").splitlines():
+        if line.startswith("FS Error count"):
+            fs_errors = int(line.split(":")[1])
+    read_only = any(l.split()[1] == "/" and "ro" in l.split()[3].split(",")
+                    for l in read("/proc/mounts").splitlines())
+
+    problems = []
+    if read_only:
+        problems.append("READ-ONLY, replace the card")
+    if card_errors:
+        problems.append(f"{card_errors} card error{'s' if card_errors != 1 else ''} since boot")
+    if fs_errors:
+        problems.append(f"{fs_errors} filesystem error{'s' if fs_errors != 1 else ''}")
+    detail = f"{written_gb:,.0f} GB written"
+    if per_day is not None:
+        detail += f", about {per_day:.1f} GB a day"
+    detail += ", " + (", ".join(problems) if problems else "no errors")
+    return {"name": "SD card", "up": not problems, "detail": detail, "for": None,
+            "sd": {"written_gb": round(written_gb, 1), "per_day": round(per_day, 2) if per_day is not None else None,
+                   "card_errors": card_errors, "fs_errors": fs_errors, "read_only": read_only}}
+
+
 def services(gravity=None):
     details = {
         "tailscale": detail_tailscale,
@@ -180,6 +222,9 @@ def services(gravity=None):
     backup = safe(backup_status)
     if backup:
         out.append(backup)
+    sd = safe(sd_health)
+    if sd:
+        out.append(sd)
     return out
 
 

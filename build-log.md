@@ -7,6 +7,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Added a hidden terminal to the status page (press T) and an animated network map (press N).
 - Set up nightly backups of all my settings, scripts, Jellyfin and Pi-hole to the media drive, keeping 14 days. See [backup](backup/).
 - First backup was 31 MB. Tested restoring my UFW rules from it into a temporary folder and compared them with `diff`: identical, so the backups actually work.
+- Added SD card health checks. Normal SD cards can't report their own health like hard drives do, so it watches the warning signs instead: total data written (from ext4's lifetime write counter), how much gets written per day, card errors in the kernel log, filesystem errors from `tune2fs`, and whether the card has gone read-only. It shows in "What's running" and with `sdcard` in the website's terminal.
 
 ## 18 October 2026
 

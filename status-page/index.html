@@ -863,6 +863,7 @@ const ABOUT = {
   "SSH": "Remote login, keys only", "Fail2ban": "Bans repeated failed logins",
   "Jellyfin": "My own Netflix, home and Tailscale only",
   "Nightly backup": "Settings and scripts, kept for 14 days",
+  "SD card": "Wear and error checks",
   "Auto updates": "Daily security fixes", "Firewall (UFW)": "Blocks unwanted traffic",
 };
 const MODALS = {
@@ -991,6 +992,7 @@ const CMDS = {
   <span class="ok">nmap</span>       my last port scan    <span class="ok">security</span>   how it's locked down
   <span class="ok">network</span>    open the network map <span class="ok">ping</span>       time a request to the pi
   <span class="ok">whoami</span>     who are you          <span class="ok">about</span>      what this is
+  <span class="ok">sdcard</span>     sd card health
   <span class="ok">ls</span>  <span class="ok">date</span>  <span class="ok">history</span>  <span class="ok">clear</span>  <span class="ok">exit</span>  <span class="ok">matrix</span>  <span class="dim">...and a few secrets</span>`,
   neofetch: () => {
     const L = lastLive();
@@ -1044,6 +1046,18 @@ code for this site written by claude (ai). built, run and broken by me.
   hack: async () => { const steps = ["scanning ports", "bypassing firewall", "cracking ssh key", "accessing mainframe"]; let o = ""; for (const s of steps) { say(`<span class="dim">[*] ${s}...</span>`); await new Promise(r => setTimeout(r, 450)); } return `<span class="bad">ACCESS DENIED.</span> it's key-only ssh behind a firewall. go practise on tryhackme instead :)`; },
   matrix: () => { matrix(); return `<span class="ok">wake up, neo...</span>`; },
   coffee: () => `418 i'm a teapot`,
+  sdcard: () => {
+    const sd = (stats && stats.services || []).find(s => s.name === "SD card");
+    if (!sd || !sd.sd) return "sd card stats not available yet";
+    const d = sd.sd, flag = (bad, t) => bad ? `<span class="bad">${t}</span>` : `<span class="ok">${t}</span>`;
+    return `<span class="b">sd card health</span> <span class="dim">(sd cards can't report their own health, so these are the warning signs)</span>
+written in total:   <span class="b">${d.written_gb.toLocaleString()} GB</span>
+written per day:    <span class="b">${d.per_day == null ? "measuring..." : d.per_day + " GB"}</span>
+card errors:        ${flag(d.card_errors, d.card_errors + " since boot")}
+filesystem errors:  ${flag(d.fs_errors, d.fs_errors)}
+read-only:          ${flag(d.read_only, d.read_only ? "YES, replace the card" : "no")}
+status:             ${flag(!sd.up, sd.up ? "healthy" : "check it")}  <span class="dim">· backed up every night anyway</span>`;
+  },
   clear: () => { tout.innerHTML = ""; return null; },
   exit: () => { closeTerm(); return null; },
 };
