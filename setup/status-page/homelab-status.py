@@ -31,6 +31,7 @@ API = "http://127.0.0.1:8090/api"  # Pi-hole's API (moved to 8090 so Caddy can h
 # (name on the page, systemd service(s) to check, extra detail function name)
 SERVICES = [
     ("Pi-hole", ["pihole-FTL"], "pihole"),
+    ("Unbound", ["unbound"], None),
     ("Tailscale", ["tailscaled"], "tailscale"),
     ("Cloudflare Tunnel", ["cloudflared"], None),
     ("Web server (Caddy)", ["caddy", "status-web"], None),

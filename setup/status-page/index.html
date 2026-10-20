@@ -992,7 +992,7 @@ function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v
 }
 
 const ABOUT = {
-  "Pi-hole": "Network-wide ad blocking", "Tailscale": "Private remote access", "Cloudflare Tunnel": "Puts this site online",
+  "Pi-hole": "Network-wide ad blocking", "Unbound": "Private DNS lookups, checks DNSSEC", "Tailscale": "Private remote access", "Cloudflare Tunnel": "Puts this site online",
   "Web server": "Serves this page", "Web server (Caddy)": "Serves this page", "Live stats": "A reading every 3 seconds",
   "SSH": "Remote login, keys only", "Fail2ban": "Bans repeated failed logins",
   "Jellyfin": "My own Netflix, home and Tailscale only",
@@ -1130,7 +1130,7 @@ const NODES = {
   sw:    { x: 900, y: 240, icon: "switch", t: "Switch", s: "TL-SG105E",
            info: "5 port managed switch in the rack. It supports VLANs, which I'll use to separate the lab from the rest of the house." },
   pi:    { x: 900, y: 385, icon: "pi", t: "Raspberry Pi 5", s: "this website", pi: true,
-           info: "The server. Runs Pi-hole, Caddy (this website), the Cloudflare Tunnel, Tailscale, Jellyfin and Fail2ban. The firewall blocks everything I haven't allowed." },
+           info: "The server. Runs Pi-hole with Unbound, Caddy (this website), the Cloudflare Tunnel, Tailscale, Jellyfin and Fail2ban. The firewall blocks everything I haven't allowed." },
   pc:    { x: 720, y: 385, icon: "pc", t: "My PC", s: "on the switch",
            info: "My PC, wired into the switch. It uses Pi-hole for its DNS, so ads and trackers get blocked." },
   drive: { x: 1075, y: 385, icon: "drive", t: "My Passport", s: "1TB, USB",
@@ -1151,7 +1151,7 @@ const FLOWS = {
   dns: { name: "Blocking ads", colour: "#5cff3a", route: ["pc","sw","pi","sw","tp","hub","net"],
     steps: [[0, 2, "My PC wants to load a website, so it asks Pi-hole for the address."],
             [2, 2, "__GRAVITY__"],
-            [2, 6, "Allowed lookups get forwarded out to the internet, and the answer comes back to my PC."]] },
+            [2, 6, "Allowed lookups go to Unbound, also on the Pi. It asks the internet's own DNS servers directly (root, then .com, then the site's own server) and checks the DNSSEC signatures, so no single company sees every site I visit."]] },
 };
 let netFlow = "site", netAnim = null, netPick = "pi";
 function netmap() {

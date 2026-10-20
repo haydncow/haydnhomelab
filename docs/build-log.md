@@ -4,6 +4,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 20 October 2026
 
+- Set up Unbound so Pi-hole stops sending my lookups to Google or Cloudflare. It asks the root DNS servers, then `.com`, then the site's own server, and checks DNSSEC. It only listens on the Pi (`127.0.0.1:5335`), so no new firewall rules. Tested before switching Pi-hole over: a normal lookup worked, `dnssec.works` came back with the `ad` (authenticated) flag, and the deliberately broken `fail01.dnssec.works` gave SERVFAIL, so faked answers get refused.
 - Took proper photos of the finished rack. Moved the My Passport onto the shelf, on top of the switch, plugged into the Pi's USB 3 port. Updated the rack drawing on the status page and the rack layout diagram to match, and the drive can be clicked on the site now.
 - Added a honeypot attack map to the status page (press A). It replays the last 7 days of honeypot hits, then watches live. Still never shows IPs or passwords, and test hits are clearly marked as not real.
 - Installed the Jellyfin app on our LG TV from the LG Content Store. It uses the Pi's IP, not `jellyfin.lan`, because the TV doesn't use my Pi-hole.

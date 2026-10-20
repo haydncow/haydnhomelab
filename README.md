@@ -29,6 +29,7 @@ My first homelab: a Raspberry Pi 5 in a 10 inch rack. I started this repo to pla
 
 - **Hardware:** Raspberry Pi 5 (2GB), TP-Link managed switch and a 1TB drive in a DeskPi RackMate T0. About £240
 - **Pi-hole** to block ads on my own devices, including my phone anywhere over Tailscale
+- **Unbound** so DNS lookups go straight to the internet's own DNS servers, with DNSSEC checks, instead of through Google or Cloudflare
 - **Tailscale** for remote access and as an exit node, with no ports forwarded on my router
 - **Security:** UFW, Fail2ban, Lynis hardening, automatic updates and an OpenCanary honeypot
 - **Jellyfin** media server, with a Samba share to copy films on from my Mac
@@ -84,6 +85,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] OpenCanary honeypot, tested from Kali
 - [x] Homepage and Speedtest Tracker in Docker
 - [x] `.lan` names for my services
+- [x] Unbound for private DNS lookups
 - [x] Live badges on this README
 
 ## Next
