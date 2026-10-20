@@ -4,6 +4,7 @@ Live at **[haydnhomelab.com](https://haydnhomelab.com)**. A public page showing 
 
 **Claude (an AI assistant) wrote all the code in this folder.** I described what I wanted, checked how it looked and set it up on the Pi with Claude's instructions.
 
+- `robots.txt`, `sitemap.xml` and `og.jpg` help Google find the site and give it a nice preview when the link is shared
 - `index.html` is the page, and `app.js` is its code. They're separate files so the Content Security Policy can block all inline scripts, which got the site an A+ on securityheaders.com.
 - `index.html`: It starts with a power-on intro (a standby light, a CRT-style screen switching on and the rack drawing itself), then shows a one-screen dashboard of tiles: the rack (click a part to zoom in), ads blocked, uptime, a CPU temperature gauge, power and cost, DNS queries, security and what's running. Clicking a tile expands it into a full view with interactive graphs.
 - Press **N** for an interactive network map. It has three traffic stories (visiting the site, my remote access over Tailscale, and Pi-hole blocking ads) that animate a packet along the real path step by step, and you can click any device to see what it does.
