@@ -9,7 +9,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Haydn | Cyber security apprenticeship portfolio</title>
-<meta name="description" content="I'm Haydn, an IT student applying for cyber security degree apprenticeships for 2027. I built a home lab on a Raspberry Pi, locked it down and tested it myself. Here's the evidence.">
+<meta name="description" content="I'm Haydn, an IT student in West Yorkshire applying for cyber security degree apprenticeships for 2027. I built a home lab on a Raspberry Pi, locked it down and tested it myself. Here's the evidence.">
 <link rel="canonical" href="https://haydnhomelab.com/about/">
 <meta property="og:type" content="profile">
 <meta property="og:url" content="https://haydnhomelab.com/about/">
@@ -111,7 +111,7 @@
          font-weight: 700; font-size: 17px; text-decoration: none; line-height: 1; }
   .btn:hover { text-decoration: underline; }
   .btn.primary { background: var(--ink); color: var(--paper); }
-  .facts { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .facts { margin: 0; display: grid; grid-template-columns: 1.1fr 1fr 1.2fr 1.1fr 0.95fr; border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); }
   .facts div { padding: 16px 24px 18px 0; font-size: 16.5px; line-height: 1.45; }
   .facts div + div { padding-left: 24px; border-left: 1px solid var(--rule); }
   .facts dt { color: var(--ink-3); font-size: 15px; margin-bottom: 4px; }
@@ -259,9 +259,9 @@
     .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 44px; }
     .ev, .skills, .ai { grid-template-columns: 1fr; gap: 24px; }
     .timeline { grid-template-columns: 1fr 1fr 1fr; row-gap: 30px; }
-    .facts { grid-template-columns: 1fr 1fr; }
-    .facts div:nth-child(3) { padding-left: 0; border-left: none; }
-    .facts div:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    .facts { grid-template-columns: 1fr 1fr 1fr; }
+    .facts div:nth-child(4) { padding-left: 0; border-left: none; }
+    .facts div:nth-child(n+4) { border-top: 1px solid var(--rule); }
   }
   @media (max-width: 640px) {
     :root { --gutter: 16px; }
@@ -306,7 +306,7 @@
     .rack figcaption { font-size: 8pt; margin-top: 5pt; }
     .legend { display: block; margin-top: 4pt; }
     .legend li { font-size: 8pt; padding: 2.5pt 0; grid-template-columns: 7.5em 1fr; }
-    .facts { grid-template-columns: repeat(4, 1fr) !important; }
+    .facts { grid-template-columns: 1.1fr 1fr 1.2fr 1.1fr 0.95fr !important; }
     .facts div, .facts div + div { font-size: 8.5pt; padding: 5pt 8pt; border-top: none !important; }
     .facts div:first-child { padding-left: 0; }
     .facts div + div { border-left: 1px solid var(--rule) !important; }
@@ -380,7 +380,7 @@
     <section class="hero" id="top" aria-labelledby="hero-title">
       <div>
         <h1 id="hero-title">I built a home lab to learn cyber security.</h1>
-        <p class="lede">I’m Haydn, an IT student in the UK. I’m applying for cyber security degree apprenticeships starting in 2027, so I built my own server to learn the skills properly. I locked it down, then attacked it from Kali Linux to check it held up. Everything I did, including what went wrong, is written up.</p>
+        <p class="lede">I’m Haydn, an IT student in West Yorkshire. I’m applying for cyber security degree apprenticeships starting in 2027, so I built my own server to learn the skills properly. I locked it down, then attacked it from Kali Linux to check it held up. Everything I did, including what went wrong, is written up.</p>
         <div class="actions">
           <a class="btn primary" href="/">Open the live lab</a>
           <a class="btn" href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md">Read the build log</a>
@@ -416,8 +416,9 @@
     </section>
 
     <dl class="facts" aria-label="About me in brief">
-      <div><dt>Studying</dt><dd>Cambridge Technical in IT (Double), working at D*D*</dd></div>
-      <div><dt>Extended project</dt><dd>Cyber EPQ on whether AI helps attackers or defenders more, working at A</dd></div>
+      <div><dt>Studying</dt><dd>Cambridge Technical in IT (Double), working at&nbsp;D*D*</dd></div>
+      <div><dt>GCSEs</dt><dd>Maths 6, English 5</dd></div>
+      <div><dt>Extended project</dt><dd>Cyber EPQ on whether AI helps attackers or defenders more, working at&nbsp;A</dd></div>
       <div><dt>Looking for</dt><dd>A Level 6 cyber security degree apprenticeship from 2027</dd></div>
       <div><dt>Lab built</dt><dd>14 to 20 October 2026, and still growing</dd></div>
     </dl>
@@ -654,8 +655,8 @@ PORT    STATE SERVICE
 
     <section class="block contact" id="contact" aria-labelledby="ct-title">
       <h2 id="ct-title">Get in touch</h2>
-      <p class="intro">I’m looking for a Level 6 cyber security degree apprenticeship starting in 2027. If you’d like to talk, or ask me anything about the lab, email me.</p>
-      <a class="email" href="mailto:hello@haydnhomelab.com">hello@haydnhomelab.com</a>
+      <p class="intro">I’m looking for a Level 6 cyber security degree apprenticeship starting in 2027. I’m based in West Yorkshire. If you’d like to talk, or ask me anything about the lab, email me.</p>
+      <a class="email" href="mailto:cowleyhaydn@gmail.com">cowleyhaydn@gmail.com</a>
       <div class="other">
         <a href="https://github.com/haydncow">GitHub: haydncow</a>
         <a href="https://github.com/haydncow/homelab-plan">The full build on GitHub</a>
