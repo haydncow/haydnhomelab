@@ -142,7 +142,8 @@ const PARTS = {
   intro: ["welcome", () => `
     <h2>My homelab</h2>
     <p class="tag">A small server I built to learn networking and security</p>
-    <p>Click a part of the rack to zoom in, or click any tile for more.</p>
+    <div class="vis-line" id="vis-line">${visLine()}</div>
+    <p>Click a part of the rack to zoom in, or click any tile for more. New to this? <button class="chip" data-go-how>How it works</button></p>
     <div class="chips">
       <button class="chip" data-go="pi">Raspberry Pi</button><button class="chip" data-go="switch">Switch</button><button class="chip" data-go="drive">Drive</button>
       <button class="chip" data-go="spare">Spare slot</button><button class="chip" data-go="blank">Blank panel</button>
@@ -267,7 +268,8 @@ function render() {
     : `<span class="note">not available yet</span>`;
   const hp = stats.honeypot;
   $("#hp-line").innerHTML = hp ? `honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in the last 24h` : "";
-  if (modalOpen && modalOpen !== "network" && modalOpen !== "attacks") drawModal(modalOpen, false);
+  const vl = $("#vis-line"); if (vl) vl.innerHTML = visLine();
+  if (modalOpen && !["network", "attacks", "how"].includes(modalOpen)) drawModal(modalOpen, false);
   if (modalOpen === "network") netInfo();
   if (modalOpen === "attacks") atkUpdate();
 }
@@ -384,6 +386,7 @@ const MODALS = {
     <div class="mgrid">${st("Running", `${up} of ${all.length}`)}${st("Firewall rules", (all.find(s => s.name === "Firewall (UFW)") || {}).detail?.replace(" rules", "") ?? "n/a")}${st("Pi uptime", stats.uptime)}</div>
     ${svcGroups().map(g => `<section class="svc-group"><h3>${g.name} ${svcCount(g.list)}</h3>${g.about ? `<p>${g.about}</p>` : ""}<div class="svc-big">${g.list.map(card).join("")}</div></section>`).join("")}`;
   },
+  how: () => howHtml(),
   attacks: () => `<h2 id="m-title">Honeypot attack map</h2><p class="tag">Every time something touches one of my fake services, it lands here. The honeypot is only on my home network, so most days it's quiet. That's the good outcome.</p>${atkMap()}`,
   network: () => `<h2 id="m-title">Network map</h2><p class="tag">How everything connects. Pick a story to watch the traffic, or click a device.</p>${netmap()}`,
   security: () => `<h2 id="m-title">Security</h2><p class="tag">How the Pi is locked down, and how I tested it.</p>
@@ -432,7 +435,7 @@ function drawModal(kind, animate = true) {
   drawLive(animate);
   if (kind === "network") netSetup();
   if (kind === "attacks") atkSetup();
-  $("#modal .sheet").classList.toggle("wide", kind === "network" || kind === "attacks");
+  $("#modal .sheet").classList.toggle("wide", kind === "network" || kind === "attacks" || kind === "how");
   if (!animate) document.querySelectorAll("#m-body .draw").forEach(p => p.classList.remove("draw"));
 }
 let modalOpen = null, opener = null;
@@ -774,11 +777,80 @@ function atkFeed(e, t, animate) {
 }
 $("#open-atk").onclick = e => openModal("attacks", e.currentTarget);
 document.addEventListener("click", e => { if (e.target.closest("[data-go-atk]")) openModal("attacks", $("#open-atk")); });
+
+/* ---------- how it works (for people who aren't techy) ---------- */
+function visLine() {
+  const v = stats && stats.visitors;
+  if (!v) return "";
+  const n = x => Number(x).toLocaleString();
+  return `visitors: <b>${n(v.today)}</b> today &middot; <b>${n(v.week)}</b> this week`;
+}
+function visBars(days) {
+  if (!days || days.length < 2) return "";
+  const W = 600, H = 70, max = Math.max(1, ...days.map(d => d[1])), bw = W / days.length;
+  const today = new Date().toISOString().slice(0, 10);
+  return `<svg class="hw-bars" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Visitors per day">${days.map((d, i) => {
+    const h = Math.max(2, d[1] / max * (H - 4));
+    return `<rect class="${d[0] === today ? "today" : ""}" x="${(i * bw + 1).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${d[0]}: ${d[1]} visitors</title></rect>`;
+  }).join("")}</svg>`;
+}
+function howHtml() {
+  const card = (icon, t, s) => `<div class="hw-card"><svg viewBox="0 0 24 24">${ICON[icon]}</svg><b>${t}</b><span>${s}</span></div>`;
+  const v = stats && stats.visitors, n = x => Number(x).toLocaleString();
+  return `<h2 id="m-title">How it works</h2><p class="tag">The plain English version, no tech knowledge needed.</p>
+  <section class="hw-sec"><h3>What is this?</h3>
+    <p>A <b>homelab</b> is a small server at home that you use to learn. Mine is a <b>Raspberry Pi 5</b>, a computer about the size of a credit card, in a mini 10 inch rack on my desk. I'm using it to learn networking and cyber security hands-on, because I want to work in cyber security.</p></section>
+  <section class="hw-sec"><h3>What's in the rack</h3><div class="hw-cards">
+    ${card("pi", "Raspberry Pi 5", "The brain. Every service on this page runs on it, using about as much power as a phone charger.")}
+    ${card("switch", "Network switch", "Plugs everything together, like an extension lead for internet cables.")}
+    ${card("drive", "1TB hard drive", "Storage for films and the Pi's nightly backups.")}
+  </div></section>
+  <section class="hw-sec"><h3>What it does</h3><div class="hw-cards">
+    ${card("shield", "Blocks ads", "Pi-hole is like a bouncer with a list. When a device asks for an advert, it gets turned away before it ever loads.")}
+    ${card("globe", "Looks up websites itself", "Unbound finds where websites live without asking Google or Cloudflare, so no big company sees every site I visit.")}
+    ${card("phone", "Lets me in from anywhere", "Tailscale is a private, encrypted tunnel just for my own devices, so I can reach the Pi from my phone anywhere.")}
+    ${card("laptop", "My own Netflix", "Jellyfin plays films from the hard drive on the TV, laptop or phone.")}
+    ${card("drive", "Backs itself up", "Every night it saves all its settings to the hard drive, and keeps two weeks of copies.")}
+  </div></section>
+  <section class="hw-sec"><h3>How you're seeing this page</h3>
+    <p>Normally to put a website online from home, you'd open a door in your router to the whole internet. I didn't. Instead:</p>
+    <ol class="hw-flow">
+      <li><b>You visit the site</b>Your browser talks to Cloudflare, a big company that sits in front of millions of websites.</li>
+      <li><b>Cloudflare checks you</b>It blocks attacks and bots before they get anywhere near my house.</li>
+      <li><b>Through a tunnel</b>The Pi opened a tunnel out to Cloudflare itself, so my router has no open doors.</li>
+      <li><b>The Pi answers</b>It sends this page back, and updates the numbers every 3 seconds.</li>
+    </ol>
+    <div class="am-btns"><button class="hbtn" data-go-net>see it animated on the network map <kbd>N</kbd></button></div></section>
+  <section class="hw-sec"><h3>How it stays safe</h3><ul class="hw-safe">
+    <li><b>No open doors</b> on my home router</li>
+    <li><b>Firewall</b> blocks everything I haven't allowed</li>
+    <li><b>No passwords</b> to log in, only digital keys</li>
+    <li><b>Auto bans</b> anyone guessing logins</li>
+    <li><b>A honeypot</b>: fake services that set off an alarm</li>
+    <li><b>Security headers A+</b> on this site</li>
+    <li><b>Cloudflare firewall rules</b> and rate limits</li>
+    <li><b>Security updates</b> install themselves daily</li>
+    <li><b>Tested it myself</b> by attacking it from Kali Linux</li>
+  </ul>
+  <div class="am-btns"><button class="hbtn" data-go-atk>watch the honeypot <kbd>A</kbd></button></div></section>
+  ${v ? `<section class="hw-sec"><h3>Visitors</h3>
+    <div class="mgrid">${st("Today", n(v.today))}${st("Last 7 days", n(v.week))}${st("Last " + v.days.length + " days", n(v.month))}${st("Page views", n(v.views_month))}</div>
+    ${visBars(v.days)}
+    <p class="hw-note">Counted by Cloudflare, unique visitors per day added up. My Pi never sees or stores anyone's IP address, just these totals.</p></section>` : ""}
+  <section class="hw-sec"><h3>Who built it</h3>
+    <p>I chose and bought the parts, built the rack, ran every command on the Pi and tested it all. <b>Claude, an AI assistant, wrote the code for this website</b> and guided me through the setup step by step. The full story, with everything that went wrong, is on <a href="https://github.com/haydncow/homelab-plan">GitHub</a>.</p></section>`;
+}
+$("#open-how").onclick = e => openModal("how", e.currentTarget);
+document.addEventListener("click", e => {
+  if (e.target.closest("[data-go-how]")) openModal("how", $("#open-how"));
+  if (e.target.closest("[data-go-net]")) openModal("network", $("#open-net"));
+});
 $("#open-net").onclick = e => openModal("network", e.currentTarget);
 addEventListener("keydown", e => {
   if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "n" || e.key === "N") openModal("network", $("#open-net"));
   if (e.key === "a" || e.key === "A") openModal("attacks", $("#open-atk"));
+  if (e.key === "h" || e.key === "H") openModal("how", $("#open-how"));
 });
 
 /* ---------- "updated 2s ago" ticker ---------- */
@@ -800,7 +872,7 @@ if (!reduceMotion && matchMedia("(hover: hover) and (min-width: 1100px)").matche
   rt.addEventListener("pointerleave", () => (rs.style.transform = ""));
 }
 
-let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && modalOpen !== "network" && modalOpen !== "attacks" && drawModal(modalOpen, false), 200); });
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && !["network", "attacks", "how"].includes(modalOpen) && drawModal(modalOpen, false), 200); });
 
 /* ---------- live data: every 3 seconds ---------- */
 let live = null, liveOk = false, liveFails = 0;

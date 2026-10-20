@@ -330,6 +330,30 @@
   .nm-live em { display: block; font-style: normal; font-weight: 600; font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 
 
+  /* ---------- how it works ---------- */
+  .hw-sec { margin-top: 22px; }
+  .hw-sec h3 { margin: 0 0 4px; font-size: 16px; letter-spacing: -0.01em; }
+  .hw-sec > p { margin: 0 0 12px; color: #b8bfb9; max-width: 760px; }
+  .hw-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+  .hw-card { border: 1px solid var(--line); border-radius: 14px; background: #0a0c0b; padding: 14px; }
+  .hw-card svg { width: 26px; height: 26px; fill: none; stroke: var(--led); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .hw-card b { display: block; margin: 8px 0 3px; font-size: 14px; }
+  .hw-card span { color: var(--muted); font-size: 12.5px; }
+  .hw-flow { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; counter-reset: s; }
+  @media (max-width: 800px) { .hw-flow { grid-template-columns: 1fr 1fr; } }
+  .hw-flow li { position: relative; border: 1px solid var(--line); border-radius: 14px; background: #0a0c0b; padding: 14px 14px 14px 46px; font-size: 13px; color: #b8bfb9; }
+  .hw-flow li::before { counter-increment: s; content: counter(s); position: absolute; left: 14px; top: 13px; width: 22px; height: 22px; border-radius: 50%;
+                        display: grid; place-items: center; font-size: 11px; font-weight: 700; background: var(--led); color: #000; box-shadow: 0 0 12px #5cff3a66; }
+  .hw-flow b { display: block; color: var(--text); margin-bottom: 2px; }
+  .hw-safe { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 6px 14px; padding: 0; margin: 0; list-style: none; }
+  .hw-safe li { padding-left: 22px; position: relative; color: #b8bfb9; font-size: 13px; }
+  .hw-safe li::before { content: ""; position: absolute; left: 2px; top: 5px; width: 9px; height: 5px; border-left: 2px solid var(--led); border-bottom: 2px solid var(--led); transform: rotate(-45deg); }
+  .hw-safe b { color: var(--text); }
+  .hw-bars { width: 100%; height: 70px; display: block; margin-top: 10px; }
+  .hw-bars rect { fill: #5cff3a99; } .hw-bars rect.today { fill: var(--led); }
+  .hw-note { color: #5f665f; font-size: 11.5px; margin: 10px 0 0; }
+  .vis-line { margin: -4px 0 8px; font-size: 12px; color: var(--muted); } .vis-line:empty { display: none; } .vis-line b { color: var(--text); font-weight: 600; }
+
   /* ---------- honeypot attack map ---------- */
   .am { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, 1fr); gap: 14px; align-items: start; }
   @media (max-width: 860px) { .am { grid-template-columns: 1fr; } }
@@ -480,6 +504,7 @@
     <span class="sub">Raspberry Pi 5 in a 10" rack. Everything here is live.</span>
     <div class="right">
       <span class="keys">updated <span id="ago">-</span></span>
+      <button class="hbtn" id="open-how" title="How it works (H)">how it works <kbd>H</kbd></button>
       <button class="hbtn" id="open-net" title="Network map (N)">network map <kbd>N</kbd></button>
       <button class="hbtn" id="open-atk" title="Honeypot attack map (A)">attack map <kbd>A</kbd></button>
       <a href="https://github.com/haydncow/homelab-plan">github</a>

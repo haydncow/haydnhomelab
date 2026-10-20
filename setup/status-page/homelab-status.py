@@ -386,6 +386,62 @@ def write_badges(data):
         os.replace(tmp, os.path.join(folder, f"{name}.json"))
 
 
+# Visitor counts come from Cloudflare, which already counts unique visitors to
+# my domain. The Pi never sees or stores anyone's IP address, only the totals.
+CF_FILE = "/etc/homelab-status/cloudflare.json"   # {"token": "...", "zone": "..."}, root-only
+CF_CACHE = os.path.join(STATE_DIR, "visitors.json")
+CF_QUERY = """query($zone: String!, $since: Date!) {
+  viewer { zones(filter: {zoneTag: $zone}) {
+    httpRequests1dGroups(limit: 31, filter: {date_geq: $since}, orderBy: [date_ASC]) {
+      dimensions { date } uniq { uniques } sum { pageViews }
+    }
+  } }
+}"""
+
+
+def cf_days(days):
+    cfg = json.load(open(CF_FILE))
+    since = time.strftime("%Y-%m-%d", time.gmtime(time.time() - (days - 1) * 86400))
+    body = json.dumps({"query": CF_QUERY, "variables": {"zone": cfg["zone"], "since": since}}).encode()
+    req = urllib.request.Request("https://api.cloudflare.com/client/v4/graphql", data=body, method="POST",
+                                 headers={"Authorization": "Bearer " + cfg["token"], "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        out = json.load(r)
+    if out.get("errors"):
+        raise RuntimeError(out["errors"][0].get("message", "Cloudflare API error"))
+    rows = out["data"]["viewer"]["zones"][0]["httpRequests1dGroups"]
+    return [[g["dimensions"]["date"], g["uniq"]["uniques"], g["sum"]["pageViews"]] for g in rows]
+
+
+def visitors():
+    # Only ask Cloudflare every 15 minutes, the numbers don't change faster than that
+    try:
+        cached = json.load(open(CF_CACHE))
+        if time.time() - cached["fetched"] < 900:
+            return cached["data"]
+    except (OSError, ValueError, KeyError):
+        cached = None
+    try:
+        try:
+            days = cf_days(30)
+        except RuntimeError:
+            days = cf_days(7)   # the free plan might only allow a shorter range
+    except Exception:
+        traceback.print_exc()   # cron sends this to the error log
+        return cached["data"] if cached else None
+    today = time.strftime("%Y-%m-%d", time.gmtime())
+    data = {
+        "today": sum(d[1] for d in days if d[0] == today),
+        "week": sum(d[1] for d in days[-7:]),
+        "month": sum(d[1] for d in days),
+        "views_month": sum(d[2] for d in days),
+        "days": days,
+    }
+    os.makedirs(STATE_DIR, exist_ok=True)
+    json.dump({"fetched": time.time(), "data": data}, open(CF_CACHE, "w"))
+    return data
+
+
 def main():
     now = time.time()
     temp = safe(temp_c)
@@ -414,6 +470,7 @@ def main():
         "honeypot": safe(honeypot) if os.path.exists(CANARY_LOG) else None,
         "dns_history": ph.get("dns_history", []),
         "pi_history": safe(lambda: history(now, temp, mem, watts), []),
+        "visitors": safe(visitors) if os.path.exists(CF_FILE) else None,
     }
     os.makedirs(OUT_DIR, exist_ok=True)
     tmp = os.path.join(OUT_DIR, ".stats.json.tmp")

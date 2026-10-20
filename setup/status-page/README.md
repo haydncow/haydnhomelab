@@ -16,6 +16,8 @@ Live at **[haydnhomelab.com](https://haydnhomelab.com)**. A public page showing 
 - A **Cloudflare Tunnel** (`cloudflared`) connects out from the Pi to Cloudflare and puts the page on my domain. Nothing is port forwarded on my router.
 - It logs in to Pi-hole's API with an app password stored in a root-only file, then logs out again.
 - It also writes tiny JSON files to `/srv/status/badges/` every minute. [shields.io](https://shields.io/badges/endpoint-badge) reads them from my domain to draw the live badges at the top of my GitHub README.
+- Press **H** for **How it works**, a plain English explanation of the lab for people who aren't techy.
+- **Visitor counts** come from Cloudflare's own analytics API, which already counts unique visitors to my domain. The script asks for the daily totals every 15 minutes using a read-only API token kept in a root-only file (`/etc/homelab-status/cloudflare.json`). The Pi never sees or stores anyone's IP address.
 - It only shows harmless info. No IP addresses, hostnames or software versions, because those would help an attacker.
 
 I used Tailscale Funnel for this at first, but switched to Cloudflare Tunnel so I could use my own domain.
