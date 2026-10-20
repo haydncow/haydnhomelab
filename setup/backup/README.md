@@ -59,4 +59,6 @@ The backups are on a drive plugged into the same Pi, so a fire, theft or power s
 
 20 October 2026: restored `etc/ufw/user.rules` from the first backup into a temporary folder and compared it with the real file using `diff`. Identical.
 
+20 October 2026, after adding encryption: copied the first encrypted backup to my Mac, decrypted it with the private key and pulled out `etc/ufw/user.rules`. Its SHA-256 matched the real file on the Pi. Then I deleted the old unencrypted backup with `shred` so it couldn't be recovered from the drive.
+
 Claude (AI) wrote this script. I set it up and tested restoring from it.
