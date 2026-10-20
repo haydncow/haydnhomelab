@@ -7,6 +7,24 @@
 	file_server
 	header /live.json Cache-Control no-store
 	header /stats.json Cache-Control no-store
+
+	# Security headers, tested on securityheaders.com
+	header {
+		# only ever load the site over HTTPS
+		Strict-Transport-Security "max-age=31536000"
+		# what the page is allowed to load: itself, Google Fonts, and Cloudflare's analytics
+		Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+		# don't guess file types, don't let other sites put my page in a frame
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		# don't tell other sites the full address someone came from
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# the page never needs the camera, mic, location and so on
+		Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()"
+		Cross-Origin-Opener-Policy "same-origin"
+		# don't say which web server I run
+		-Server
+	}
 }
 
 # Friendly names for my services. Pi-hole's local DNS points them all at the
