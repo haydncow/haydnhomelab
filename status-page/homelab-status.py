@@ -150,10 +150,17 @@ CANARY_PORTS = {21: "Fake FTP", 23: "Fake Telnet", 2222: "Fake SSH", 3306: "Fake
                 5900: "Fake VNC", 6379: "Fake Redis", 8081: "Fake NAS login page"}
 
 
+# Only these usernames are shown on the public page. Anything else someone
+# types (like a real email or name) just shows as "a username".
+SAFE_USERS = {"root", "admin", "administrator", "user", "pi", "test", "guest", "ubuntu", "oracle",
+              "postgres", "ftp", "support", "default", "sa", "mysql", "operator", "nas"}
+
+
 def honeypot():
     # Read the honeypot's log. Only says which fake service was touched and
     # when, never IP addresses or passwords (I might type a real one testing it).
-    events = []
+    # Each connection counts once, even though it logs several lines.
+    conns = {}
     with open(CANARY_LOG) as f:
         for line in f:
             try:
@@ -162,10 +169,13 @@ def honeypot():
                 continue
             if int(e.get("logtype", 0)) < 2000 or not e.get("src_host"):
                 continue   # 1xxx are OpenCanary's own start-up messages
+            key = (e.get("src_host"), e.get("src_port"), e.get("dst_port"))
             when = calendar.timegm(time.strptime(e["utc_time"][:19], "%Y-%m-%d %H:%M:%S"))
             user = (e.get("logdata") or {}).get("USERNAME")
-            events.append({"time": int(when), "service": CANARY_PORTS.get(e.get("dst_port"), f"port {e.get('dst_port')}"),
-                           "user": str(user)[:32] if user else None})
+            c = conns.setdefault(key, {"time": int(when), "service": CANARY_PORTS.get(e.get("dst_port"), "another port"), "user": None})
+            if user:
+                c["user"] = str(user) if str(user).lower() in SAFE_USERS else "a username"
+    events = sorted(conns.values(), key=lambda c: c["time"])
     now = time.time()
     day = [e for e in events if now - e["time"] < 86400]
     return {"today": len(day), "total": len(events), "recent": events[-8:][::-1]}
