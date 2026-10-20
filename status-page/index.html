@@ -358,6 +358,16 @@
   .chart { border-radius: 16px; background: #0a0c0b; } .chart h4 { font-size: 14px; }
   .cards div, .svc-big > div { border-radius: 14px; background: #0a0c0b; }
   footer { font-size: 11.5px; }
+  .hp-line { margin-top: auto; font-size: 12px; color: var(--muted); padding-bottom: 6px; }
+  .hp-line b { color: var(--led); font-weight: 600; } .hp-line b.hp-hot { color: var(--amber); }
+  .hp-line + .scanline { margin-top: 0; }
+  .hp-box { border: 1px solid var(--line); border-radius: 16px; background: #0a0c0b; padding: 14px 16px; margin-bottom: 12px; }
+  .hp-box h3 { margin: 0 0 4px; font-size: 15px; }
+  .hp-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .hp-list li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: #101311; border: 1px solid var(--line); font-size: 12.5px; }
+  .hp-list i { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 8px var(--amber); flex: none; }
+  .hp-list span { color: var(--muted); } .hp-list code { color: var(--text); font-family: "JetBrains Mono", monospace; font-size: 11.5px; }
+  .hp-list em { margin-left: auto; font-style: normal; color: var(--muted); font-size: 11.5px; }
 
   /* ---------- smaller screens: stack the tiles ---------- */
   @media (max-width: 1100px) {
@@ -591,6 +601,7 @@
         <div>Firewall, deny by default</div><div>Fail2ban</div>
         <div>Auto security updates</div><div>Lynis score 75</div>
       </div>
+      <div class="hp-line" id="hp-line"></div>
       <div class="scanline">nmap: <b>4 open</b> / 65,531 filtered &middot; only what I allowed</div>
     </section>
 
@@ -867,6 +878,8 @@ function render() {
   const svc = stats.services || [], up = svc.filter(s => s.up).length;
   $("#svc-count").textContent = svc.length ? `${up}/${svc.length} up` : "";
   $("#svc").innerHTML = svc.length ? svc.map(s => `<div class="svc ${s.up ? "up" : "down"}" title="${s.detail || ABOUT[s.name] || ""}"><i></i>${s.name.replace(" (Caddy)", "").replace(" Tunnel", "")}</div>`).join("") : `<span class="note">not available yet</span>`;
+  const hp = stats.honeypot;
+  $("#hp-line").innerHTML = hp ? `honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in the last 24h` : "";
   if (modalOpen && modalOpen !== "network") drawModal(modalOpen, false);
   if (modalOpen === "network") netInfo();
 }
@@ -926,6 +939,7 @@ const ABOUT = {
   "Jellyfin": "My own Netflix, home and Tailscale only",
   "Nightly backup": "Settings and scripts, kept for 14 days",
   "SD card": "Wear and error checks",
+  "Honeypot": "Fake services that should never be touched",
   "Auto updates": "Daily security fixes", "Firewall (UFW)": "Blocks unwanted traffic",
 };
 const MODALS = {
@@ -951,6 +965,7 @@ const MODALS = {
       <div><b>Lynis audit: 63 to 75</b><p>Hardened SSH, kernel network settings and file permissions. Checked two warnings and found they were false positives.</p></div>
       <div><b>Only safe info here</b><p>No IP addresses, hostnames or software versions on this page.</p></div>
     </div>
+    ${honeypotHtml()}
     <pre class="scan"><span class="f"># every TCP port, scanned from another device on my network</span>
 $ sudo nmap -p- &lt;the pi&gt;
 Not shown: <span class="f">65531 filtered tcp ports (no-response)</span>
@@ -960,6 +975,16 @@ PORT    STATE SERVICE
 80/tcp  <span class="o">open</span>  http
 443/tcp <span class="o">open</span>  https</pre>`,
 };
+function honeypotHtml() {
+  const h = stats && stats.honeypot;
+  const esc = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const when = t => { const s = Date.now() / 1000 - t; return s < 3600 ? Math.max(1, Math.round(s / 60)) + "m ago" : s < 86400 ? Math.round(s / 3600) + "h ago" : Math.round(s / 86400) + "d ago"; };
+  const list = h && h.recent.length
+    ? `<ul class="hp-list">${h.recent.map(e => `<li><i></i><b>${esc(e.service)}</b>${e.user ? `<span>tried user <code>${esc(e.user)}</code></span>` : "<span>connected</span>"}<em>${when(e.time)}</em></li>`).join("")}</ul>`
+    : `<p class="note">Nothing has touched it yet. That's the idea: on a healthy network, nothing should.</p>`;
+  return `<div class="hp-box"><h3>Honeypot</h3><p class="note">Fake services on my home network that nothing should ever touch: an old SSH server, Telnet, FTP, MySQL, Remote Desktop, VNC, Redis and a NAS login page. If anything connects, it gets logged. Only reachable from inside my home, nothing is open to the internet.</p>
+    <div class="mgrid" style="margin:10px 0">${st("Alerts (24h)", h ? h.today : "n/a")}${st("Alerts (all time)", h ? h.total : "n/a")}</div>${list}</div>`;
+}
 const st = (l, v) => `<div class="stat"><span>${l}</span><b>${v ?? "n/a"}</b></div>`;
 function drawModal(kind, animate = true) {
   if (!stats) { $("#m-body").innerHTML = `<p class="empty">Loading live stats...</p>`; return; }

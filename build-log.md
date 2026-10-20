@@ -5,6 +5,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 ## 20 October 2026
 
 - Added an animated network map to the status page (press N). I tried a hidden terminal too but took it out, it didn't fit the look I wanted.
+- Set up an OpenCanary honeypot on my home network: fake SSH, Telnet, FTP, MySQL, Remote Desktop, VNC, Redis and a NAS login page. Kept it home network only so nothing is open to the internet. See [honeypot](honeypot/).
 - Made the Pi a Tailscale exit node, so my phone or laptop can send all its traffic through my home connection on public Wi-Fi, like a free VPN. Needed IP forwarding turned on, and a UFW route rule that only allows forwarding from Tailscale out to the internet. Tested on mobile data: "what is my IP" showed my home IP.
 - Rebuilt the network map with zones, device icons, clickable devices and three animated traffic stories that explain how the tunnels and Pi-hole work.
 - Gave the status page a sleeker look: Inter font, calmer background, glassier tiles and a spotlight on the rack.

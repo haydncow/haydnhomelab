@@ -41,6 +41,7 @@ The DeskPi RackMate T0 with the shelf and blank panel in. The Pi and switch go i
 - [Photos](photos/) - photos of the build as it goes
 - [Media](media/) - Jellyfin media server
 - [Backup](backup/) - nightly backups and how to restore
+- [Honeypot](honeypot/) - fake services that alert me if anything pokes around my network
 - [Diagrams](diagrams/) - network diagram and rack layout
 - [Status page](status-page/) - live at [haydnhomelab.com](https://haydnhomelab.com), served from the Pi through a Cloudflare Tunnel
 
@@ -79,6 +80,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Jellyfin media server with a 1TB drive
 - [x] Nightly backups
 - [x] Tailscale exit node (a free VPN through home)
+- [x] Honeypot (OpenCanary, home network only)
 - [ ] Fit everything in the rack
       
 I'll keep this updated as I go.

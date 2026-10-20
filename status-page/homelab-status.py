@@ -9,6 +9,7 @@ It only shows harmless info (uptime, temperature, memory, power use,
 ads blocked, whether each service is running). No IP addresses, hostnames, ports or
 software versions, because those help attackers.
 """
+import calendar
 import json
 import os
 import subprocess
@@ -37,6 +38,7 @@ SERVICES = [
     ("SSH", ["ssh"], None),
     ("Fail2ban", ["fail2ban"], "fail2ban"),
     ("Jellyfin", ["jellyfin"], None),
+    ("Honeypot", ["opencanary"], "honeypot"),
     ("Auto updates", ["unattended-upgrades"], "updates"),
 ]
 
@@ -143,6 +145,40 @@ def detail_updates():
     return f"last checked {ago(time.time() - os.path.getmtime(stamp))} ago"
 
 
+CANARY_LOG = "/var/log/opencanary/opencanary.log"
+CANARY_PORTS = {21: "Fake FTP", 23: "Fake Telnet", 2222: "Fake SSH", 3306: "Fake MySQL", 3389: "Fake Remote Desktop",
+                5900: "Fake VNC", 6379: "Fake Redis", 8081: "Fake NAS login page"}
+
+
+def honeypot():
+    # Read the honeypot's log. Only says which fake service was touched and
+    # when, never IP addresses or passwords (I might type a real one testing it).
+    events = []
+    with open(CANARY_LOG) as f:
+        for line in f:
+            try:
+                e = json.loads(line)
+            except ValueError:
+                continue
+            if int(e.get("logtype", 0)) < 2000 or not e.get("src_host"):
+                continue   # 1xxx are OpenCanary's own start-up messages
+            when = calendar.timegm(time.strptime(e["utc_time"][:19], "%Y-%m-%d %H:%M:%S"))
+            user = (e.get("logdata") or {}).get("USERNAME")
+            events.append({"time": int(when), "service": CANARY_PORTS.get(e.get("dst_port"), f"port {e.get('dst_port')}"),
+                           "user": str(user)[:32] if user else None})
+    now = time.time()
+    day = [e for e in events if now - e["time"] < 86400]
+    return {"today": len(day), "total": len(events), "recent": events[-8:][::-1]}
+
+
+def detail_honeypot():
+    h = honeypot()
+    if not h["total"]:
+        return "watching, nothing touched it yet"
+    last = h["recent"][0]
+    return f"{h['today']} alerts in 24h, last: {last['service']} {ago(time.time() - last['time'])} ago"
+
+
 def detail_firewall():
     rules = [l for l in run("ufw", "status", "numbered").splitlines() if l.strip().startswith("[")]
     return f"{len(rules)} rules"
@@ -205,6 +241,7 @@ def services(gravity=None):
         "fail2ban": detail_fail2ban,
         "updates": detail_updates,
         "pihole": lambda: f"blocking {gravity:,} domains" if gravity else None,
+        "honeypot": detail_honeypot,
     }
     out = []
     for name, units, extra in SERVICES:
@@ -311,6 +348,7 @@ def main():
         "percent": ph.get("percent"),
         "gravity": ph.get("gravity"),
         "services": safe(lambda: services(ph.get("gravity")), []),
+        "honeypot": safe(honeypot) if os.path.exists(CANARY_LOG) else None,
         "dns_history": ph.get("dns_history", []),
         "pi_history": safe(lambda: history(now, temp, mem, watts), []),
     }
