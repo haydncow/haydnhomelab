@@ -39,18 +39,23 @@ My first homelab: a Raspberry Pi 5 in a 10 inch rack. I started this repo to pla
 
 ## What's in this repo
 
+**Start here:**
+
+- [Build log](docs/build-log.md): everything I did, including what went wrong and how I fixed it
+- [Security plan](docs/security-plan.md): how the lab is secured, plus my Nmap, Fail2ban, Lynis and honeypot testing
+- [Parts list](docs/parts-list.md): what I bought and why
+- [Research notes](docs/research-notes.md): what I learned while planning
+
+**Setup files** (configs and scripts, in [setup](setup/)):
+
 | Folder | What's in it |
 |---|---|
-| [docs](docs/) | [Build log](docs/build-log.md), [security plan](docs/security-plan.md), [parts list](docs/parts-list.md) and [research notes](docs/research-notes.md) |
-| [status-page](status-page/) | The website at haydnhomelab.com and the scripts that feed it live stats |
-| [honeypot](honeypot/) | Fake services that alert me if anything pokes around my network |
-| [backup](backup/) | Nightly backups and how to restore |
-| [homepage](homepage/) | My private dashboard |
-| [speedtest](speedtest/) | Tests my broadband every 2 hours |
-| [caddy](caddy/) | Web server config for the status page and the `.lan` names |
-| [images](images/) | Rack photos and the rack layout |
-
-The [build log](docs/build-log.md) is the best place to start. It has everything I did, including what went wrong and how I fixed it.
+| [status-page](setup/status-page/) | The website at haydnhomelab.com and the scripts that feed it live stats |
+| [honeypot](setup/honeypot/) | Fake services that alert me if anything pokes around my network |
+| [backup](setup/backup/) | Nightly backups and how to restore |
+| [homepage](setup/homepage/) | My private dashboard |
+| [speedtest](setup/speedtest/) | Tests my broadband every 2 hours |
+| [caddy](setup/caddy/) | Web server config for the status page and the `.lan` names |
 
 ## How I built this
 
