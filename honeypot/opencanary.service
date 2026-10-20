@@ -6,10 +6,12 @@ Wants=network-online.target
 [Service]
 User=canary
 Group=canary
-# opencanaryd calls "python3" and "twistd" itself, so make sure it finds the
-# ones inside its own virtual environment, not the system ones
+# Start the honeypot engine (twistd) directly as the canary user. The
+# opencanaryd wrapper script tries to use sudo to become root, which the
+# sandbox below blocks on purpose.
 Environment=PATH=/opt/opencanary/bin:/usr/bin:/bin
-ExecStart=/opt/opencanary/bin/opencanaryd --dev
+WorkingDirectory=/var/log/opencanary
+ExecStart=/opt/opencanary/bin/twistd --nodaemon --pidfile= --python /opt/opencanary/bin/opencanary.tac
 Restart=always
 RestartSec=10
 
