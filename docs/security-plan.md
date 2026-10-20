@@ -87,7 +87,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 - [x] Fail2ban: 5 fake logins from my Kali VM got its IP banned straight away (18 October 2026)
 - [x] Lynis security audit: hardening score went from 63 to 75 (18 October 2026)
 - [x] Honeypot test: SSH and fake NAS logins from my Kali VM were caught and logged (20 October 2026)
-- [x] Security headers on haydnhomelab.com: securityheaders.com grade went from F to A (20 October 2026)
+- [x] Security headers on haydnhomelab.com: securityheaders.com grade went from F to A+ (20 October 2026)
 - [x] Backup restore test: restored my UFW rules from the nightly backup and they matched exactly (20 October 2026)
 
 ### Nmap results (home network)
@@ -105,11 +105,11 @@ Over Tailscale, DNS (53) didn't show because at the time I'd only allowed it fro
 
 ### Security headers (20 October 2026)
 
-Added security headers to haydnhomelab.com in Caddy. securityheaders.com went from **F to A**.
+Added security headers to haydnhomelab.com in Caddy. securityheaders.com went from **F to A+**, with all six headers including HSTS.
 
 <p>
   <img src="../images/securityheaders-before.png" alt="Before: grade F, all headers missing" width="420">
-  <img src="../images/securityheaders-after.png" alt="After: grade A, all headers present" width="420">
+  <img src="../images/securityheaders-after.png" alt="After: grade A+, all six headers present" width="420">
 </p>
 
 It was capped at A because my Content Security Policy still allowed inline scripts (`'unsafe-inline'`), since the page's code was all in one file. I moved the code into `app.js` and took `'unsafe-inline'` out of `script-src`, so now only scripts from my own site can run. Even if someone managed to inject code into the page, the browser would refuse to run it.
