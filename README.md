@@ -7,6 +7,7 @@
 ![CPU temp](https://img.shields.io/endpoint?url=https%3A%2F%2Fhaydnhomelab.com%2Fbadges%2Ftemp.json)
 ![power](https://img.shields.io/endpoint?url=https%3A%2F%2Fhaydnhomelab.com%2Fbadges%2Fpower.json)
 ![Lynis](https://img.shields.io/badge/Lynis%20score-75-blue)
+![Security headers](https://img.shields.io/badge/security%20headers-A-brightgreen)
 
 My first homelab: a Raspberry Pi 5 in a 10 inch rack. I started this repo to plan it and now use it to document the build. I'm doing it to learn networking and security hands-on, instead of just reading about it. The badges above are live from the Pi.
 
@@ -86,6 +87,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Homepage and Speedtest Tracker in Docker
 - [x] `.lan` names for my services
 - [x] Unbound for private DNS lookups
+- [x] Security headers on my site (F to A on securityheaders.com)
 - [x] Live badges on this README
 
 ## Next

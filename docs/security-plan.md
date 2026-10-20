@@ -87,6 +87,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 - [x] Fail2ban: 5 fake logins from my Kali VM got its IP banned straight away (18 October 2026)
 - [x] Lynis security audit: hardening score went from 63 to 75 (18 October 2026)
 - [x] Honeypot test: SSH and fake NAS logins from my Kali VM were caught and logged (20 October 2026)
+- [x] Security headers on haydnhomelab.com: securityheaders.com grade went from F to A (20 October 2026)
 - [x] Backup restore test: restored my UFW rules from the nightly backup and they matched exactly (20 October 2026)
 
 ### Nmap results (home network)
