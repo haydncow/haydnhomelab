@@ -5,6 +5,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 ## 20 October 2026
 
 - Added an animated network map to the status page (press N). I tried a hidden terminal too but took it out, it didn't fit the look I wanted.
+- Rebuilt the network map with zones, device icons, clickable devices and three animated traffic stories that explain how the tunnels and Pi-hole work.
 - Gave the status page a sleeker look: Inter font, calmer background, glassier tiles and a spotlight on the rack.
 - Set up nightly backups of all my settings, scripts, Jellyfin and Pi-hole to the media drive, keeping 14 days. See [backup](backup/).
 - First backup was 31 MB. Tested restoring my UFW rules from it into a temporary folder and compared them with `diff`: identical, so the backups actually work.

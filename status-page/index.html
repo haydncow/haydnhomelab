@@ -249,19 +249,58 @@
   #ago { font-variant-numeric: tabular-nums; }
 
   /* ---------- network map ---------- */
-  .netmap { width: 100%; height: auto; display: block; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; }
-  .netmap .node rect { fill: #0e1110; stroke: #3a4038; stroke-width: 1.2; }
-  .netmap .node.pi rect { stroke: var(--led); filter: drop-shadow(0 0 6px #5cff3a66); }
-  .netmap .node text { fill: var(--text); font: 600 11px "JetBrains Mono", monospace; text-anchor: middle; }
-  .netmap .node .s { fill: var(--muted); font-weight: 400; font-size: 9px; }
-  .netmap .link { stroke: #3a4038; stroke-width: 1.5; fill: none; }
-  .netmap .tun { fill: none; stroke-width: 2; stroke-dasharray: 6 5; animation: march 1.2s linear infinite; }
-  .netmap .tun.cf { stroke: #f38020; } .netmap .tun.ts { stroke: var(--s-total); }
-  @keyframes march { to { stroke-dashoffset: -22; } }
-  .netmap .lbl { font: 10px "JetBrains Mono", monospace; fill: var(--muted); }
-  .netkey { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; color: var(--muted); margin: 12px 0 4px; }
-  .netkey i { display: inline-block; width: 18px; height: 0; border-top: 2px dashed; vertical-align: middle; margin-right: 6px; }
-
+  #modal .sheet.wide { width: min(1240px, 100%); }
+  .nm-wrap { --flow: #f38020; }
+  .nm-flows { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .nm-flow { font: 500 12.5px Inter, sans-serif; color: var(--muted); background: #0a0c0b; border: 1px solid var(--line2); border-radius: 999px;
+             padding: 7px 14px; cursor: pointer; transition: all .2s; }
+  .nm-flow::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--c); margin-right: 8px; opacity: .5; }
+  .nm-flow:hover { color: var(--text); border-color: #3a4038; }
+  .nm-flow.on { color: var(--text); border-color: var(--c); box-shadow: 0 0 0 1px var(--c) inset, 0 0 20px -6px var(--c); }
+  .nm-flow.on::before { opacity: 1; box-shadow: 0 0 8px var(--c); }
+  .nm { width: 100%; height: auto; display: block; background: radial-gradient(80% 90% at 70% 60%, #0f1a10, #080908 70%);
+        border: 1px solid var(--line); border-radius: 18px; }
+  .nm-zone { fill: #ffffff04; stroke: #ffffff10; stroke-dasharray: 3 5; }
+  .nm-zone.home { fill: #5cff3a05; stroke: #5cff3a22; } .nm-zone.rack { fill: #5cff3a07; stroke: #5cff3a33; stroke-dasharray: none; }
+  .nm-zl { font: 600 10px Inter, sans-serif; letter-spacing: .14em; fill: #6a726b; }
+  .nm-link { stroke: #2a302c; stroke-width: 2; transition: stroke .3s, opacity .3s; }
+  .nm-link.wifi { stroke-dasharray: 2 6; stroke-linecap: round; } .nm-link.usb { stroke-dasharray: 8 4; }
+  .nm-link.lit { stroke: var(--flow); filter: drop-shadow(0 0 4px var(--flow)); }
+  .nm-tun { fill: none; stroke-width: 2.5; stroke-dasharray: 7 7; opacity: .22; animation: march 1.1s linear infinite; transition: opacity .3s; }
+  .nm-tun.cf { stroke: #f38020; } .nm-tun.ts { stroke: #5a86e6; }
+  .nm-tun.lit { opacity: 1; filter: drop-shadow(0 0 5px currentColor); }
+  .nm-tl { font: 500 11px Inter, sans-serif; opacity: .35; transition: opacity .3s; } .nm-tl.cf { fill: #f38020; } .nm-tl.ts { fill: #5a86e6; }
+  .nm-tl.lit { opacity: 1; }
+  @keyframes march { to { stroke-dashoffset: -28; } }
+  .nm-node { cursor: pointer; outline: none; transition: opacity .3s; }
+  .nm-box { fill: #101311; stroke: #2a302c; stroke-width: 1.2; transition: stroke .3s, fill .3s; }
+  .nm-node:hover .nm-box, .nm-node:focus-visible .nm-box { stroke: #4a564b; }
+  .nm-node.lit .nm-box { stroke: var(--flow); fill: #121712; }
+  .nm-node.picked .nm-box { stroke: #fff; stroke-width: 1.6; }
+  .nm-node.pi .nm-box { filter: drop-shadow(0 0 10px #5cff3a33); }
+  .nm-ico svg { fill: none; stroke: #c9d0ca; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+  .nm-node.lit .nm-ico svg { stroke: var(--flow); }
+  .nm-t { font: 600 13px Inter, sans-serif; fill: var(--text); } .nm-s { font: 400 10.5px Inter, sans-serif; fill: var(--muted); }
+  .nm-pkt { fill: #fff; stroke: var(--flow); stroke-width: 3; filter: drop-shadow(0 0 8px var(--flow)) drop-shadow(0 0 2px var(--flow)); }
+  .nm-scroll { overflow-x: auto; border-radius: 18px; }
+  .nm-swipe { display: none; margin: 6px 0 0; font-size: 11px; color: var(--muted); text-align: center; }
+  @media (max-width: 800px) { .nm { min-width: 860px; } .nm-swipe { display: block; } }
+  .nm-under { display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px; margin-top: 14px; }
+  @media (max-width: 800px) { .nm-under { grid-template-columns: 1fr; } }
+  .nm-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .nm-steps li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--line);
+                 background: #0a0c0b; color: var(--muted); font-size: 13px; transition: all .3s; }
+  .nm-steps li span { flex: none; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-size: 11px; font-weight: 700;
+                      background: #1a1e1b; color: var(--muted); transition: all .3s; }
+  .nm-steps li.on { color: var(--text); border-color: var(--flow); background: #101410; }
+  .nm-steps li.on span { background: var(--flow); color: #000; box-shadow: 0 0 12px var(--flow); }
+  .nm-info { border: 1px solid var(--line); border-radius: 14px; background: #0a0c0b; padding: 14px 16px; font-size: 13px; }
+  .nm-info p { margin: 8px 0 0; color: #b8bfb9; } .nm-info .nm-hint { color: #5f665f; font-size: 11.5px; }
+  .nm-ih { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+  .nm-ih svg { fill: none; stroke: var(--led); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+  .nm-live { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+  .nm-live span { background: #101311; border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .nm-live em { display: block; font-style: normal; font-weight: 600; font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 
   /* =========================================================
      Sleeker look: Inter for text, mono only for technical bits
@@ -828,7 +867,8 @@ function render() {
   const svc = stats.services || [], up = svc.filter(s => s.up).length;
   $("#svc-count").textContent = svc.length ? `${up}/${svc.length} up` : "";
   $("#svc").innerHTML = svc.length ? svc.map(s => `<div class="svc ${s.up ? "up" : "down"}" title="${s.detail || ABOUT[s.name] || ""}"><i></i>${s.name.replace(" (Caddy)", "").replace(" Tunnel", "")}</div>`).join("") : `<span class="note">not available yet</span>`;
-  if (modalOpen) drawModal(modalOpen, false);
+  if (modalOpen && modalOpen !== "network") drawModal(modalOpen, false);
+  if (modalOpen === "network") netInfo();
 }
 
 /* ---------- expanded views ---------- */
@@ -901,9 +941,7 @@ const MODALS = {
     <div class="mgrid">${st("Pi right now", stats.power)}${st("Whole rack per year (est.)", stats.cost_year)}</div><div class="chart" id="ml-pow"></div><div class="chart" id="mc-pow"></div>`,
   services: () => `<h2 id="m-title">What's running</h2><p class="tag">Checked every minute with systemd.</p>
     <div class="svc-big">${(stats.services || []).map(s => `<div class="${s.up ? "up" : ""}"><i></i><div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span>${s.detail || s.for ? `<span class="d">${[s.detail, s.for ? "up for " + s.for : ""].filter(Boolean).join(" &middot; ")}</span>` : ""}</div><em>${s.up ? "running" : "down"}</em></div>`).join("")}</div>`,
-  network: () => `<h2 id="m-title">Network map</h2><p class="tag">How everything connects. Both tunnels are started by the Pi, so my router has no open ports.</p>
-    ${netmap()}
-    <div class="netkey"><span><i style="border-color:#f38020"></i>Cloudflare Tunnel: how you're seeing this page</span><span><i style="border-color:var(--s-total)"></i>Tailscale (WireGuard): how I manage the Pi from anywhere</span><span><i style="border-color:#3a4038;border-top-style:solid"></i>normal network link</span></div>`,
+  network: () => `<h2 id="m-title">Network map</h2><p class="tag">How everything connects. Pick a story to watch the traffic, or click a device.</p>${netmap()}`,
   security: () => `<h2 id="m-title">Security</h2><p class="tag">How the Pi is locked down, and how I tested it.</p>
     <div class="cards">
       <div><b>No open ports on my router</b><p>This site comes through a Cloudflare Tunnel. The Pi connects out, so nothing at home is open to the internet.</p></div>
@@ -936,6 +974,7 @@ function drawModal(kind, animate = true) {
   C("mc-pow", { title: "Power, last 24 hours", sub: "Every 5 minutes", unit: " W", min: 0, fmt: v => Number(v).toFixed(1), tickFmt: v => v.toFixed(1),
     series: [{ name: "Power", colour: "var(--s-blocked)", data: pw.map(p => [p[0], p[3]]) }] });
   drawLive(animate);
+  if (kind === "network") { netSetup(); $("#modal .sheet").classList.add("wide"); } else $("#modal .sheet").classList.remove("wide");
   if (!animate) document.querySelectorAll("#m-body .draw").forEach(p => p.classList.remove("draw"));
 }
 let modalOpen = null, opener = null;
@@ -972,31 +1011,154 @@ addEventListener("keydown", e => {
 });
 
 /* ---------- network map ---------- */
+/* ---------- network map: zones, icons, traffic stories ---------- */
+const ICON = {
+  laptop: '<rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/>',
+  cloud: '<path d="M7 18h10a4 4 0 0 0 .6-7.95A6 6 0 0 0 6.2 9.1 4.5 4.5 0 0 0 7 18z"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/>',
+  shield: '<path d="M12 3l8 3v6c0 4.5-3.4 8-8 9-4.6-1-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  phone: '<rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/>',
+  router: '<rect x="3" y="12" width="18" height="7" rx="1.5"/><path d="M7 12V6M17 12V6M7 15.5h.01M10 15.5h.01"/>',
+  wifi: '<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19" r="1"/>',
+  switch: '<rect x="2.5" y="8" width="19" height="9" rx="1.5"/><path d="M6 12.5h2M10 12.5h2M14 12.5h2"/>',
+  pi: '<rect x="4" y="5" width="16" height="14" rx="2"/><rect x="8.5" y="9" width="7" height="6" rx="1"/><path d="M4 9H2M4 15H2M22 9h-2M22 15h-2"/>',
+  pc: '<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M9 20h6M12 16v4"/>',
+  drive: '<rect x="5" y="3" width="14" height="18" rx="2.5"/><circle cx="12" cy="12" r="3.2"/><path d="M8.5 18h7"/>',
+};
+const NODES = {
+  you:   { x: 95,  y: 95,  icon: "laptop", t: "You", s: "any browser",
+           info: "Anyone visiting this site. You only ever talk to Cloudflare, never directly to my house, so you never see my home IP address." },
+  cf:    { x: 330, y: 95,  icon: "cloud", t: "Cloudflare", s: "haydnhomelab.com",
+           info: "Sits in front of my website. It hides my home IP, handles HTTPS and blocks a lot of attacks before they ever reach me." },
+  net:   { x: 330, y: 240, icon: "globe", t: "Internet", s: "" , info: "The internet." },
+  ts:    { x: 330, y: 385, icon: "shield", t: "Tailscale", s: "private network",
+           info: "A private network just for my own devices, built on WireGuard encryption. The account has 2FA turned on." },
+  me:    { x: 95,  y: 385, icon: "phone", t: "My devices", s: "Mac, phone",
+           info: "My Mac and phone. With Tailscale on, they can reach the Pi from anywhere, as if I was at home." },
+  hub:   { x: 540, y: 240, icon: "router", t: "EE hub", s: "home router",
+           info: "My home router. No port forwarding is set up, so nothing from the internet is let in. That's why the tunnels matter." },
+  tp:    { x: 720, y: 240, icon: "wifi", t: "TP-Link box", s: "wireless link",
+           info: "Links the rack to the router over Wi-Fi, so the rack doesn't need a long cable to the router." },
+  sw:    { x: 900, y: 240, icon: "switch", t: "Switch", s: "TL-SG105E",
+           info: "5 port managed switch in the rack. It supports VLANs, which I'll use to separate the lab from the rest of the house." },
+  pi:    { x: 900, y: 385, icon: "pi", t: "Raspberry Pi 5", s: "this website", pi: true,
+           info: "The server. Runs Pi-hole, Caddy (this website), the Cloudflare Tunnel, Tailscale, Jellyfin and Fail2ban. The firewall blocks everything I haven't allowed." },
+  pc:    { x: 720, y: 385, icon: "pc", t: "My PC", s: "on the switch",
+           info: "My PC, wired into the switch. It uses Pi-hole for its DNS, so ads and trackers get blocked." },
+  drive: { x: 1075, y: 385, icon: "drive", t: "My Passport", s: "1TB, USB",
+           info: "Plugged into the Pi. Holds Jellyfin films and the nightly backups. The backups folder is root-only." },
+};
+const LINKS = [["you","cf"],["cf","net"],["net","ts"],["me","ts"],["net","hub"],["hub","tp","wifi"],["tp","sw"],["sw","pi"],["sw","pc"],["pi","drive","usb"]];
+const FLOWS = {
+  site: { name: "Visiting this site", colour: "#f38020", route: ["you","cf","net","hub","tp","sw","pi"], tunnel: "cf",
+    steps: [[0, 1, "You open haydnhomelab.com. Your browser connects to Cloudflare, not to my house."],
+            [1, 3, "Cloudflare sends it down the tunnel. The Pi opened this tunnel itself, going outwards, so my router has no open ports."],
+            [3, 6, "Inside my home it travels EE hub, TP-Link box, switch, Pi."],
+            [6, 6, "Caddy on the Pi serves the page. The live stats update every 3 seconds."]] },
+  remote: { name: "My remote access", colour: "#5a86e6", route: ["me","ts","net","hub","tp","sw","pi"], tunnel: "ts",
+    steps: [[0, 1, "On my phone or Mac, I switch Tailscale on."],
+            [1, 3, "Tailscale makes an encrypted WireGuard tunnel to the Pi. Again, the Pi's side started it, so nothing is open on my router."],
+            [3, 6, "It comes through the home network like any other traffic."],
+            [6, 6, "Now I can SSH in (keys only) or open Pi-hole and Jellyfin. Nobody else can reach these."]] },
+  dns: { name: "Blocking ads", colour: "#5cff3a", route: ["pc","sw","pi","sw","tp","hub","net"],
+    steps: [[0, 2, "My PC wants to load a website, so it asks Pi-hole for the address."],
+            [2, 2, "__GRAVITY__"],
+            [2, 6, "Allowed lookups get forwarded out to the internet, and the answer comes back to my PC."]] },
+};
+let netFlow = "site", netAnim = null, netPick = "pi";
 function netmap() {
-  const N = (x, y, t, sub, cls = "") => `<g class="node ${cls}" transform="translate(${x},${y})"><rect x="-58" y="-20" width="116" height="40" rx="9"/><text y="${sub ? -2 : 4}">${t}</text>${sub ? `<text class="s" y="12">${sub}</text>` : ""}</g>`;
-  const L = d => `<path class="link" d="${d}"/>`;
-  const cf = "M838 290 C 930 260, 920 40, 390 45", ts = "M780 310 C 780 372, 450 372, 390 318";
-  let pk = "";
-  if (!reduceMotion) for (let i = 0; i < 3; i++) {
-    pk += `<circle r="3" fill="#f38020"><animateMotion dur="2.6s" begin="${i * .87}s" repeatCount="indefinite" path="${cf}"/></circle>`;
-    pk += `<circle r="3" fill="#5a86e6"><animateMotion dur="2.6s" begin="${i * .87}s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear" path="${ts}"/></circle>`;
+  const n = NODES, W = 1170, H = 470;
+  const node = (id) => {
+    const d = n[id];
+    return `<g class="nm-node${d.pi ? " pi" : ""}" data-node="${id}" tabindex="0" role="button" aria-label="${d.t}" transform="translate(${d.x},${d.y})">
+      <rect class="nm-box" x="-74" y="-26" width="148" height="52" rx="13"/>
+      <g class="nm-ico" transform="translate(-62,-12)"><svg width="24" height="24" viewBox="0 0 24 24">${ICON[d.icon]}</svg></g>
+      <text class="nm-t" x="-30" y="${d.s ? -2 : 5}">${d.t}</text>${d.s ? `<text class="nm-s" x="-30" y="13">${d.s}</text>` : ""}
+    </g>`;
+  };
+  const link = ([a, b, kind]) => `<line class="nm-link${kind ? " " + kind : ""}" data-a="${a}" data-b="${b}" x1="${n[a].x}" y1="${n[a].y}" x2="${n[b].x}" y2="${n[b].y}"/>`;
+  const tunnels = `
+    <path class="nm-tun cf" d="M ${n.pi.x + 30} ${n.pi.y - 26} C 1080 120, 760 40, ${n.cf.x + 74} ${n.cf.y}"/>
+    <path class="nm-tun ts" d="M ${n.pi.x - 20} ${n.pi.y + 26} C 820 470, 520 470, ${n.ts.x + 74} ${n.ts.y + 8}"/>`;
+  return `<div class="nm-wrap">
+    <div class="nm-flows" role="tablist">${Object.entries(FLOWS).map(([k, f]) =>
+      `<button class="nm-flow${k === netFlow ? " on" : ""}" data-flow="${k}" role="tab" style="--c:${f.colour}">${f.name}</button>`).join("")}</div>
+    <div class="nm-scroll"><svg class="nm" viewBox="0 0 ${W} ${H}" role="img" aria-label="Network map of my homelab">
+      <rect class="nm-zone" x="18" y="24" width="425" height="426" rx="22"/><text class="nm-zl" x="40" y="50">THE INTERNET</text>
+      <rect class="nm-zone home" x="458" y="160" width="700" height="290" rx="22"/><text class="nm-zl" x="480" y="186">MY HOME</text>
+      <rect class="nm-zone rack" x="812" y="196" width="176" height="236" rx="16"/><text class="nm-zl" x="832" y="425">THE RACK</text>
+      ${LINKS.map(link).join("")}
+      ${tunnels}
+      <text class="nm-tl cf" x="700" y="64">Cloudflare Tunnel, started by the Pi</text>
+      <text class="nm-tl ts" x="560" y="462">WireGuard tunnel (Tailscale)</text>
+      ${Object.keys(n).map(node).join("")}
+      <circle class="nm-pkt" r="6" cx="-20" cy="-20"/>
+    </svg></div>
+    <p class="nm-swipe">swipe the map sideways to see it all</p>
+    <div class="nm-under">
+      <ol class="nm-steps" id="nm-steps"></ol>
+      <div class="nm-info" id="nm-info"></div>
+    </div>
+  </div>`;
+}
+function netSetup() {
+  const root = document.querySelector(".nm-wrap"); if (!root) return;
+  root.querySelectorAll(".nm-flow").forEach(b => b.onclick = () => { netFlow = b.dataset.flow; netRun(); });
+  root.querySelectorAll(".nm-node").forEach(g => {
+    const pick = () => { netPick = g.dataset.node; netInfo(); };
+    g.onclick = pick; g.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } };
+  });
+  netRun(); netInfo();
+}
+function netInfo() {
+  const d = NODES[netPick], box = $("#nm-info"); if (!box) return;
+  document.querySelectorAll(".nm-node").forEach(g => g.classList.toggle("picked", g.dataset.node === netPick));
+  let live = "";
+  if (d.pi && stats) {
+    const L = lastLive();
+    live = `<div class="nm-live">${[["CPU", L ? Math.round(L[1]) + "%" : stats.load], ["Temp", L && L[2] != null ? L[2].toFixed(1) + "°C" : stats.temp],
+      ["Power", L && L[3] != null ? L[3].toFixed(1) + " W" : stats.power], ["Uptime", stats.uptime]].map(([k, v]) => `<span><em>${k}</em>${v ?? "n/a"}</span>`).join("")}</div>`;
   }
-  return `<svg class="netmap" viewBox="0 0 960 390" role="img" aria-label="Network map: visitors reach the Pi through a Cloudflare Tunnel, I reach it through Tailscale, and at home it connects through the switch, a TP-Link wireless box and the EE hub.">
-    ${L("M128 50 L 272 50")}${L("M330 70 L 330 150")}${L("M330 190 L 330 280")}${L("M128 300 L 272 300")}
-    ${L("M388 170 L 422 170")}${L("M538 170 L 572 170")}${L("M688 170 L 722 170")}${L("M780 190 L 780 270")}${L("M740 190 L 660 270")}
-    <path class="tun cf" d="${cf}"/><path class="tun ts" d="${ts}"/>${pk}
-    ${N(70, 50, "You", "any browser")}
-    ${N(330, 50, "Cloudflare", "haydnhomelab.com")}
-    ${N(330, 170, "Internet", "")}
-    ${N(330, 300, "Tailscale", "private network")}
-    ${N(70, 300, "My devices", "Mac, phone")}
-    ${N(480, 170, "EE hub", "home router")}
-    ${N(630, 170, "TP-Link box", "wireless link")}
-    ${N(780, 170, "Switch", "TL-SG105E")}
-    ${N(780, 290, "Raspberry Pi", "this website", "pi")}
-    ${N(630, 290, "My PC", "on the switch")}
-    <text class="lbl" x="560" y="30">tunnel out to Cloudflare</text><text class="lbl" x="520" y="384">WireGuard tunnel</text>
-  </svg>`;
+  box.innerHTML = `<div class="nm-ih"><svg width="22" height="22" viewBox="0 0 24 24">${ICON[d.icon]}</svg><b>${d.t}</b></div><p>${d.info}</p>${live}<p class="nm-hint">Click any device on the map.</p>`;
+}
+function netRun() {
+  cancelAnimationFrame(netAnim);
+  const f = FLOWS[netFlow], root = document.querySelector(".nm-wrap"); if (!root) return;
+  root.style.setProperty("--flow", f.colour);
+  root.querySelectorAll(".nm-flow").forEach(b => b.classList.toggle("on", b.dataset.flow === netFlow));
+  const pairs = new Set(f.route.slice(1).map((id, i) => [f.route[i], id].sort().join("|")));
+  root.querySelectorAll(".nm-link").forEach(l => l.classList.toggle("lit", pairs.has([l.dataset.a, l.dataset.b].sort().join("|"))));
+  root.querySelectorAll(".nm-node").forEach(g => g.classList.toggle("lit", f.route.includes(g.dataset.node)));
+  root.querySelectorAll(".nm-tun, .nm-tl").forEach(t => t.classList.toggle("lit", !!f.tunnel && t.classList.contains(f.tunnel)));
+  const grav = stats && stats.gravity ? Number(stats.gravity).toLocaleString() : "thousands of";
+  $("#nm-steps").innerHTML = f.steps.map((s, i) => `<li data-i="${i}"><span>${i + 1}</span>${s[2].replace("__GRAVITY__", `Pi-hole checks it against ${grav} known ad and tracker domains. If it's on the list, the answer is "nowhere" and the ad never loads.`)}</li>`).join("");
+  const pts = f.route.map(id => [NODES[id].x, NODES[id].y]);
+  const pkt = root.querySelector(".nm-pkt"), lis = [...root.querySelectorAll("#nm-steps li")];
+  // Timeline: move along each link, and pause at the nodes where a step happens there
+  const SPEED = 240, HOLD = 1600, END = 1800;
+  const holds = new Set(f.steps.filter(s => s[0] === s[1]).map(s => s[0]));
+  const plan = [];
+  pts.slice(1).forEach((p, i) => {
+    if (holds.has(i) && i > 0) plan.push({ at: i, ms: HOLD });
+    plan.push({ from: i, ms: Math.hypot(p[0] - pts[i][0], p[1] - pts[i][1]) / SPEED * 1000 });
+  });
+  plan.push({ at: pts.length - 1, ms: END });
+  const cycle = plan.reduce((a, b) => a + b.ms, 0);
+  let t0 = performance.now();
+  const step = now => {
+    let t = (now - t0) % cycle, k = 0;
+    while (t > plan[k].ms) { t -= plan[k].ms; k++; }
+    const e = plan[k];
+    let p, at;
+    if (e.from == null) { p = pts[e.at]; at = e.at; }
+    else { const a = pts[e.from], b = pts[e.from + 1], r = t / e.ms; p = [a[0] + (b[0] - a[0]) * r, a[1] + (b[1] - a[1]) * r]; at = e.from; }
+    pkt.setAttribute("cx", p[0]); pkt.setAttribute("cy", p[1]);
+    const still = e.from == null;
+    lis.forEach((li, j) => { const [a, b] = f.steps[j]; li.classList.toggle("on", a === b ? still && at === a : at >= a && at < b && !(still && holds.has(at))); });
+    if (modalOpen === "network") netAnim = requestAnimationFrame(step);
+  };
+  if (reduceMotion) { const last = pts[pts.length - 1]; pkt.setAttribute("cx", last[0]); pkt.setAttribute("cy", last[1]); lis.forEach(li => li.classList.add("on")); return; }
+  netAnim = requestAnimationFrame(step);
 }
 
 $("#open-net").onclick = e => openModal("network", e.currentTarget);
@@ -1007,7 +1169,7 @@ addEventListener("keydown", e => {
 
 /* ---------- "updated 2s ago" ticker ---------- */
 setInterval(() => {
-  const t = liveOk ? lastLive()[0] : stats && stats.updated;
+  const L = lastLive(), t = L ? L[0] : stats && stats.updated;
   if (!t) return;
   const s = Math.max(0, Math.round(Date.now() / 1000 - t));
   $("#ago").textContent = s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`;
@@ -1024,10 +1186,11 @@ if (!reduceMotion && matchMedia("(hover: hover) and (min-width: 1100px)").matche
   rt.addEventListener("pointerleave", () => (rs.style.transform = ""));
 }
 
-let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && drawModal(modalOpen, false), 200); });
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && modalOpen !== "network" && drawModal(modalOpen, false), 200); });
 
 /* ---------- live data: every 3 seconds ---------- */
 let live = null, liveOk = false, liveFails = 0;
+const lastLive = () => liveOk && live.points.length ? live.points[live.points.length - 1] : null;
 const secs = t => new Date(t * 1000).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
 function drawLive(animate = false) {
   if (!liveOk || !modalOpen) return;
