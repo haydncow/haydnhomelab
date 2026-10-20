@@ -302,6 +302,47 @@
   .nm-live span { background: #101311; border: 1px solid var(--line); border-radius: 10px; padding: 6px 8px; font-weight: 600; font-variant-numeric: tabular-nums; }
   .nm-live em { display: block; font-style: normal; font-weight: 600; font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
 
+
+  /* ---------- honeypot attack map ---------- */
+  .am { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(260px, 1fr); gap: 14px; align-items: start; }
+  @media (max-width: 860px) { .am { grid-template-columns: 1fr; } }
+  .am-svg { width: 100%; height: auto; display: block; border: 1px solid var(--line); border-radius: 18px;
+            background: radial-gradient(60% 60% at 50% 50%, #1a1206 0%, #0a0907 55%, #070707 100%); }
+  .am-ring { fill: none; stroke: #ffb21a1c; } .am-ring.home { stroke: #ffb21a55; stroke-dasharray: 4 7; stroke-width: 1.5; }
+  .am-spoke { stroke: #ffb21a14; stroke-width: 1.2; }
+  .am-zl { font: 600 10px Inter, sans-serif; letter-spacing: .16em; fill: #8a7a5c; }
+  .am-wall { font: 500 11px Inter, sans-serif; fill: #6f6a60; }
+  .am-sweep { transform-origin: 320px 320px; animation: amspin 6s linear infinite; }
+  @keyframes amspin { to { transform: rotate(360deg); } }
+  .am-core rect { fill: #101311; stroke: #5cff3a66; stroke-width: 1.4; filter: drop-shadow(0 0 14px #5cff3a33); }
+  .am-core text { font: 600 12px Inter, sans-serif; fill: var(--text); } .am-core .s { font: 400 10px Inter, sans-serif; fill: var(--muted); }
+  .am-trap circle.b { fill: #120f0a; stroke: #ffb21a55; stroke-width: 1.4; transition: fill .4s, stroke .4s; }
+  .am-trap .heat { fill: var(--amber); transition: opacity .6s; }
+  .am-trap text.p { font: 700 11px "JetBrains Mono", monospace; fill: #f3d9a6; }
+  .am-trap text.n { font: 600 11px Inter, sans-serif; fill: var(--text); }
+  .am-trap .cnt circle { fill: var(--amber); } .am-trap .cnt text { font: 700 10px Inter, sans-serif; fill: #000; }
+  .am-trap.hit circle.b { fill: #3a2606; stroke: var(--amber); filter: drop-shadow(0 0 16px var(--amber)); }
+  .am-ripple { fill: none; stroke: var(--amber); stroke-width: 2; }
+  .am-pkt { fill: #fff; filter: drop-shadow(0 0 6px var(--amber)) drop-shadow(0 0 2px var(--amber)); }
+  .am-trail { stroke: var(--amber); stroke-width: 2; stroke-linecap: round; opacity: .7; }
+  .am-mode { display: inline-flex; align-items: center; gap: 8px; font: 600 11px Inter, sans-serif; letter-spacing: .12em; text-transform: uppercase;
+             color: var(--amber); border: 1px solid #ffb21a55; border-radius: 999px; padding: 5px 12px; margin-bottom: 10px; }
+  .am-mode i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; box-shadow: 0 0 8px currentColor; animation: ampulse 1.2s ease-in-out infinite alternate; }
+  .am-mode.live { color: var(--led); border-color: #5cff3a55; }
+  @keyframes ampulse { from { opacity: .35; } }
+  .am-side .mgrid { margin: 0 0 10px; grid-template-columns: repeat(3, 1fr); }
+  .am-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; max-height: 360px; overflow: auto; scrollbar-width: thin; }
+  .am-feed li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: #101311; border: 1px solid var(--line); font-size: 12.5px; }
+  .am-feed li.new { animation: amin .5s ease-out; border-color: #ffb21a66; }
+  @keyframes amin { from { opacity: 0; transform: translateY(-6px); background: #2a1c06; } }
+  .am-feed i { width: 8px; height: 8px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 8px var(--amber); flex: none; }
+  .am-feed li.test i { background: #5a86e6; box-shadow: 0 0 8px #5a86e6; } .am-feed li.test { border-color: #5a86e655; }
+  .am-feed span { color: var(--muted); } .am-feed code { color: var(--text); font-family: "JetBrains Mono", monospace; font-size: 11.5px; }
+  .am-feed em { margin-left: auto; font-style: normal; color: var(--muted); font-size: 11px; white-space: nowrap; }
+  .am-quiet { color: var(--muted); font-size: 12.5px; border: 1px dashed var(--line2); border-radius: 12px; padding: 12px; margin: 0 0 10px; }
+  .am-btns { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0 0; }
+  .am-note { color: #5f665f; font-size: 11.5px; margin: 10px 0 0; }
+
   /* =========================================================
      Sleeker look: Inter for text, mono only for technical bits
      ========================================================= */
@@ -413,6 +454,7 @@
     <div class="right">
       <span class="keys">updated <span id="ago">-</span></span>
       <button class="hbtn" id="open-net" title="Network map (N)">network map <kbd>N</kbd></button>
+      <button class="hbtn" id="open-atk" title="Honeypot attack map (A)">attack map <kbd>A</kbd></button>
       <a href="https://github.com/haydncow/homelab-plan">github</a>
     </div>
   </header>
@@ -880,8 +922,9 @@ function render() {
   $("#svc").innerHTML = svc.length ? svc.map(s => `<div class="svc ${s.up ? "up" : "down"}" title="${s.detail || ABOUT[s.name] || ""}"><i></i>${s.name.replace(" (Caddy)", "").replace(" Tunnel", "")}</div>`).join("") : `<span class="note">not available yet</span>`;
   const hp = stats.honeypot;
   $("#hp-line").innerHTML = hp ? `honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in the last 24h` : "";
-  if (modalOpen && modalOpen !== "network") drawModal(modalOpen, false);
+  if (modalOpen && modalOpen !== "network" && modalOpen !== "attacks") drawModal(modalOpen, false);
   if (modalOpen === "network") netInfo();
+  if (modalOpen === "attacks") atkUpdate();
 }
 
 /* ---------- expanded views ---------- */
@@ -955,6 +998,7 @@ const MODALS = {
     <div class="mgrid">${st("Pi right now", stats.power)}${st("Whole rack per year (est.)", stats.cost_year)}</div><div class="chart" id="ml-pow"></div><div class="chart" id="mc-pow"></div>`,
   services: () => `<h2 id="m-title">What's running</h2><p class="tag">Checked every minute with systemd.</p>
     <div class="svc-big">${(stats.services || []).map(s => `<div class="${s.up ? "up" : ""}"><i></i><div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span>${s.detail || s.for ? `<span class="d">${[s.detail, s.for ? "up for " + s.for : ""].filter(Boolean).join(" &middot; ")}</span>` : ""}</div><em>${s.up ? "running" : "down"}</em></div>`).join("")}</div>`,
+  attacks: () => `<h2 id="m-title">Honeypot attack map</h2><p class="tag">Every time something touches one of my fake services, it lands here. The honeypot is only on my home network, so most days it's quiet. That's the good outcome.</p>${atkMap()}`,
   network: () => `<h2 id="m-title">Network map</h2><p class="tag">How everything connects. Pick a story to watch the traffic, or click a device.</p>${netmap()}`,
   security: () => `<h2 id="m-title">Security</h2><p class="tag">How the Pi is locked down, and how I tested it.</p>
     <div class="cards">
@@ -966,6 +1010,7 @@ const MODALS = {
       <div><b>Only safe info here</b><p>No IP addresses, hostnames or software versions on this page.</p></div>
     </div>
     ${honeypotHtml()}
+    <div class="am-btns" style="margin:-4px 0 12px"><button class="hbtn" onclick="openModal('attacks', $('#open-atk'))">open the attack map <kbd>A</kbd></button></div>
     <pre class="scan"><span class="f"># every TCP port, scanned from another device on my network</span>
 $ sudo nmap -p- &lt;the pi&gt;
 Not shown: <span class="f">65531 filtered tcp ports (no-response)</span>
@@ -999,7 +1044,9 @@ function drawModal(kind, animate = true) {
   C("mc-pow", { title: "Power, last 24 hours", sub: "Every 5 minutes", unit: " W", min: 0, fmt: v => Number(v).toFixed(1), tickFmt: v => v.toFixed(1),
     series: [{ name: "Power", colour: "var(--s-blocked)", data: pw.map(p => [p[0], p[3]]) }] });
   drawLive(animate);
-  if (kind === "network") { netSetup(); $("#modal .sheet").classList.add("wide"); } else $("#modal .sheet").classList.remove("wide");
+  if (kind === "network") netSetup();
+  if (kind === "attacks") atkSetup();
+  $("#modal .sheet").classList.toggle("wide", kind === "network" || kind === "attacks");
   if (!animate) document.querySelectorAll("#m-body .draw").forEach(p => p.classList.remove("draw"));
 }
 let modalOpen = null, opener = null;
@@ -1186,10 +1233,165 @@ function netRun() {
   netAnim = requestAnimationFrame(step);
 }
 
+
+/* ---------- honeypot attack map ---------- */
+// Only real events from the honeypot log: no IPs or passwords ever reach this page.
+// It replays the last 7 days quickly, then watches for new ones every minute.
+const TRAPS = [
+  { port: 2222, n: "SSH",     svc: "Fake SSH" },
+  { port: 23,   n: "Telnet",  svc: "Fake Telnet" },
+  { port: 21,   n: "FTP",     svc: "Fake FTP" },
+  { port: 3306, n: "MySQL",   svc: "Fake MySQL" },
+  { port: 3389, n: "RDP",     svc: "Fake Remote Desktop" },
+  { port: 5900, n: "VNC",     svc: "Fake VNC" },
+  { port: 6379, n: "Redis",   svc: "Fake Redis" },
+  { port: 8081, n: "NAS",     svc: "Fake NAS login page" },
+];
+const AC = 320, AR_TRAP = 178, AR_HOME = 286;
+TRAPS.forEach((t, i) => { t.a = -Math.PI / 2 + i * 2 * Math.PI / TRAPS.length; t.x = AC + AR_TRAP * Math.cos(t.a); t.y = AC + AR_TRAP * Math.sin(t.a); });
+const trapFor = e => TRAPS.find(t => t.port === e.port || t.svc === e.service);
+let atkSeen = 0, atkCounts = {}, atkTimers = [], atkMode = "replay";
+const atkEsc = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+function atkWeek() { const h = stats && stats.honeypot; return (h && h.week) || []; }
+function atkMap() {
+  const traps = TRAPS.map((t, i) => `
+    <g class="am-trap" data-i="${i}" transform="translate(${t.x.toFixed(1)},${t.y.toFixed(1)})">
+      <circle class="heat" r="44" opacity="0"/>
+      <circle class="b" r="31"/>
+      <text class="p" text-anchor="middle" y="4">:${t.port}</text>
+      <text class="n" text-anchor="middle" y="50">${t.n}</text>
+      <g class="cnt" transform="translate(23,-23)" style="display:none"><circle r="10"/><text text-anchor="middle" y="3.5">0</text></g>
+    </g>`).join("");
+  const spokes = TRAPS.map(t => `<line class="am-spoke" x1="${AC}" y1="${AC}" x2="${t.x.toFixed(1)}" y2="${t.y.toFixed(1)}"/>`).join("");
+  const h = stats && stats.honeypot;
+  return `<div class="am">
+    <svg class="am-svg" viewBox="0 0 640 640" role="img" aria-label="Map of my honeypot's fake services and what has touched them">
+      <defs><linearGradient id="am-sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb21a" stop-opacity="0"/><stop offset="1" stop-color="#ffb21a" stop-opacity=".28"/></linearGradient></defs>
+      <text class="am-zl" x="24" y="34">THE INTERNET</text>
+      <text class="am-wall" x="24" y="52">can't reach these: no ports</text>
+      <text class="am-wall" x="24" y="67">forwarded on my router</text>
+      <circle class="am-ring home" cx="${AC}" cy="${AC}" r="${AR_HOME}"/>
+      <text class="am-zl" x="${AC}" y="${AC - AR_HOME + 20}" text-anchor="middle">MY HOME NETWORK</text>
+      <circle class="am-ring" cx="${AC}" cy="${AC}" r="${AR_TRAP}"/><circle class="am-ring" cx="${AC}" cy="${AC}" r="100"/><circle class="am-ring" cx="${AC}" cy="${AC}" r="236"/>
+      ${reduceMotion ? "" : `<g class="am-sweep"><path d="M${AC} ${AC} L${AC + AR_HOME} ${AC} A${AR_HOME} ${AR_HOME} 0 0 0 ${(AC + AR_HOME * Math.cos(-0.5)).toFixed(1)} ${(AC + AR_HOME * Math.sin(-0.5)).toFixed(1)} Z" fill="url(#am-sw)"/></g>`}
+      ${spokes}
+      <g class="am-core" transform="translate(${AC},${AC})"><rect x="-66" y="-30" width="132" height="60" rx="14"/>
+        <text text-anchor="middle" y="-3">OpenCanary</text><text class="s" text-anchor="middle" y="13">on the Pi</text></g>
+      ${traps}
+      <g id="am-fx"></g>
+    </svg>
+    <div class="am-side">
+      <div class="am-mode" id="am-mode"><i></i><span>replaying the last 7 days</span></div>
+      <div class="mgrid">${st("Last 24h", h ? h.today : "n/a")}${st("Last 7 days", h ? atkWeek().length : "n/a")}${st("All time", h ? h.total : "n/a")}</div>
+      <div id="am-quiet"></div>
+      <ul class="am-feed" id="am-feed" aria-live="polite"></ul>
+      <div class="am-btns"><button class="hbtn" id="am-replay">replay</button><button class="hbtn" id="am-test">send a test hit</button></div>
+      <p class="am-note">Shows which fake service was touched, when, and common usernames like root. Never IP addresses or passwords.</p>
+    </div>
+  </div>`;
+}
+function atkClear() { atkTimers.forEach(clearTimeout); atkTimers = []; const fx = $("#am-fx"); if (fx) fx.innerHTML = ""; }
+function atkSetup() {
+  atkClear(); atkCounts = {};
+  $("#am-replay").onclick = () => atkReplay();
+  $("#am-test").onclick = () => atkHit({ time: Date.now() / 1000, port: TRAPS[Math.floor(Math.random() * TRAPS.length)].port, test: true }, true);
+  atkReplay();
+}
+function atkSetMode(mode) {
+  atkMode = mode;
+  const m = $("#am-mode"); if (!m) return;
+  m.classList.toggle("live", mode === "live");
+  m.querySelector("span").textContent = mode === "live" ? "live, watching every minute" : "replaying the last 7 days";
+}
+function atkQuiet() {
+  const q = $("#am-quiet"); if (!q) return;
+  q.innerHTML = atkWeek().length ? "" : `<p class="am-quiet">Nothing has touched the traps in the last 7 days. On a healthy network, that's exactly what should happen. Press "send a test hit" to see what an alert looks like.</p>`;
+}
+function atkReplay() {
+  atkClear(); atkCounts = {};
+  const feed = $("#am-feed"); if (feed) feed.innerHTML = "";
+  document.querySelectorAll(".am-trap").forEach(g => atkBadge(g, 0));
+  const ev = atkWeek();
+  atkSeen = ev.length ? ev[ev.length - 1].time : 0;
+  atkQuiet();
+  if (reduceMotion || !ev.length) { ev.forEach(e => atkHit(e, false)); atkSetMode("live"); return; }
+  atkSetMode("replay");
+  // squash 7 days into about 8 seconds, but keep hits at least 120ms apart
+  const t0 = ev[0].time, span = Math.max(1, ev[ev.length - 1].time - t0);
+  let last = -999;
+  ev.forEach(e => {
+    const at = Math.max(last + 120, (e.time - t0) / span * 8000);
+    last = at;
+    atkTimers.push(setTimeout(() => atkHit(e, true), 300 + at));
+  });
+  atkTimers.push(setTimeout(() => atkSetMode("live"), 300 + last + 1400));
+}
+function atkUpdate() {
+  // called when stats.json refreshes: animate anything newer than what we've shown
+  if (atkMode !== "live") return;
+  const fresh = atkWeek().filter(e => e.time > atkSeen);
+  if (!fresh.length) return;
+  atkSeen = fresh[fresh.length - 1].time;
+  atkQuiet();
+  fresh.forEach((e, i) => atkTimers.push(setTimeout(() => atkHit(e, true), i * 500)));
+}
+function atkBadge(g, n) {
+  const c = g.querySelector(".cnt"); c.style.display = n ? "" : "none"; c.querySelector("text").textContent = n > 99 ? "99+" : n;
+  g.querySelector(".heat").setAttribute("opacity", n ? Math.min(.28, .06 + n * .03) : 0);
+}
+function atkHit(e, animate) {
+  if (modalOpen !== "attacks") return;
+  const t = trapFor(e) || TRAPS[0], i = TRAPS.indexOf(t), g = document.querySelector(`.am-trap[data-i="${i}"]`);
+  const done = () => {
+    if (!e.test) { atkCounts[i] = (atkCounts[i] || 0) + 1; atkBadge(g, atkCounts[i]); }
+    atkFeed(e, t, animate);
+    if (!animate) return;
+    g.classList.add("hit"); atkTimers.push(setTimeout(() => g.classList.remove("hit"), 700));
+    const fx = $("#am-fx"), r = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    r.setAttribute("class", "am-ripple"); r.setAttribute("cx", t.x); r.setAttribute("cy", t.y); r.setAttribute("r", 31);
+    r.style.transformBox = "fill-box"; r.style.transformOrigin = "center";
+    fx.appendChild(r);
+    r.animate([{ transform: "scale(1)", opacity: .9 }, { transform: "scale(2.2)", opacity: 0 }], { duration: 900, easing: "ease-out" }).onfinish = () => r.remove();
+  };
+  if (!animate) return done();
+  // a packet comes in from somewhere on the home network edge, near the trap it's heading for
+  const a = t.a + (Math.random() - .5) * .9, sx = AC + AR_HOME * Math.cos(a), sy = AC + AR_HOME * Math.sin(a);
+  const fx = $("#am-fx"), NS = "http://www.w3.org/2000/svg";
+  const trail = document.createElementNS(NS, "line"), pkt = document.createElementNS(NS, "circle");
+  trail.setAttribute("class", "am-trail"); pkt.setAttribute("class", "am-pkt"); pkt.setAttribute("r", 4.5);
+  if (e.test) { trail.style.stroke = "#5a86e6"; }
+  fx.append(trail, pkt);
+  const ex = t.x - (t.x - sx) * 31 / Math.hypot(t.x - sx, t.y - sy), ey = t.y - (t.y - sy) * 31 / Math.hypot(t.x - sx, t.y - sy);
+  const dur = 750, start = performance.now();
+  const step = now => {
+    if (modalOpen !== "attacks") return;
+    const k = Math.min(1, (now - start) / dur), q = 1 - Math.pow(1 - k, 3);
+    const x = sx + (ex - sx) * q, y = sy + (ey - sy) * q, tk = Math.max(0, q - .25);
+    pkt.setAttribute("cx", x); pkt.setAttribute("cy", y);
+    trail.setAttribute("x1", sx + (ex - sx) * tk); trail.setAttribute("y1", sy + (ey - sy) * tk); trail.setAttribute("x2", x); trail.setAttribute("y2", y);
+    if (k < 1) requestAnimationFrame(step); else { pkt.remove(); trail.remove(); done(); }
+  };
+  requestAnimationFrame(step);
+}
+function atkFeed(e, t, animate) {
+  const feed = $("#am-feed"); if (!feed) return;
+  const what = e.test ? "<span>test hit, not real</span>"
+    : e.user === "a username" ? "<span>tried logging in</span>"
+    : e.user ? `<span>tried user <code>${atkEsc(e.user)}</code></span>` : "<span>connected</span>";
+  const d = new Date(e.time * 1000);
+  const when = d.toLocaleDateString([], { weekday: "short" }) + " " + d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const li = document.createElement("li");
+  li.className = (animate ? "new" : "") + (e.test ? " test" : "");
+  li.innerHTML = `<i></i><b>${atkEsc(t.n)}</b>${what}<em>${when}</em>`;
+  feed.prepend(li);
+  while (feed.children.length > 60) feed.lastChild.remove();
+}
+$("#open-atk").onclick = e => openModal("attacks", e.currentTarget);
 $("#open-net").onclick = e => openModal("network", e.currentTarget);
 addEventListener("keydown", e => {
   if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "n" || e.key === "N") openModal("network", $("#open-net"));
+  if (e.key === "a" || e.key === "A") openModal("attacks", $("#open-atk"));
 });
 
 /* ---------- "updated 2s ago" ticker ---------- */
@@ -1211,7 +1413,7 @@ if (!reduceMotion && matchMedia("(hover: hover) and (min-width: 1100px)").matche
   rt.addEventListener("pointerleave", () => (rs.style.transform = ""));
 }
 
-let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && modalOpen !== "network" && drawModal(modalOpen, false), 200); });
+let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && modalOpen !== "network" && modalOpen !== "attacks" && drawModal(modalOpen, false), 200); });
 
 /* ---------- live data: every 3 seconds ---------- */
 let live = null, liveOk = false, liveFails = 0;

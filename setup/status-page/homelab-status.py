@@ -172,13 +172,16 @@ def honeypot():
             key = (e.get("src_host"), e.get("src_port"), e.get("dst_port"))
             when = calendar.timegm(time.strptime(e["utc_time"][:19], "%Y-%m-%d %H:%M:%S"))
             user = (e.get("logdata") or {}).get("USERNAME")
-            c = conns.setdefault(key, {"time": int(when), "service": CANARY_PORTS.get(e.get("dst_port"), "another port"), "user": None})
+            c = conns.setdefault(key, {"time": int(when), "service": CANARY_PORTS.get(e.get("dst_port"), "another port"),
+                                       "port": e.get("dst_port"), "user": None})
             if user:
                 c["user"] = str(user) if str(user).lower() in SAFE_USERS else "a username"
     events = sorted(conns.values(), key=lambda c: c["time"])
     now = time.time()
     day = [e for e in events if now - e["time"] < 86400]
-    return {"today": len(day), "total": len(events), "recent": events[-8:][::-1]}
+    week = [e for e in events if now - e["time"] < 7 * 86400]
+    # "week" feeds the attack map on the page: the last 7 days, newest last
+    return {"today": len(day), "total": len(events), "recent": events[-8:][::-1], "week": week[-150:]}
 
 
 def detail_honeypot():
