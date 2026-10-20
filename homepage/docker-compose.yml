@@ -13,7 +13,7 @@ services:
     environment:
       PORT: "3000"
       # Homepage refuses requests for any other address, to stop DNS rebinding attacks
-      HOMEPAGE_ALLOWED_HOSTS: "192.168.1.5:3000,homelab.local:3000,homelab:3000,100.110.215.83:3000,localhost:3000"
+      HOMEPAGE_ALLOWED_HOSTS: "dashboard.lan,192.168.1.5:3000,homelab.local:3000,homelab:3000,100.110.215.83:3000,localhost:3000"
     volumes:
       - ./config:/app/config
       - /mnt/media:/mnt/media:ro     # read-only, just so it can show free space

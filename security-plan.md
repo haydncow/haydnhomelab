@@ -51,6 +51,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 ## Firewall
 
 - **UFW** on the Pi blocks everything coming in by default, and only allows what's listed in the status section above
+- Private services have names like `jellyfin.lan`: Pi-hole's local DNS points them at the Pi and Caddy on port 80 sends each to the right place. Pi-hole's own web page moved to 8090, which isn't open in UFW, so it's only reachable through Caddy
 - Docker would normally go around UFW, so Homepage uses `network_mode: host` to keep UFW in control
 
 ## Updates

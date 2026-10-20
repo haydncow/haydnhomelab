@@ -25,7 +25,7 @@ os.environ["PATH"] = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/b
 OUT_DIR = "/srv/status"
 STATE_DIR = "/var/lib/homelab-status"  # keeps 24 hours of temp/memory readings
 PASS_FILE = "/etc/homelab-status/pihole-app-password"  # root-only (chmod 600)
-API = "http://127.0.0.1/api"  # Pi-hole's API, only asked from the Pi itself
+API = "http://127.0.0.1:8090/api"  # Pi-hole's API (moved to 8090 so Caddy can have port 80)
 
 # What shows in the "What's running" panel:
 # (name on the page, systemd service(s) to check, extra detail function name)

@@ -43,6 +43,7 @@ The DeskPi RackMate T0 when it arrived. The Pi and switch are fitted now (see th
 - [Homepage](homepage/) - my private dashboard, running in Docker
 - [Speedtest](speedtest/) - tests my broadband every 2 hours
 - [Diagrams](diagrams/) - rack layout and my original network plan (the up-to-date map is on the status page, press N)
+- [Caddyfile](Caddyfile) - gives my services names like `jellyfin.lan` instead of IP addresses and ports
 - [Status page](status-page/) - live at [haydnhomelab.com](https://haydnhomelab.com), served from the Pi through a Cloudflare Tunnel
 
 ## How I built this

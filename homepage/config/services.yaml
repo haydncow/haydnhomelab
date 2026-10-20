@@ -1,17 +1,17 @@
 - Homelab:
     - Pi-hole:
         icon: pi-hole.png
-        href: http://192.168.1.5/admin/
+        href: http://pihole.lan
         description: Network ad blocking
         widget:
           type: pihole
-          url: http://127.0.0.1
+          url: http://127.0.0.1:8090
           version: 6
           key: "{{HOMEPAGE_VAR_PIHOLE_KEY}}"
 
     - Jellyfin:
         icon: jellyfin.png
-        href: http://192.168.1.5:8096
+        href: http://jellyfin.lan
         description: My own Netflix
         siteMonitor: http://127.0.0.1:8096
         widget:
@@ -24,7 +24,7 @@
 
     - Speedtest:
         icon: speedtest-tracker.png
-        href: http://192.168.1.5:8766
+        href: http://speed.lan
         description: Broadband speed every 2 hours
         widget:
           type: speedtest

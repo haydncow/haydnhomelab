@@ -14,7 +14,7 @@ services:
       - PGID=1000
       - TZ=Europe/London
       - DISPLAY_TIMEZONE=Europe/London
-      - APP_URL=http://192.168.1.5:8766
+      - APP_URL=http://speed.lan
       - DB_CONNECTION=sqlite
       - SPEEDTEST_SCHEDULE=0 */2 * * *
       - PRUNE_RESULTS_OLDER_THAN=90

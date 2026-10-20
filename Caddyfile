@@ -1,0 +1,35 @@
+# /etc/caddy/Caddyfile
+
+# Status page, only on the Pi itself for the Cloudflare Tunnel
+:8080 {
+	bind 127.0.0.1
+	root * /srv/status
+	file_server
+	header /live.json Cache-Control no-store
+	header /stats.json Cache-Control no-store
+}
+
+# Friendly names for my services. Pi-hole's local DNS points them all at the
+# Pi, and Caddy sends each one to the right port. Port 80 is only open to my
+# home network and Tailscale in UFW.
+http://jellyfin.lan {
+	reverse_proxy 127.0.0.1:8096
+}
+
+http://dashboard.lan {
+	reverse_proxy 127.0.0.1:3000
+}
+
+http://speed.lan {
+	reverse_proxy 127.0.0.1:8765
+}
+
+http://pihole.lan {
+	redir / /admin/
+	reverse_proxy 127.0.0.1:8090
+}
+
+# Speedtest Tracker by port too, as a backup
+:8766 {
+	reverse_proxy 127.0.0.1:8765
+}
