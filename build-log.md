@@ -40,6 +40,10 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Changed the film script so it refuses to run if the drive isn't mounted, so it can never fill up the SD card.
 - Removed the free films script in the end. The films available legally for free weren't really what I wanted to watch.
 
+## 20 October 2026
+
+- Added a hidden terminal to the status page (press T) and an animated network map (press N).
+
 **Next:** point my PC at Pi-hole, set up VLANs on the switch, and set up Jellyfin with my NAS.
 
 ## 17 October 2026

@@ -234,6 +234,60 @@
 
   footer { padding: 10px 2px 0; font-size: 10.5px; color: var(--muted); display: flex; gap: 10px; flex-wrap: wrap; justify-content: space-between; }
 
+
+  /* ---------- extra polish ---------- */
+  body::after { content: ""; position: fixed; inset: -20%; pointer-events: none; z-index: 0; opacity: .55;
+    background: radial-gradient(40% 35% at 20% 30%, #5cff3a12, transparent 70%), radial-gradient(35% 30% at 80% 70%, #3a8bff0d, transparent 70%),
+                radial-gradient(30% 25% at 60% 20%, #5cff3a0a, transparent 70%);
+    animation: drift 26s ease-in-out infinite alternate; }
+  @keyframes drift { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(4%, -3%) rotate(6deg); } }
+  @property --ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+  .tile.click::after { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px; pointer-events: none; opacity: 0;
+    background: conic-gradient(from var(--ang), transparent 0 70%, #5cff3a 80%, #b6ffa0 85%, transparent 95%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude;
+    transition: opacity .3s; animation: spin 3s linear infinite; }
+  .tile.click:hover::after, .tile.click:focus-visible::after { opacity: 1; }
+  @keyframes spin { to { --ang: 360deg; } }
+  .t-rack svg { transition: transform .4s ease-out; transform-style: preserve-3d; will-change: transform; }
+  .hbtn { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); background: var(--panel);
+          border: 1px solid var(--line); border-radius: 8px; padding: 4px 10px; cursor: pointer; }
+  .hbtn:hover, .hbtn:focus-visible { color: var(--led); border-color: #5cff3a66; outline: none; }
+  .hbtn kbd { font-size: 9px; padding: 0 4px; }
+  #ago { font-variant-numeric: tabular-nums; }
+
+  /* ---------- terminal ---------- */
+  #term { position: fixed; left: 50%; top: 0; z-index: 40; width: min(900px, calc(100% - 24px)); height: min(62vh, 560px);
+          transform: translate(-50%, -105%); transition: transform .38s cubic-bezier(.2,.8,.2,1);
+          background: #030503f2; border: 1px solid #5cff3a44; border-top: 0; border-radius: 0 0 16px 16px;
+          box-shadow: 0 30px 80px -10px #000, 0 0 40px -10px #5cff3a33; display: flex; flex-direction: column; overflow: hidden; }
+  #term.open { transform: translate(-50%, 0); }
+  #term .bar { display: flex; align-items: center; gap: 7px; padding: 9px 14px; border-bottom: 1px solid #5cff3a22; font-size: 11px; color: var(--muted); }
+  #term .bar i { width: 10px; height: 10px; border-radius: 50%; background: #333; } #term .bar i:nth-child(1) { background: #ff5f57; }
+  #term .bar i:nth-child(2) { background: #febc2e; } #term .bar i:nth-child(3) { background: #28c840; }
+  #term .bar span { margin-left: 8px; } #term .bar button { margin-left: auto; background: none; border: 0; color: var(--muted); cursor: pointer; font-size: 11px; }
+  #term-out { flex: 1; overflow: auto; padding: 12px 16px 4px; font-size: 13px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; color: #c9d1c7; }
+  #term-out .p, #term-line .p { color: var(--led); } #term-out .dim { color: var(--muted); } #term-out .ok { color: var(--led); }
+  #term-out .warn { color: var(--amber); } #term-out .bad { color: var(--bad); } #term-out .b { color: #fff; font-weight: 700; }
+  #term-out a { color: var(--led); }
+  #term-line { display: flex; gap: 8px; padding: 6px 16px 14px; font-size: 13px; }
+  #term-in { flex: 1; background: none; border: 0; outline: none; color: #fff; font: inherit; caret-color: var(--led); }
+  #matrix { position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: 0; transition: opacity .5s; }
+  #matrix.on { opacity: 1; }
+
+  /* ---------- network map ---------- */
+  .netmap { width: 100%; height: auto; display: block; background: var(--bg); border: 1px solid var(--line); border-radius: 14px; }
+  .netmap .node rect { fill: #0e1110; stroke: #3a4038; stroke-width: 1.2; }
+  .netmap .node.pi rect { stroke: var(--led); filter: drop-shadow(0 0 6px #5cff3a66); }
+  .netmap .node text { fill: var(--text); font: 600 11px "JetBrains Mono", monospace; text-anchor: middle; }
+  .netmap .node .s { fill: var(--muted); font-weight: 400; font-size: 9px; }
+  .netmap .link { stroke: #3a4038; stroke-width: 1.5; fill: none; }
+  .netmap .tun { fill: none; stroke-width: 2; stroke-dasharray: 6 5; animation: march 1.2s linear infinite; }
+  .netmap .tun.cf { stroke: #f38020; } .netmap .tun.ts { stroke: var(--s-total); }
+  @keyframes march { to { stroke-dashoffset: -22; } }
+  .netmap .lbl { font: 10px "JetBrains Mono", monospace; fill: var(--muted); }
+  .netkey { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; color: var(--muted); margin: 12px 0 4px; }
+  .netkey i { display: inline-block; width: 18px; height: 0; border-top: 2px dashed; vertical-align: middle; margin-right: 6px; }
+
   /* ---------- smaller screens: stack the tiles ---------- */
   @media (max-width: 1100px) {
     .app { height: auto; min-height: 0; }
@@ -254,6 +308,9 @@
     .t-info { min-height: 0; }
     .svc-list, .sec-list { grid-template-columns: 1fr; }
     header .right .keys { display: none; }
+    .hbtn kbd { display: none; }
+    #term { height: 70vh; } #term-out, #term-line { font-size: 12px; }
+    .nf-art { display: none; }
   }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -275,7 +332,9 @@
     <span id="status" class="pill"><span class="dot"></span><span id="status-text">checking</span></span>
     <span class="sub">Raspberry Pi 5 in a 10" rack. Everything here is live.</span>
     <div class="right">
-      <span class="keys">click any tile &middot; <kbd>esc</kbd> to close</span>
+      <span class="keys">updated <span id="ago">-</span></span>
+      <button class="hbtn" id="open-net" title="Network map (N)">network map <kbd>N</kbd></button>
+      <button class="hbtn" id="open-term" title="Terminal (T)">&gt;_ terminal <kbd>T</kbd></button>
       <a href="https://github.com/haydncow/homelab-plan">github</a>
     </div>
   </header>
@@ -478,6 +537,13 @@
     <span>Code written by Claude (AI), built and run by me. <a href="https://github.com/haydncow/homelab-plan">How it's built</a></span>
   </footer>
 </div>
+
+<div id="term" role="dialog" aria-label="Terminal" aria-hidden="true">
+  <div class="bar"><i></i><i></i><i></i><span>guest@haydnhomelab: ~</span><button id="term-x">esc to close</button></div>
+  <div id="term-out" aria-live="polite"></div>
+  <label id="term-line"><span class="p">guest@homelab:~$</span><input id="term-in" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Type a command"></label>
+</div>
+<canvas id="matrix" aria-hidden="true"></canvas>
 
 <div id="modal" aria-hidden="true">
   <div class="scrim"></div>
@@ -811,6 +877,9 @@ const MODALS = {
     <div class="mgrid">${st("Pi right now", stats.power)}${st("Whole rack per year (est.)", stats.cost_year)}</div><div class="chart" id="ml-pow"></div><div class="chart" id="mc-pow"></div>`,
   services: () => `<h2 id="m-title">What's running</h2><p class="tag">Checked every minute with systemd.</p>
     <div class="svc-big">${(stats.services || []).map(s => `<div class="${s.up ? "up" : ""}"><i></i><div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span>${s.detail || s.for ? `<span class="d">${[s.detail, s.for ? "up for " + s.for : ""].filter(Boolean).join(" &middot; ")}</span>` : ""}</div><em>${s.up ? "running" : "down"}</em></div>`).join("")}</div>`,
+  network: () => `<h2 id="m-title">Network map</h2><p class="tag">How everything connects. Both tunnels are started by the Pi, so my router has no open ports.</p>
+    ${netmap()}
+    <div class="netkey"><span><i style="border-color:#f38020"></i>Cloudflare Tunnel: how you're seeing this page</span><span><i style="border-color:var(--s-total)"></i>Tailscale (WireGuard): how I manage the Pi from anywhere</span><span><i style="border-color:#3a4038;border-top-style:solid"></i>normal network link</span></div>`,
   security: () => `<h2 id="m-title">Security</h2><p class="tag">How the Pi is locked down, and how I tested it.</p>
     <div class="cards">
       <div><b>No open ports on my router</b><p>This site comes through a Cloudflare Tunnel. The Pi connects out, so nothing at home is open to the internet.</p></div>
@@ -875,8 +944,182 @@ $("#close").onclick = closeModal;
 $("#modal .scrim").onclick = closeModal;
 addEventListener("keydown", e => {
   if (e.key !== "Escape") return;
-  if (modalOpen) closeModal(); else if (current !== "intro") select("intro");
+  if (term.classList.contains("open")) closeTerm(); else if (modalOpen) closeModal(); else if (current !== "intro") select("intro");
 });
+
+/* ---------- network map ---------- */
+function netmap() {
+  const N = (x, y, t, sub, cls = "") => `<g class="node ${cls}" transform="translate(${x},${y})"><rect x="-58" y="-20" width="116" height="40" rx="9"/><text y="${sub ? -2 : 4}">${t}</text>${sub ? `<text class="s" y="12">${sub}</text>` : ""}</g>`;
+  const L = d => `<path class="link" d="${d}"/>`;
+  const cf = "M838 290 C 930 260, 920 40, 390 45", ts = "M780 310 C 780 372, 450 372, 390 318";
+  let pk = "";
+  if (!reduceMotion) for (let i = 0; i < 3; i++) {
+    pk += `<circle r="3" fill="#f38020"><animateMotion dur="2.6s" begin="${i * .87}s" repeatCount="indefinite" path="${cf}"/></circle>`;
+    pk += `<circle r="3" fill="#5a86e6"><animateMotion dur="2.6s" begin="${i * .87}s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear" path="${ts}"/></circle>`;
+  }
+  return `<svg class="netmap" viewBox="0 0 960 390" role="img" aria-label="Network map: visitors reach the Pi through a Cloudflare Tunnel, I reach it through Tailscale, and at home it connects through the switch, a TP-Link wireless box and the EE hub.">
+    ${L("M128 50 L 272 50")}${L("M330 70 L 330 150")}${L("M330 190 L 330 280")}${L("M128 300 L 272 300")}
+    ${L("M388 170 L 422 170")}${L("M538 170 L 572 170")}${L("M688 170 L 722 170")}${L("M780 190 L 780 270")}${L("M740 190 L 660 270")}
+    <path class="tun cf" d="${cf}"/><path class="tun ts" d="${ts}"/>${pk}
+    ${N(70, 50, "You", "any browser")}
+    ${N(330, 50, "Cloudflare", "haydnhomelab.com")}
+    ${N(330, 170, "Internet", "")}
+    ${N(330, 300, "Tailscale", "private network")}
+    ${N(70, 300, "My devices", "Mac, phone")}
+    ${N(480, 170, "EE hub", "home router")}
+    ${N(630, 170, "TP-Link box", "wireless link")}
+    ${N(780, 170, "Switch", "TL-SG105E")}
+    ${N(780, 290, "Raspberry Pi", "this website", "pi")}
+    ${N(630, 290, "My PC", "on the switch")}
+    <text class="lbl" x="560" y="30">tunnel out to Cloudflare</text><text class="lbl" x="520" y="384">WireGuard tunnel</text>
+  </svg>`;
+}
+
+/* ---------- hidden terminal ---------- */
+const term = $("#term"), tout = $("#term-out"), tin = $("#term-in");
+const esc = t => String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const say = html => { tout.insertAdjacentHTML("beforeend", html + "\n"); tout.scrollTop = tout.scrollHeight; };
+const hist = []; let hi = 0, termOpened = false;
+const v = k => (stats && stats[k]) ?? "n/a";
+const lastLive = () => liveOk && live.points.length ? live.points[live.points.length - 1] : null;
+const CMDS = {
+  help: () => `<span class="b">commands</span>
+  <span class="ok">neofetch</span>   system info          <span class="ok">uptime</span>     how long it's been up
+  <span class="ok">services</span>   what's running       <span class="ok">pihole</span>     ad blocking stats
+  <span class="ok">temp</span>       cpu temperature      <span class="ok">power</span>      watts and running cost
+  <span class="ok">nmap</span>       my last port scan    <span class="ok">security</span>   how it's locked down
+  <span class="ok">network</span>    open the network map <span class="ok">ping</span>       time a request to the pi
+  <span class="ok">whoami</span>     who are you          <span class="ok">about</span>      what this is
+  <span class="ok">ls</span>  <span class="ok">date</span>  <span class="ok">history</span>  <span class="ok">clear</span>  <span class="ok">exit</span>  <span class="ok">matrix</span>  <span class="dim">...and a few secrets</span>`,
+  neofetch: () => {
+    const L = lastLive();
+    const art = ["   <span class='ok'>.~~.   .~~.</span>", "  <span class='ok'>'. \\ ' ' / .'</span>", "   <span class='bad'>.~ .~~~..~.</span>", "  <span class='bad'>: .~.'~'.~. :</span>", " <span class='bad'>~ (   ) (   ) ~</span>", "<span class='bad'>( : '~'.~.'~' : )</span>", " <span class='bad'>~ .~ (   ) ~. ~</span>", "  <span class='bad'>(  : '~' :  )</span>", "   <span class='bad'>'~ .~~~. ~'</span>", "       <span class='bad'>'~'</span>"];
+    const info = [`<span class="ok">guest</span>@<span class="ok">haydnhomelab</span>`, "-----------------", `<span class="ok">Host</span>: Raspberry Pi 5 (2GB)`, `<span class="ok">Rack</span>: DeskPi RackMate T0, 10"`,
+      `<span class="ok">OS</span>: Raspberry Pi OS Lite (Debian)`, `<span class="ok">Uptime</span>: ${v("uptime")}`, `<span class="ok">CPU</span>: ${L ? Math.round(L[1]) + "%" : "load " + v("load")}, ${L && L[2] != null ? L[2].toFixed(1) + "°C" : v("temp")}`,
+      `<span class="ok">Memory</span>: ${L && L[4] != null ? Math.round(L[4]) + "%" : v("memory")} used`, `<span class="ok">Power</span>: ${L && L[3] != null ? L[3].toFixed(2) + " W" : v("power")}`,
+      `<span class="ok">Ads blocked</span>: ${v("blocked")} today`];
+    return `<span style="display:inline-flex;gap:28px;align-items:flex-start;white-space:pre"><span class="nf-art">${art.join("\n")}</span><span>${info.join("\n")}</span></span>`;
+  },
+  uptime: () => `up ${v("uptime")}`,
+  temp: () => { const L = lastLive(); return `cpu temperature: <span class="b">${L && L[2] != null ? L[2].toFixed(1) + "°C" : v("temp")}</span> <span class="dim">(comfortable under 60°C, throttles at 85°C)</span>`; },
+  power: () => { const L = lastLive(); return `pi is using <span class="b">${L && L[3] != null ? L[3].toFixed(2) + " W" : v("power")}</span>. whole rack costs about <span class="b">${v("cost_year")}</span> a year.`; },
+  pihole: () => `dns queries today: <span class="b">${v("queries")}</span>\nblocked:           <span class="b">${v("blocked")}</span> (${v("percent")})\nblocklist:         <span class="b">${stats && stats.gravity ? Number(stats.gravity).toLocaleString() : "n/a"}</span> domains`,
+  services: () => (stats && stats.services || []).map(s => `${s.up ? '<span class="ok">● running</span>' : '<span class="bad">● down   </span>'}  ${s.name.padEnd(20)} <span class="dim">${s.detail || ""}</span>`).join("\n") || "not available yet",
+  nmap: () => `<span class="dim">$ sudo nmap -p- &lt;the pi&gt;   (from another device on my network)</span>
+Not shown: 65531 filtered tcp ports (no-response)
+PORT    STATE SERVICE
+22/tcp  <span class="ok">open</span>  ssh
+53/tcp  <span class="ok">open</span>  domain
+80/tcp  <span class="ok">open</span>  http
+443/tcp <span class="ok">open</span>  https
+<span class="dim">only what I allowed. everything else gets no reply.</span>`,
+  security: () => `<span class="ok">✓</span> no open ports on my router (cloudflare + tailscale tunnels)
+<span class="ok">✓</span> ssh: keys only, no root, max 3 tries
+<span class="ok">✓</span> ufw firewall: deny by default
+<span class="ok">✓</span> fail2ban: 5 wrong logins = banned
+<span class="ok">✓</span> automatic security updates
+<span class="ok">✓</span> lynis hardening score: 63 → 75`,
+  whoami: () => `guest <span class="dim">(you're on the public site. the real login needs an ssh key you don't have.)</span>`,
+  about: () => `a raspberry pi 5 homelab i built to learn networking and cyber security.
+code for this site written by claude (ai). built, run and broken by me.
+<a href="https://github.com/haydncow/homelab-plan" target="_blank" rel="noopener">github.com/haydncow/homelab-plan</a>`,
+  ls: () => `<span class="ok">about.txt</span>  <span class="ok">security.txt</span>  <span class="ok">rack.svg</span>  <span class="dim">secrets/</span>`,
+  "cat": a => ({ "about.txt": CMDS.about, "security.txt": CMDS.security, "rack.svg": () => "nice try, it's the drawing on the left" }[a]?.() ?? (a.startsWith("secrets") ? `<span class="bad">permission denied</span>` : `cat: ${esc(a)}: no such file`)),
+  "cd": a => a && a.startsWith("secrets") ? `<span class="bad">permission denied</span> <span class="dim">(this is a firewall joke)</span>` : "",
+  date: () => new Date().toString(),
+  history: () => hist.map((h, i) => `  ${String(i + 1).padStart(3)}  ${esc(h)}`).join("\n"),
+  network: () => { closeTerm(); setTimeout(() => openModal("network", $("#open-net")), 300); return "opening network map..."; },
+  ping: async () => {
+    const out = [];
+    for (let i = 0; i < 4; i++) {
+      const t0 = performance.now();
+      try { await fetch("stats.json?ping=" + Math.random(), { cache: "no-store" }); out.push(`reply from haydnhomelab.com: time=${Math.round(performance.now() - t0)}ms`); }
+      catch (e) { out.push('<span class="bad">request timed out</span>'); }
+    }
+    return out.join("\n");
+  },
+  sudo: a => /rm\s+-rf/.test(a) ? `<span class="bad">nice try.</span> fail2ban has been notified. <span class="dim">(not really)</span>` : `<span class="bad">guest is not in the sudoers file. this incident will be reported.</span>`,
+  rm: () => `<span class="bad">rm: read-only website</span>`,
+  hack: async () => { const steps = ["scanning ports", "bypassing firewall", "cracking ssh key", "accessing mainframe"]; let o = ""; for (const s of steps) { say(`<span class="dim">[*] ${s}...</span>`); await new Promise(r => setTimeout(r, 450)); } return `<span class="bad">ACCESS DENIED.</span> it's key-only ssh behind a firewall. go practise on tryhackme instead :)`; },
+  matrix: () => { matrix(); return `<span class="ok">wake up, neo...</span>`; },
+  coffee: () => `418 i'm a teapot`,
+  clear: () => { tout.innerHTML = ""; return null; },
+  exit: () => { closeTerm(); return null; },
+};
+CMDS.ssh = () => `<span class="bad">permission denied (publickey).</span> <span class="dim">keys only, remember?</span>`;
+CMDS.neofetch.alias = ["fetch"];
+async function runCmd(line) {
+  const [cmd, ...rest] = line.trim().split(/\s+/), arg = rest.join(" ");
+  say(`<span class="p">guest@homelab:~$</span> ${esc(line)}`);
+  if (!cmd) return;
+  hist.push(line); hi = hist.length;
+  const fn = CMDS[cmd.toLowerCase()] || (cmd === "fetch" && CMDS.neofetch);
+  if (!fn) return say(`${esc(cmd)}: command not found. type <span class="ok">help</span>`);
+  const out = await fn(arg);
+  if (out != null && out !== "") say(out);
+}
+function openTerm() {
+  if (modalOpen) closeModal();
+  term.classList.add("open"); term.setAttribute("aria-hidden", "false");
+  if (!termOpened) {
+    termOpened = true;
+    say(`<span class="ok">haydnhomelab</span> <span class="dim">· raspberry pi 5 · live</span>\ntype <span class="ok">help</span> to see what you can do.\n`);
+  }
+  setTimeout(() => tin.focus({ preventScroll: true }), 50);
+}
+function closeTerm() { term.classList.remove("open"); term.setAttribute("aria-hidden", "true"); tin.blur(); }
+tin.addEventListener("keydown", async e => {
+  if (e.key === "Enter") { const l = tin.value; tin.value = ""; await runCmd(l); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); if (hi > 0) tin.value = hist[--hi]; }
+  else if (e.key === "ArrowDown") { e.preventDefault(); hi = Math.min(hist.length, hi + 1); tin.value = hist[hi] || ""; }
+  else if (e.key === "Tab") { e.preventDefault(); const m = Object.keys(CMDS).filter(c => c.startsWith(tin.value)); if (m.length === 1) tin.value = m[0] + " "; else if (m.length) say(m.join("  ")); }
+  else if (e.key === "Escape") closeTerm();
+});
+$("#open-term").onclick = openTerm;
+$("#term-x").onclick = closeTerm;
+$("#open-net").onclick = e => openModal("network", e.currentTarget);
+addEventListener("keydown", e => {
+  if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
+  if (e.key === "`" || e.key === "t" || e.key === "T") { e.preventDefault(); term.classList.contains("open") ? closeTerm() : openTerm(); }
+  else if ((e.key === "n" || e.key === "N") && !term.classList.contains("open")) openModal("network", $("#open-net"));
+});
+
+/* matrix rain */
+function matrix() {
+  if (reduceMotion) return;
+  const c = $("#matrix"), x = c.getContext("2d");
+  c.width = innerWidth; c.height = innerHeight; c.classList.add("on");
+  const cols = Math.floor(c.width / 16), y = Array(cols).fill(0).map(() => Math.random() * -50);
+  const chars = "アイウエオカキクケコサシスセソ01HAYDNHOMELAB";
+  const t0 = performance.now();
+  const step = now => {
+    x.fillStyle = "#00000018"; x.fillRect(0, 0, c.width, c.height);
+    x.fillStyle = "#5cff3a"; x.font = "15px JetBrains Mono, monospace";
+    y.forEach((v, i) => { x.fillText(chars[Math.random() * chars.length | 0], i * 16, v * 16); y[i] = v * 16 > c.height && Math.random() > .975 ? 0 : v + 1; });
+    if (now - t0 < 5000) requestAnimationFrame(step); else { c.classList.remove("on"); setTimeout(() => x.clearRect(0, 0, c.width, c.height), 600); }
+  };
+  requestAnimationFrame(step);
+}
+
+/* ---------- "updated 2s ago" ticker ---------- */
+setInterval(() => {
+  const t = liveOk ? lastLive()[0] : stats && stats.updated;
+  if (!t) return;
+  const s = Math.max(0, Math.round(Date.now() / 1000 - t));
+  $("#ago").textContent = s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`;
+}, 1000);
+
+/* ---------- 3D tilt on the rack ---------- */
+if (!reduceMotion && matchMedia("(hover: hover) and (min-width: 1100px)").matches) {
+  const rt = $(".t-rack"), rs = $("#rack");
+  rt.addEventListener("pointermove", e => {
+    if (rt.classList.contains("zoomed")) return;
+    const r = rt.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5;
+    rs.style.transform = `perspective(900px) rotateY(${px * 7}deg) rotateX(${-py * 5}deg)`;
+  });
+  rt.addEventListener("pointerleave", () => (rs.style.transform = ""));
+}
+
 let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && drawModal(modalOpen, false), 200); });
 
 /* ---------- live data: every 3 seconds ---------- */
