@@ -112,7 +112,7 @@ Added security headers to haydnhomelab.com in Caddy. securityheaders.com went fr
   <img src="../images/securityheaders-after.png" alt="After: grade A, all headers present" width="420">
 </p>
 
-It's capped at A rather than A+ because my Content Security Policy still allows inline scripts (`'unsafe-inline'`), since the page's code is all in one file. Moving the script into its own file would fix that.
+It was capped at A because my Content Security Policy still allowed inline scripts (`'unsafe-inline'`), since the page's code was all in one file. I moved the code into `app.js` and took `'unsafe-inline'` out of `script-src`, so now only scripts from my own site can run. Even if someone managed to inject code into the page, the browser would refuse to run it.
 
 ### Lynis audit (18 October 2026)
 
