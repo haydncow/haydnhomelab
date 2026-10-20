@@ -6,6 +6,9 @@ Wants=network-online.target
 [Service]
 User=canary
 Group=canary
+# opencanaryd calls "python3" and "twistd" itself, so make sure it finds the
+# ones inside its own virtual environment, not the system ones
+Environment=PATH=/opt/opencanary/bin:/usr/bin:/bin
 ExecStart=/opt/opencanary/bin/opencanaryd --dev
 Restart=always
 RestartSec=10

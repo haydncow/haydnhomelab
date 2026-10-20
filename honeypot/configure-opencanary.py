@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Turns OpenCanary's default config into my home honeypot config.
 
-Run after `opencanaryd --copyconfig` has made /etc/opencanary/opencanary.conf.
+Run after copying the default settings.json to /etc/opencanaryd/opencanary.conf.
 Every fake service is on a port my real services don't use, and UFW only
 lets my home network reach them.
 """
 import json
 
-PATH = "/etc/opencanary/opencanary.conf"
+PATH = "/etc/opencanaryd/opencanary.conf"
 cfg = json.load(open(PATH))
 
 # Turn everything off first, then switch on the ones I want
