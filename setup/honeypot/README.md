@@ -24,9 +24,9 @@ A honeypot on the internet would catch real attackers, but it means opening a po
 - systemd sandboxing: it can only write to its own log folder, can't see home folders, can't gain privileges, and is limited to 200 MB of memory. It gets one extra permission, to use ports below 1024 (FTP and Telnet)
 - Logs rotate weekly so they can't fill the SD card
 
-## On the status page
+## On my website
 
-The stats script reads the honeypot log and shows how many alerts there have been and which fake services were touched. It never shows IP addresses or passwords, because I might type a real password by accident while testing. Usernames are escaped so a username like `<script>` can't run as code on the page.
+The stats script reads the honeypot log, and the [live lab](https://haydnhomelab.com/lab/) shows how many alerts there have been and which fake services were touched. Press A there for the attack map. It never shows IP addresses or passwords, because I might type a real password by accident while testing. Usernames are escaped so a username like `<script>` can't run as code on the page.
 
 ## Files
 

@@ -2,7 +2,7 @@
 
 A private dashboard for my homelab using [Homepage](https://gethomepage.dev). It shows all my services with live info (Pi-hole stats, what's playing on Jellyfin, CPU, memory and disk space) plus my bookmarks.
 
-It's **private**: only reachable from my home network and over Tailscale, on port 3000. My public dashboard is haydnhomelab.com.
+It's **private**: only reachable from my home network and over Tailscale, on port 3000. My public dashboard is the [live lab](https://haydnhomelab.com/lab/).
 
 ## How it's set up
 

@@ -19,7 +19,7 @@ The films themselves aren't backed up. They're on the same drive and too big.
 - The backups contain secrets (SSH host keys, the tunnel token, password hashes), so the folder and files are **root-only**. My Samba login can't open them.
 - It refuses to run if the drive isn't mounted, so it never fills the SD card.
 - It checks each archive opens before counting it as a good backup.
-- The time of the last backup shows in "What's running" on the status page, and it shows as down if a night gets missed.
+- The time of the last backup shows in "What's running" on the live lab, and it shows as down if a night gets missed.
 
 ## Restoring
 

@@ -2,6 +2,8 @@
 
 How I keep my homelab secure, and how I've tested it. I started this as a plan before building and keep it updated.
 
+**Jump to test results:** [Nmap](#nmap-results-home-network) | [Security headers](#security-headers-20-october-2026) | [Cloudflare WAF](#cloudflare-waf-20-october-2026) | [Lynis](#lynis-audit-18-october-2026) | [All tests](#testing)
+
 ## Status (20 October 2026)
 
 - [x] Tailscale for remote access, with no port forwarding on my router
@@ -32,7 +34,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 ## Remote access
 
 - **Tailscale** to reach the lab from outside my house, with 2FA on the account
-- **No port forwarding** on my router. The public status page goes out through a Cloudflare Tunnel, which the Pi connects out to
+- **No port forwarding** on my router. My website goes out through a Cloudflare Tunnel, which the Pi connects out to
 - The Pi is a Tailscale exit node, so my devices can route their traffic through home on untrusted Wi-Fi. Forwarding is only allowed from `tailscale0` out to the internet (`ufw route allow in on tailscale0 out on eth0`), nothing else can be forwarded
 
 ## Logging in to the Pi

@@ -15,6 +15,6 @@ It's private, like Homepage: only reachable from my home network and over Tailsc
 
 ## Problem I hit
 
-Caddy wouldn't reload after I added the new site. The first block had lost its closing `}`, so Caddy read `:8766` as a setting inside it. `caddy validate` showed the exact line, and the old config kept running until I fixed it, so the status page never went down.
+Caddy wouldn't reload after I added the new site. The first block had lost its closing `}`, so Caddy read `:8766` as a setting inside it. `caddy validate` showed the exact line, and the old config kept running until I fixed it, so my website never went down.
 
 Claude (AI) wrote these config files. I set it up on the Pi.

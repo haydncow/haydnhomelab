@@ -2,9 +2,11 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
+**Jump to:** [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+
 ## 20 October 2026
 
-- Made the portfolio my homepage, so haydnhomelab.com is the first thing employers see. The live dashboard moved to [haydnhomelab.com/lab](https://haydnhomelab.com/lab/) and looks the same, and `/about` redirects to the homepage. Tested the new Caddyfile with a real copy of Caddy before putting it on the Pi, which caught a mistake: my `*.js` no-cache rule wasn't matching anything. A named matcher (`@scripts path *.js`) fixed it.
+- Made the portfolio my homepage, so haydnhomelab.com is the first thing employers see. The live dashboard moved to [haydnhomelab.com/lab](https://haydnhomelab.com/lab/) and looks the same, and `/about` redirects to the homepage. Claude tested the new Caddyfile on a real copy of Caddy before it went on the Pi, which caught a mistake: the `*.js` no-cache rule was valid but wasn't matching anything. A named matcher (`@scripts path *.js`) fixed it.
 - Made an apprenticeship portfolio page at [haydnhomelab.com/about](https://haydnhomelab.com/about/). It shows what I've built with the proof next to each part (the command I ran and what it gave back), the problems I fixed, a timeline of the build, my skills and how I used AI. The photo of my rack has live readings from the Pi on it, and it prints as a PDF for applications. Added `boot` (the exact time the Pi started) to my stats so the uptime can count up every second.
 - Made the site findable on Google: a clearer title and description, `robots.txt`, a `sitemap.xml` and a share image so the link previews nicely. Verified the domain in Google Search Console with a DNS TXT record in Cloudflare, submitted the sitemap (it needs the full `https://` address for a Domain property) and requested indexing.
 - Added Cloudflare WAF rules: block common attack paths (WordPress, PHP, `.env`, `.git`), only allow GET and HEAD, and rate limit to 100 requests per 10 seconds per IP. Tested with `curl` from my Mac: attack paths and POST got 403. The rate limit didn't trigger at first because I'd used `wildcard "/"`, which only matches the homepage. Changed it to `/*` and 1,000 requests got 785 blocked with 429. Details in the [security plan](security-plan.md#cloudflare-waf-20-october-2026).
