@@ -123,6 +123,23 @@ def running_for(unit):
     return ago(boot_secs - int(mono) / 1e6)
 
 
+# Apps that run in Docker instead of systemd: (name on the page, container name)
+DOCKER = [("Homepage", "homepage"), ("Speedtest Tracker", "speedtest-tracker")]
+
+
+def docker_services():
+    out = []
+    for name, container in DOCKER:
+        info = run("docker", "inspect", "-f", "{{.State.Running}} {{.State.StartedAt}}", container).split()
+        up = bool(info) and info[0] == "true"
+        since = None
+        if up:
+            started = calendar.timegm(time.strptime(info[1][:19], "%Y-%m-%dT%H:%M:%S"))
+            since = ago(time.time() - started)
+        out.append({"name": name, "up": up, "detail": None, "for": since})
+    return out
+
+
 def detail_tailscale():
     # Count how many of my devices are online, without showing their names or IPs
     status = json.loads(run("tailscale", "status", "--json"))
@@ -270,6 +287,7 @@ def services(gravity=None):
     fw = run("ufw", "status")
     out.append({"name": "Firewall (UFW)", "up": "Status: active" in fw,
                 "detail": safe(detail_firewall), "for": None})
+    out += safe(docker_services, [])
     backup = safe(backup_status)
     if backup:
         out.append(backup)

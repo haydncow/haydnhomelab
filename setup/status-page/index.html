@@ -158,7 +158,27 @@
   .gauge text { fill: var(--text); font: 800 22px "JetBrains Mono", monospace; text-anchor: middle; }
   .gauge .u { fill: var(--muted); font-size: 10px; font-weight: 400; }
 
-  /* services */
+  /* services, in sections */
+  .svc-sec { margin-top: 8px; }
+  .svc-sec + .svc-sec { margin-top: 7px; }
+  .svc-h { display: flex; align-items: baseline; gap: 8px; font: 600 9.5px Inter, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .svc-h b { font-weight: 600; color: var(--led); letter-spacing: 0; } .svc-h b.bad { color: var(--bad); }
+  .svc-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .svc-chips .svc { padding: 3px 9px 3px 8px; border-radius: 999px; font-size: 11px; gap: 6px; }
+  #svc { flex: 1 1 auto; min-height: 0; overflow: auto; scrollbar-width: none; padding-bottom: 14px;
+         mask-image: linear-gradient(#000 calc(100% - 22px), transparent); }
+  #svc::-webkit-scrollbar { display: none; }
+  #svc { display: grid; grid-template-columns: 1fr 1fr; column-gap: 12px; align-content: start; }
+  #svc .svc-sec { grid-column: 1 / -1; }
+  #svc .svc-sec.half { grid-column: auto; margin-top: 7px; }
+  @media (max-width: 800px) { #svc { grid-template-columns: 1fr; } #svc .svc-sec.half { grid-column: 1 / -1; } }
+  .count.bad { color: var(--bad); }
+  .svc-alert { margin-top: 10px; padding: 7px 10px; border-radius: 10px; border: 1px solid #ff5a4a55; background: #2a0d0a; color: #ffb0a8; font-size: 12px; }
+  .svc-group { margin: 18px 0 0; }
+  .svc-group h3 { margin: 0; font-size: 15px; display: flex; align-items: baseline; gap: 10px; }
+  .svc-group h3 b { font-size: 11px; font-weight: 600; color: var(--led); } .svc-group h3 b.bad { color: var(--bad); }
+  .svc-group > p { margin: 2px 0 10px; color: var(--muted); font-size: 12.5px; }
+  .svc-sum { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
   .svc-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; margin-top: 10px; overflow: auto; align-content: start; }
   .svc { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line);
          font-size: 11.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -657,7 +677,7 @@
 
     <section class="tile t-svc click" style="--i:8" tabindex="0" role="button" data-open="services" aria-label="Running services. Open details.">
       <div class="label">what's running <span class="count" id="svc-count"></span><span class="ex">&#8599;</span></div>
-      <div class="svc-list" id="svc"></div>
+      <div id="svc"></div>
     </section>
   </main>
 
@@ -934,8 +954,13 @@ function render() {
     spark($("#spark-pow"), [{ colour: "var(--s-blocked)", data: pi.filter(p => p[3] > 0).map(p => p[3]) }]);
   }
   const svc = stats.services || [], up = svc.filter(s => s.up).length;
-  $("#svc-count").textContent = svc.length ? `${up}/${svc.length} up` : "";
-  $("#svc").innerHTML = svc.length ? svc.map(s => `<div class="svc ${s.up ? "up" : "down"}" title="${s.detail || ABOUT[s.name] || ""}"><i></i>${s.name.replace(" (Caddy)", "").replace(" Tunnel", "")}</div>`).join("") : `<span class="note">not available yet</span>`;
+  $("#svc-count").textContent = !svc.length ? "" : up === svc.length ? `all ${up} up` : `${svc.length - up} down, ${up}/${svc.length} up`;
+  $("#svc-count").classList.toggle("bad", up < svc.length);
+  const down = svc.filter(s => !s.up);
+  $("#svc").innerHTML = svc.length
+    ? svcGroups().map(g => `<div class="svc-sec${g.list.length <= 2 ? " half" : ""}"><div class="svc-h">${g.name} ${svcCount(g.list)}</div><div class="svc-chips">${g.list.map(s =>
+        `<div class="svc ${s.up ? "up" : "down"}" title="${ABOUT[s.name] || ""}"><i></i>${SVC_SHORT[s.name] || s.name}</div>`).join("")}</div></div>`).join("")
+    : `<span class="note">not available yet</span>`;
   const hp = stats.honeypot;
   $("#hp-line").innerHTML = hp ? `honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in the last 24h` : "";
   if (modalOpen && modalOpen !== "network" && modalOpen !== "attacks") drawModal(modalOpen, false);
@@ -992,15 +1017,51 @@ function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v
 }
 
 const ABOUT = {
-  "Pi-hole": "Network-wide ad blocking", "Unbound": "Private DNS lookups, checks DNSSEC", "Tailscale": "Private remote access", "Cloudflare Tunnel": "Puts this site online",
-  "Web server": "Serves this page", "Web server (Caddy)": "Serves this page", "Live stats": "A reading every 3 seconds",
-  "SSH": "Remote login, keys only", "Fail2ban": "Bans repeated failed logins",
-  "Jellyfin": "My own Netflix, home and Tailscale only",
-  "Nightly backup": "Settings and scripts, kept for 14 days",
-  "SD card": "Wear and error checks",
-  "Honeypot": "Fake services that should never be touched",
-  "Auto updates": "Daily security fixes", "Firewall (UFW)": "Blocks unwanted traffic",
+  "Firewall (UFW)": "Blocks everything coming in unless I've allowed it",
+  "Fail2ban": "Bans anyone who gets the SSH login wrong 5 times",
+  "Honeypot": "Fake services that alert me if anything pokes around",
+  "SSH": "How I log in remotely. Keys only, no passwords",
+  "Auto updates": "Installs security fixes by itself every day",
+  "Pi-hole": "Blocks ads and trackers on my devices",
+  "Unbound": "Looks websites up itself, no Google or Cloudflare in the middle",
+  "Tailscale": "Private VPN, so I can reach the lab from anywhere",
+  "Cloudflare Tunnel": "Puts this site online without opening my router",
+  "Jellyfin": "My own Netflix for films and shows",
+  "Homepage": "My private dashboard with links to everything",
+  "Speedtest Tracker": "Tests my broadband every 2 hours",
+  "Web server": "Serves this page", "Web server (Caddy)": "Serves this page and my .lan names",
+  "Live stats": "Takes a reading every 3 seconds for the graphs",
+  "Nightly backup": "Saves all my settings every night, keeps 14",
+  "SD card": "Watches the card for wear and errors",
 };
+
+// "What's running" is split into sections, most important first
+const SVC_GROUPS = [
+  { name: "Security", about: "Keeping attackers out, and catching anything that gets in.",
+    items: ["Firewall (UFW)", "Fail2ban", "Honeypot", "SSH", "Auto updates"] },
+  { name: "Network and DNS", about: "Blocking ads, private lookups and safe remote access.",
+    items: ["Pi-hole", "Unbound", "Tailscale", "Cloudflare Tunnel"] },
+  { name: "Apps", about: "Things I actually use day to day. Home network and Tailscale only.",
+    items: ["Jellyfin", "Homepage", "Speedtest Tracker"] },
+  { name: "This website", about: "What serves this page and keeps the graphs moving.",
+    items: ["Web server (Caddy)", "Web server", "Live stats"] },
+  { name: "Looking after the Pi", about: "Backups and SD card health, so nothing is lost if it breaks.",
+    items: ["Nightly backup", "SD card"] },
+];
+const SVC_SHORT = { "Firewall (UFW)": "Firewall", "Web server (Caddy)": "Caddy", "Web server": "Web server", "Cloudflare Tunnel": "Cloudflare",
+  "Speedtest Tracker": "Speedtest", "Nightly backup": "Backup", "Auto updates": "Updates" };
+function svcGroups() {
+  const all = stats && stats.services || [], used = new Set();
+  const groups = SVC_GROUPS.map(g => {
+    const list = g.items.map(n => all.find(s => s.name === n)).filter(Boolean);
+    list.forEach(s => used.add(s.name));
+    return { ...g, list };
+  }).filter(g => g.list.length);
+  const rest = all.filter(s => !used.has(s.name));
+  if (rest.length) groups.push({ name: "Other", about: "", list: rest });
+  return groups;
+}
+const svcCount = list => { const up = list.filter(s => s.up).length; return `<b class="${up < list.length ? "bad" : ""}">${up}/${list.length}</b>`; };
 const MODALS = {
   dns: () => `<h2 id="m-title">Pi-hole &middot; DNS</h2><p class="tag">Every website lookup my devices make goes through Pi-hole. Ads and trackers get blocked.</p>
     <div class="mgrid">${st("Queries (24h)", stats.queries)}${st("Blocked (24h)", stats.blocked)}${st("Blocked %", stats.percent)}</div>
@@ -1012,8 +1073,13 @@ const MODALS = {
     <div class="mgrid">${st("Right now", stats.temp)}${st("CPU load", stats.load)}</div><div class="chart" id="ml-temp"></div><div class="chart" id="mc-temp"></div>`,
   power: () => `<h2 id="m-title">Power use</h2><p class="tag">Measured by the Pi 5's own power chip (volts x amps on each rail). The yearly cost adds about 2 W for the switch and power supply, at about 25p per kWh.</p>
     <div class="mgrid">${st("Pi right now", stats.power)}${st("Whole rack per year (est.)", stats.cost_year)}</div><div class="chart" id="ml-pow"></div><div class="chart" id="mc-pow"></div>`,
-  services: () => `<h2 id="m-title">What's running</h2><p class="tag">Checked every minute with systemd.</p>
-    <div class="svc-big">${(stats.services || []).map(s => `<div class="${s.up ? "up" : ""}"><i></i><div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span>${s.detail || s.for ? `<span class="d">${[s.detail, s.for ? "up for " + s.for : ""].filter(Boolean).join(" &middot; ")}</span>` : ""}</div><em>${s.up ? "running" : "down"}</em></div>`).join("")}</div>`,
+  services: () => {
+    const all = stats.services || [], up = all.filter(s => s.up).length;
+    const card = s => `<div class="${s.up ? "up" : ""}"><i></i><div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span>${s.detail || s.for ? `<span class="d">${[s.detail, s.for ? "up for " + s.for : ""].filter(Boolean).join(" &middot; ")}</span>` : ""}</div><em>${s.up ? "running" : "down"}</em></div>`;
+    return `<h2 id="m-title">What's running</h2><p class="tag">Everything on the Pi, checked every minute. Most important first.</p>
+    <div class="mgrid">${st("Running", `${up} of ${all.length}`)}${st("Firewall rules", (all.find(s => s.name === "Firewall (UFW)") || {}).detail?.replace(" rules", "") ?? "n/a")}${st("Pi uptime", stats.uptime)}</div>
+    ${svcGroups().map(g => `<section class="svc-group"><h3>${g.name} ${svcCount(g.list)}</h3>${g.about ? `<p>${g.about}</p>` : ""}<div class="svc-big">${g.list.map(card).join("")}</div></section>`).join("")}`;
+  },
   attacks: () => `<h2 id="m-title">Honeypot attack map</h2><p class="tag">Every time something touches one of my fake services, it lands here. The honeypot is only on my home network, so most days it's quiet. That's the good outcome.</p>${atkMap()}`,
   network: () => `<h2 id="m-title">Network map</h2><p class="tag">How everything connects. Pick a story to watch the traffic, or click a device.</p>${netmap()}`,
   security: () => `<h2 id="m-title">Security</h2><p class="tag">How the Pi is locked down, and how I tested it.</p>
