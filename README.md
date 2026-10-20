@@ -11,9 +11,9 @@
 
 My first homelab: a Raspberry Pi 5 in a 10 inch rack. I started this repo to plan it and now use it to document the build. I'm doing it to learn networking and security hands-on, instead of just reading about it. The badges above are live from the Pi.
 
-**Live status page: [haydnhomelab.com](https://haydnhomelab.com)**
+**Portfolio: [haydnhomelab.com](https://haydnhomelab.com)**, what I've built, how I tested it and what I'm looking for
 
-**Apprenticeship portfolio: [haydnhomelab.com/about](https://haydnhomelab.com/about/)**, what I've built, how I tested it and what I'm looking for
+**Live lab: [haydnhomelab.com/lab](https://haydnhomelab.com/lab/)**, the live dashboard for my homelab
 
 <p align="center">
   <img src="images/rack-front.jpg" alt="Rack from the front" height="240">
@@ -54,7 +54,7 @@ My first homelab: a Raspberry Pi 5 in a 10 inch rack. I started this repo to pla
 
 | Folder | What's in it |
 |---|---|
-| [status-page](setup/status-page/) | The website at haydnhomelab.com, my portfolio page and the scripts that feed them live stats |
+| [website](setup/website/) | My portfolio at haydnhomelab.com, the live lab at /lab, and the scripts that feed them live stats |
 | [honeypot](setup/honeypot/) | Fake services that alert me if anything pokes around my network |
 | [backup](setup/backup/) | Nightly backups and how to restore |
 | [homepage](setup/homepage/) | My private dashboard |

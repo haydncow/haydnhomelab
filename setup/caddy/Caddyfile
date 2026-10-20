@@ -1,14 +1,18 @@
 # /etc/caddy/Caddyfile
 
-# Status page, only on the Pi itself for the Cloudflare Tunnel
+# My website, only on the Pi itself for the Cloudflare Tunnel.
+# The portfolio is the homepage (/) and the live dashboard is at /lab/
 :8080 {
 	bind 127.0.0.1
 	root * /srv/status
 	file_server
 	header /live.json Cache-Control no-store
 	header /stats.json Cache-Control no-store
-	# make Cloudflare check for a new app.js every time instead of caching an old one
-	header /app.js Cache-Control no-cache
+	# make Cloudflare check for new JavaScript every time instead of caching an old copy
+	@scripts path *.js
+	header @scripts Cache-Control no-cache
+	# the portfolio used to be at /about, so send old links to the homepage
+	redir /about* / permanent
 
 	# Security headers, tested on securityheaders.com
 	header {

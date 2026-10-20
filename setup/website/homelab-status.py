@@ -2,8 +2,8 @@
 """Collects live stats for my homelab status page.
 
 Runs every minute from cron (as root) and writes /srv/status/stats.json.
-index.html (in the same folder) reads it, and a Cloudflare Tunnel
-shares the page on the internet.
+My portfolio (/) and the live lab (/lab/) both read it, and a Cloudflare
+Tunnel shares them on the internet.
 
 It only shows harmless info (uptime, temperature, memory, power use,
 ads blocked, whether each service is running). No IP addresses, hostnames, ports or

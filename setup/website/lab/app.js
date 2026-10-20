@@ -838,7 +838,7 @@ function howHtml() {
     ${visBars(v.days)}
     <p class="hw-note">Counted by Cloudflare, unique visitors per day added up. My Pi never sees or stores anyone's IP address, just these totals.</p></section>` : ""}
   <section class="hw-sec"><h3>Who built it</h3>
-    <p>I chose and bought the parts, built the rack, ran every command on the Pi and tested it all. <b>Claude, an AI assistant, wrote the code for this website</b> and guided me through the setup step by step. The full story, with everything that went wrong, is on <a href="https://github.com/haydncow/homelab-plan">GitHub</a>. More about me, and the apprenticeship I'm looking for, is on my <a href="/about/">about page</a>.</p></section>`;
+    <p>I chose and bought the parts, built the rack, ran every command on the Pi and tested it all. <b>Claude, an AI assistant, wrote the code for this website</b> and guided me through the setup step by step. The full story, with everything that went wrong, is on <a href="https://github.com/haydncow/homelab-plan">GitHub</a>. More about me, and the apprenticeship I'm looking for, is on my <a href="/">homepage</a>.</p></section>`;
 }
 $("#open-how").onclick = e => openModal("how", e.currentTarget);
 document.addEventListener("click", e => {
@@ -906,7 +906,7 @@ function renderLive() {
 async function loadLive() {
   if (document.hidden || !booted) return;
   try {
-    const r = await fetch("live.json", { cache: "no-store" });
+    const r = await fetch("/live.json", { cache: "no-store" });
     if (!r.ok) throw new Error(r.status);
     const data = await r.json(), pts = data.points || [];
     if (!pts.length || Date.now() / 1000 - pts[pts.length - 1][0] > 30) throw new Error("stale");
@@ -924,7 +924,7 @@ setInterval(loadLive, 3000);
 async function load() {
   const pill = $("#status"), text = $("#status-text");
   try {
-    const r = await fetch("stats.json", { cache: "no-store" });
+    const r = await fetch("/stats.json", { cache: "no-store" });
     const first = !stats;
     stats = await r.json();
     const live = (Date.now() / 1000 - stats.updated) / 60 < 15;

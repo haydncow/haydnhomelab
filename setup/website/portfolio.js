@@ -1,4 +1,4 @@
-// Portfolio page: theme toggle and live readings from my Raspberry Pi.
+// My portfolio (the homepage): theme toggle and live readings from my Raspberry Pi.
 // Kept in its own file so the Content Security Policy can block inline scripts.
 // Code written by Claude (AI). The data comes from the same stats files as my live lab.
 (function () {
