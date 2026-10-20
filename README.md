@@ -15,7 +15,7 @@ My first homelab: a Raspberry Pi 5 in a 10 inch rack. I started this repo to pla
 - **Pi-hole** to block ads on my own devices, including my phone anywhere over Tailscale
 - **Tailscale** for remote access and as an exit node, with no ports forwarded on my router
 - **Security:** UFW, Fail2ban, Lynis hardening, automatic updates and an OpenCanary honeypot
-- **Jellyfin** media server, nightly backups and a private Homepage dashboard
+- **Jellyfin** media server, nightly backups, Speedtest Tracker and a private Homepage dashboard
 - **A public status page** at [haydnhomelab.com](https://haydnhomelab.com) through a Cloudflare Tunnel
 
 I designed the rack layout and network before buying anything so I knew exactly what I needed.
@@ -41,6 +41,7 @@ The DeskPi RackMate T0 when it arrived. The Pi and switch are fitted now (see th
 - [Backup](backup/) - nightly backups and how to restore
 - [Honeypot](honeypot/) - fake services that alert me if anything pokes around my network
 - [Homepage](homepage/) - my private dashboard, running in Docker
+- [Speedtest](speedtest/) - tests my broadband every 2 hours
 - [Diagrams](diagrams/) - rack layout and my original network plan (the up-to-date map is on the status page, press N)
 - [Status page](status-page/) - live at [haydnhomelab.com](https://haydnhomelab.com), served from the Pi through a Cloudflare Tunnel
 
@@ -48,7 +49,7 @@ The DeskPi RackMate T0 when it arrived. The Pi and switch are fitted now (see th
 
 I used Claude (an AI assistant) a lot on this project, so I want to be clear about who did what.
 
-- **Claude wrote all the code** in this repo: the status page website and its stats scripts, the backup script, the honeypot setup and the Homepage config. I don't have the coding skills to write those myself yet.
+- **Claude wrote all the code** in this repo: the status page website and its stats scripts, the backup script, the honeypot setup and the Homepage and Speedtest configs. I don't have the coding skills to write those myself yet.
 - **Claude guided me through the setup** step by step, and gave me the commands for the Pi: SSH keys, UFW, Pi-hole, Tailscale, Fail2ban, Lynis, Jellyfin, Docker, the honeypot and the Cloudflare Tunnel.
 - **Claude made the diagrams** and cleaned up the rack photos, and helped me write up these notes.
 - **I** chose and bought the parts, built the rack, ran every command on the Pi myself, tested that things worked (like the Nmap scans and the Fail2ban test), and decided how the lab is set up, like only using Pi-hole on my own devices.
@@ -82,6 +83,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Tailscale exit node (a free VPN through home)
 - [x] Honeypot (OpenCanary, home network only)
 - [x] Homepage private dashboard (Docker)
+- [x] Speedtest Tracker
 
 ## Next
 

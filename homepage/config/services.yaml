@@ -22,6 +22,16 @@
           enableBlocks: true
           enableNowPlaying: true
 
+    - Speedtest:
+        icon: speedtest-tracker.png
+        href: http://192.168.1.5:8766
+        description: Broadband speed every 2 hours
+        widget:
+          type: speedtest
+          version: 2
+          url: http://127.0.0.1:8765
+          key: "{{HOMEPAGE_VAR_SPEEDTEST_KEY}}"
+
     - Status page:
         icon: mdi-rack-server
         href: https://haydnhomelab.com

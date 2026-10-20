@@ -4,6 +4,8 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 20 October 2026
 
+- Set up Speedtest Tracker in Docker to test my broadband every 2 hours. Its port clashed with Pi-hole, so it only listens on the Pi itself and Caddy passes it through on 8766, with UFW allowing that from home and Tailscale only. Changed the default admin login straight away. See [speedtest](speedtest/).
+- Problem: Caddy wouldn't reload. I'd lost the closing `}` on the first block, so Caddy read the new site as a setting inside it. `caddy validate` showed the line. The old config kept running, so the website stayed up.
 - Added an animated network map to the status page (press N). I tried a hidden terminal too but took it out, it didn't fit the look I wanted.
 - Changed my mind about Pi-hole on my phone and set it up through Tailscale: UFW allows DNS on `tailscale0`, Pi-hole listens on all interfaces (UFW still decides who can reach it), the Pi doesn't use Tailscale DNS itself, and the Pi is the global nameserver in Tailscale with "Override DNS servers" on. Ads are blocked on my phone anywhere, even on mobile data. Checked the exit node too: with it on, "what is my IP" shows my home IP.
 - Set up Homepage, a private dashboard for all my services, running in Docker. Used `network_mode: host` because Docker normally publishes ports with its own firewall rules that skip UFW. Secrets are in a `.env` file on the Pi, not on GitHub. See [homepage](homepage/).

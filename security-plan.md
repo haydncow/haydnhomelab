@@ -9,7 +9,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 - [x] UFW blocks everything coming in except what's needed:
   - SSH from my home network and over Tailscale
   - DNS (53) for Pi-hole from my home network and over Tailscale
-  - Pi-hole admin page (80/443), Jellyfin, Samba and Homepage from my home network and over Tailscale
+  - Pi-hole admin page (80/443), Jellyfin, Samba, Homepage and Speedtest Tracker from my home network and over Tailscale
   - Honeypot ports from my home network only
 - [x] Pi-hole admin page has a password
 - [x] Automatic security updates (`unattended-upgrades`)
