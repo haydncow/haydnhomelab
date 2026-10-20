@@ -13,6 +13,8 @@ My first homelab: a Raspberry Pi 5 in a 10 inch rack. I started this repo to pla
 
 **Live status page: [haydnhomelab.com](https://haydnhomelab.com)**
 
+**Apprenticeship portfolio: [haydnhomelab.com/about](https://haydnhomelab.com/about/)**, what I've built, how I tested it and what I'm looking for
+
 <p align="center">
   <img src="images/rack-front.jpg" alt="Rack from the front" height="240">
   <img src="images/rack-angle.jpg" alt="Rack from an angle" height="240">
@@ -52,7 +54,7 @@ My first homelab: a Raspberry Pi 5 in a 10 inch rack. I started this repo to pla
 
 | Folder | What's in it |
 |---|---|
-| [status-page](setup/status-page/) | The website at haydnhomelab.com and the scripts that feed it live stats |
+| [status-page](setup/status-page/) | The website at haydnhomelab.com, my portfolio page and the scripts that feed them live stats |
 | [honeypot](setup/honeypot/) | Fake services that alert me if anything pokes around my network |
 | [backup](setup/backup/) | Nightly backups and how to restore |
 | [homepage](setup/homepage/) | My private dashboard |
@@ -81,6 +83,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Fail2ban, tested from Kali
 - [x] Lynis audit and hardening (score 63 to 75)
 - [x] Live status page on my own domain
+- [x] Apprenticeship portfolio page, with live readings from the Pi
 - [x] Jellyfin media server with a 1TB drive
 - [x] Nightly backups, with a restore tested
 - [x] OpenCanary honeypot, tested from Kali

@@ -1,0 +1,677 @@
+<!doctype html>
+<!--
+  Hi! This is my apprenticeship portfolio. It's served by the Raspberry Pi in the photo.
+  Claude (an AI assistant) wrote the code. I built the lab, ran every command and tested it.
+  The whole build is written up at https://github.com/haydncow/homelab-plan
+-->
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haydn | Cyber security apprenticeship portfolio</title>
+<meta name="description" content="I'm Haydn, an IT student applying for cyber security degree apprenticeships for 2027. I built a home lab on a Raspberry Pi, locked it down and tested it myself. Here's the evidence.">
+<link rel="canonical" href="https://haydnhomelab.com/about/">
+<meta property="og:type" content="profile">
+<meta property="og:url" content="https://haydnhomelab.com/about/">
+<meta property="og:title" content="Haydn | Cyber security apprenticeship portfolio">
+<meta property="og:description" content="I built a home lab to learn cyber security, locked it down and attacked it myself to check it held up.">
+<meta property="og:image" content="https://haydnhomelab.com/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f4f6f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1311" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%227%22%20fill%3D%22%2316191b%22/%3E%3Cpath%20d%3D%22M9%208v16M19%208v16M9%2016h10%22%20stroke%3D%22%23fff%22%20stroke-width%3D%223.2%22%20stroke-linecap%3D%22round%22/%3E%3Ccircle%20cx%3D%2225%22%20cy%3D%2225%22%20r%3D%223.2%22%20fill%3D%22%233ddc5b%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<!-- Loaded in the head (not deferred) so the saved theme applies before the page draws -->
+<script src="about.js?v=2"></script>
+<style>
+  /* ---------- tokens ----------
+     Colour only means two things on this page: a test result (pass / fail) or "live".
+     Everything else is ink on paper. Pass and fail were checked with a colour-blindness
+     validator, and always come with a text label too. */
+  :root {
+    --paper: #f4f6f4; --paper-2: #e9eeea; --ink: #16191b; --ink-2: #444e55; --ink-3: #66717a; --rule: #d5dcd7;
+    --pass: #1b7a3e; --fail: #a3337a; --on-status: #ffffff;
+    --term: #111513; --term-ink: #d9e3dc; --term-dim: #84918a; --term-hi: #ffffff;
+    --bar-strong: #16191b; --bar-soft: #b7c1bb;
+    --led: #22c55e; --led-glow: #22c55e88;
+    --sans: "Atkinson Hyperlegible Next", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "Atkinson Hyperlegible Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --wrap: 1160px; --gutter: 24px;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #0f1311; --paper-2: #161c19; --ink: #e6ebe7; --ink-2: #b4bdb6; --ink-3: #8c968f; --rule: #27302b;
+      --pass: #3aa864; --fail: #d9629f; --on-status: #0f1311;
+      --term: #0a0d0b; --term-ink: #d9e3dc; --term-dim: #7d8a83; --term-hi: #ffffff;
+      --bar-strong: #e6ebe7; --bar-soft: #3d4842;
+      --led: #5cff3a; --led-glow: #5cff3a88;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0f1311; --paper-2: #161c19; --ink: #e6ebe7; --ink-2: #b4bdb6; --ink-3: #8c968f; --rule: #27302b;
+    --pass: #3aa864; --fail: #d9629f; --on-status: #0f1311;
+    --term: #0a0d0b; --term-ink: #d9e3dc; --term-dim: #7d8a83; --term-hi: #ffffff;
+    --bar-strong: #e6ebe7; --bar-soft: #3d4842;
+    --led: #5cff3a; --led-glow: #5cff3a88;
+    color-scheme: dark;
+  }
+
+  /* ---------- base ---------- */
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font: 400 18px/1.6 var(--sans);
+         -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  img { max-width: 100%; }
+  a { color: inherit; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2.5px; }
+  :focus-visible { outline: 2.5px solid var(--ink); outline-offset: 3px; border-radius: 6px; }
+  code, kbd { font-family: var(--mono); font-size: .9em; }
+  p code, td code { background: var(--paper-2); padding: .08em .35em; border-radius: 5px; }
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 var(--gutter); }
+  .skip { position: absolute; left: 12px; top: -60px; background: var(--ink); color: var(--paper); padding: 10px 14px; border-radius: 8px; z-index: 50; }
+  .skip:focus { top: 12px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  /* live light: the only bright colour on the page */
+  .led { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--ink-3); flex: none; vertical-align: middle; }
+  .led.on { background: var(--led); box-shadow: 0 0 0 3px color-mix(in srgb, var(--led) 22%, transparent), 0 0 12px var(--led-glow); }
+  .led.off { background: var(--fail); }
+
+  /* ---------- top bar ---------- */
+  .top { position: sticky; top: 0; z-index: 20; border-bottom: 1px solid var(--rule);
+         background: color-mix(in srgb, var(--paper) 88%, transparent); backdrop-filter: saturate(1.4) blur(10px); -webkit-backdrop-filter: saturate(1.4) blur(10px); }
+  .top .wrap { display: flex; align-items: center; gap: 28px; height: 62px; }
+  .name { font-weight: 800; font-size: 21px; letter-spacing: -0.02em; text-decoration: none; }
+  .top nav { display: flex; gap: 22px; font-size: 16px; }
+  .top nav a { color: var(--ink-2); text-decoration: none; }
+  .top nav a:hover { color: var(--ink); text-decoration: underline; }
+  .top-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+  .lab-link { display: inline-flex; align-items: center; gap: 9px; font-size: 15.5px; font-weight: 600; text-decoration: none;
+              border: 1.5px solid var(--rule); border-radius: 999px; padding: 6px 14px 6px 12px; }
+  .lab-link:hover { border-color: var(--ink); }
+  .theme { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 999px; border: 1.5px solid var(--rule);
+           background: none; color: var(--ink); cursor: pointer; padding: 0; }
+  .theme:hover { border-color: var(--ink); }
+  .theme svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+  .theme .moon { display: none; }
+  .theme[data-mode="dark"] .sun { display: none; } .theme[data-mode="dark"] .moon { display: block; }
+  @media (max-width: 820px) { .top nav { display: none; } }
+
+  /* ---------- hero ---------- */
+  .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.02fr); gap: 56px; align-items: center; padding: 56px 0 64px; }
+  h1 { font-size: clamp(2.6rem, 5.4vw, 4.6rem); line-height: 1.02; letter-spacing: -0.03em; font-weight: 800; margin: 0 0 24px; max-width: 12.5ch; text-wrap: balance; }
+  .lede { font-size: 20.5px; line-height: 1.55; color: var(--ink-2); margin: 0 0 28px; max-width: 33em; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn { display: inline-flex; align-items: center; gap: 10px; padding: 13px 20px; border-radius: 12px; border: 1.5px solid var(--ink);
+         font-weight: 700; font-size: 17px; text-decoration: none; line-height: 1; }
+  .btn:hover { text-decoration: underline; }
+  .btn.primary { background: var(--ink); color: var(--paper); }
+  .facts { margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--rule); }
+  .facts div { padding: 16px 24px 18px 0; font-size: 16.5px; line-height: 1.45; }
+  .facts div + div { padding-left: 24px; border-left: 1px solid var(--rule); }
+  .facts dt { color: var(--ink-3); font-size: 15px; margin-bottom: 4px; }
+  .facts dd { margin: 0; }
+
+  /* the rack photo, with live readings pinned to the hardware */
+  .rack { margin: 0; }
+  .rack-frame { position: relative; border-radius: 18px; overflow: hidden; border: 1px solid var(--rule); background: #fff; container-type: inline-size; }
+  .rack-frame img { display: block; width: 100%; height: auto; }
+  :root[data-theme="dark"] .rack-frame img { filter: brightness(.86) contrast(1.04); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .rack-frame img { filter: brightness(.86) contrast(1.04); } }
+  .leaders { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+  .leaders line { stroke: #ffffffd9; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .pin { position: absolute; left: var(--x); top: var(--y); width: clamp(10px, 2.3cqw, 15px); height: clamp(10px, 2.3cqw, 15px);
+         transform: translate(-50%, -50%); border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px #0009, 0 0 14px #000a; }
+  .pin.live { background: var(--led); box-shadow: 0 0 0 3px #000a, 0 0 16px var(--led-glow); }
+  .pin.live::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--led); opacity: 0; }
+  .tag { position: absolute; left: var(--x); top: var(--y); max-width: 40%; padding: 1.25cqw 1.6cqw; border-radius: 10px;
+         background: #0b0f0dd9; color: #eef3ef; border: 1px solid #ffffff26; font-size: clamp(11px, 2.05cqw, 14px); line-height: 1.35;
+         -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+  .tag.up { transform: translateY(-100%); }
+  .tag b { display: block; font-weight: 700; }
+  .tag .v { display: block; font-family: var(--mono); font-variant-numeric: tabular-nums; color: #c9f2d3; white-space: nowrap; }
+  .tag .s { display: block; color: #b9c4bd; }
+  .rack figcaption { display: flex; gap: 10px; align-items: baseline; margin-top: 14px; font-size: 15px; color: var(--ink-3); }
+  .rack figcaption .led { position: relative; top: -1px; }
+  .rack figcaption b { color: var(--ink); font-weight: 600; }
+  .legend { display: none; list-style: none; margin: 14px 0 0; padding: 0; border-top: 1px solid var(--rule); }
+  .legend li { display: grid; grid-template-columns: 8.5em 1fr; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--rule); font-size: 15.5px; }
+  .legend b { font-weight: 600; } .legend span { color: var(--ink-2); }
+
+  /* one orchestrated moment: pins light up, lines draw out, readings appear */
+  @media (prefers-reduced-motion: no-preference) {
+    .js .pin { animation: pin-in .45s cubic-bezier(.2,.8,.2,1) both; animation-delay: var(--d); }
+    .js .leaders line { stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw .45s ease-out forwards; animation-delay: calc(var(--d) + .2s); }
+    .js .tag { animation: tag-in .4s ease-out both; animation-delay: calc(var(--d) + .45s); }
+    .pin.live.on::after { animation: ping 2.6s ease-out 2s infinite; }
+  }
+  @keyframes pin-in { from { transform: translate(-50%, -50%) scale(0); } 60% { transform: translate(-50%, -50%) scale(1.35); } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes tag-in { from { opacity: 0; } }
+  @keyframes ping { 0% { opacity: .9; transform: scale(.6); } 80%, 100% { opacity: 0; transform: scale(1.9); } }
+
+  /* ---------- sections ---------- */
+  section.block { padding: 88px 0 8px; }
+  h2 { font-size: clamp(2rem, 3.6vw, 2.9rem); line-height: 1.08; letter-spacing: -0.025em; font-weight: 800; margin: 0 0 16px; max-width: 20ch; text-wrap: balance; }
+  .intro { font-size: 19px; color: var(--ink-2); max-width: 36em; margin: 0 0 36px; }
+
+  /* evidence: claim on the left, proof on the right */
+  .ev { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 48px; padding: 40px 0; border-top: 1px solid var(--rule); }
+  .ev:last-child { border-bottom: 1px solid var(--rule); }
+  .ev h3 { font-size: 1.55rem; line-height: 1.2; letter-spacing: -0.015em; margin: 0 0 12px; font-weight: 700; }
+  .ev p { color: var(--ink-2); margin: 0 0 14px; max-width: 32em; }
+  .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; font-size: 15.5px; margin-top: 18px; }
+  .tested { display: inline-flex; align-items: center; gap: 7px; color: var(--ink); font-weight: 600; }
+  .tested svg { width: 18px; height: 18px; fill: none; stroke: var(--pass); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .proof { min-width: 0; }
+  .note { font-size: 15px; color: var(--ink-3); margin: 12px 0 0; max-width: 40em; }
+  pre.term { margin: 0; background: var(--term); color: var(--term-ink); border-radius: 12px; padding: 18px 20px;
+             font: 400 14.5px/1.65 var(--mono); white-space: pre-wrap; overflow-wrap: anywhere; tab-size: 4; }
+  :root[data-theme="dark"] pre.term { border: 1px solid var(--rule); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) pre.term { border: 1px solid var(--rule); } }
+  pre.term .c { color: var(--term-dim); } /* prompt and comments */
+  pre.term b { color: var(--term-hi); font-weight: 600; }
+  pre.term + pre.term { margin-top: 10px; }
+
+  /* small figures */
+  .tries { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(0, 1.7fr); gap: 6px; }
+  .tries li { border: 1.5px solid var(--rule); border-radius: 10px; padding: 12px 6px 10px; text-align: center; font-size: 14px; color: var(--ink-3); }
+  .tries li svg { display: block; margin: 0 auto 6px; width: 20px; height: 20px; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+  .tries li.x svg { stroke: var(--fail); }
+  .tries li.ban { border-color: var(--ink); color: var(--ink); font-weight: 700; }
+  .tries li.ban svg { stroke: var(--pass); }
+  .tries .n { display: block; color: var(--ink); font-family: var(--mono); font-weight: 600; }
+
+  .bars { display: grid; gap: 10px; }
+  .bar-row { display: grid; grid-template-columns: 4.5em minmax(0, 1fr) 2.4em; align-items: center; gap: 12px; font-size: 15.5px; }
+  .bar-row .l { color: var(--ink-3); }
+  .bar-row .v { font-family: var(--mono); font-weight: 600; text-align: right; }
+  .track { height: 14px; border-radius: 4px; background: var(--paper-2); overflow: hidden; }
+  .fill { display: block; height: 100%; border-radius: 0 4px 4px 0; }
+  .fill.soft { background: var(--bar-soft); } .fill.good { background: var(--pass); }
+  .scale { display: flex; justify-content: space-between; margin-left: calc(4.5em + 12px); margin-right: calc(2.4em + 12px); font-size: 13px; color: var(--ink-3); font-family: var(--mono); }
+
+  .grades { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; }
+  .grade { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 14px; font-weight: 800; font-size: 30px; letter-spacing: -0.02em; color: var(--on-status); }
+  .grade.fail { background: var(--fail); } .grade.pass { background: var(--pass); }
+  .grade-l { font-size: 14px; color: var(--ink-3); text-align: center; margin-top: 4px; }
+  .grades .to { color: var(--ink-3); font-size: 15px; }
+  .grades .src { font-size: 15px; color: var(--ink-2); max-width: 16em; }
+
+  .stack { display: flex; height: 18px; gap: 2px; border-radius: 4px; overflow: hidden; margin-top: 14px; }
+  .stack span { display: block; height: 100%; }
+  .stack .blocked { background: var(--bar-strong); } .stack .allowed { background: var(--bar-soft); }
+  .stack-l { display: flex; justify-content: space-between; gap: 12px; margin-top: 8px; font-size: 15px; color: var(--ink-2); }
+  .stack-l b { color: var(--ink); font-family: var(--mono); }
+
+  .traps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  .traps li { border: 1.5px dashed var(--rule); border-radius: 10px; padding: 10px 12px; font-size: 15px; }
+  .traps li span { display: block; font-family: var(--mono); color: var(--ink-3); font-size: 13.5px; }
+
+  /* fixes table */
+  .fixes { width: 100%; border-collapse: collapse; font-size: 16.5px; line-height: 1.5; }
+  .fixes th { text-align: left; font-weight: 600; font-size: 15px; color: var(--ink-3); padding: 0 20px 12px 0; border-bottom: 1.5px solid var(--ink); }
+  .fixes td { padding: 16px 20px 16px 0; border-bottom: 1px solid var(--rule); vertical-align: top; color: var(--ink-2); }
+  .fixes td:first-child { color: var(--ink); font-weight: 700; width: 27%; }
+  .fixes td:nth-child(2) { width: 38%; }
+  .fixes tr:last-child td { border-bottom: none; }
+
+  /* timeline: a real sequence, so it gets dates */
+  .timeline { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .timeline li { position: relative; padding: 26px 18px 0 0; border-top: 2px solid var(--ink); font-size: 16px; color: var(--ink-2); }
+  .timeline li::before { content: ""; position: absolute; left: 0; top: -7px; width: 12px; height: 12px; border-radius: 50%; background: var(--paper); border: 2.5px solid var(--ink); }
+  .timeline li:last-child::before { background: var(--ink); }
+  .timeline time { display: block; font-weight: 700; color: var(--ink); font-size: 17px; margin-bottom: 4px; }
+
+  /* skills */
+  .skills { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 56px; }
+  .skills h3 { font-size: 1.2rem; margin: 0 0 6px; }
+  .skills ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  .skills li { display: grid; grid-template-columns: 9.5em 1fr; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--rule); font-size: 16.5px; }
+  .skills li b { font-weight: 700; } .skills li span { color: var(--ink-2); }
+
+  /* AI and EPQ */
+  .ai { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+  .ai p { color: var(--ink-2); max-width: 34em; margin: 0 0 16px; }
+  .epq { margin: 6px 0 0; padding: 0 0 0 26px; border-left: 3px solid var(--ink); }
+  .epq blockquote { margin: 0; font-size: clamp(1.45rem, 2.5vw, 1.95rem); line-height: 1.25; font-style: italic; letter-spacing: -0.01em; }
+  .epq figcaption { margin-top: 14px; font-size: 15.5px; color: var(--ink-3); }
+
+  /* contact */
+  .contact { padding-bottom: 96px; }
+  .email { display: inline-block; font-size: clamp(1.7rem, 4.6vw, 3.3rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin: 8px 0 22px; word-break: break-word; }
+  .other { display: flex; flex-wrap: wrap; gap: 10px 28px; font-size: 17px; }
+  .linkish { font: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer;
+             text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: 3px; }
+  .linkish:hover { text-decoration-thickness: 2.5px; }
+
+  footer { border-top: 1px solid var(--rule); padding: 26px 0 40px; font-size: 15px; color: var(--ink-3); }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px 24px; }
+  footer p { margin: 0; max-width: 44em; }
+
+  /* ---------- smaller screens ---------- */
+  @media (max-width: 980px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; padding-top: 44px; }
+    .ev, .skills, .ai { grid-template-columns: 1fr; gap: 24px; }
+    .timeline { grid-template-columns: 1fr 1fr 1fr; row-gap: 30px; }
+    .facts { grid-template-columns: 1fr 1fr; }
+    .facts div:nth-child(3) { padding-left: 0; border-left: none; }
+    .facts div:nth-child(n+3) { border-top: 1px solid var(--rule); }
+  }
+  @media (max-width: 640px) {
+    :root { --gutter: 16px; }
+    body { font-size: 17px; }
+    .lede { font-size: 18.5px; }
+    .skills li, .legend li { grid-template-columns: 1fr; gap: 2px; }
+    .facts { grid-template-columns: 1fr; }
+    .facts div, .facts div + div { padding: 12px 0; border-left: none; }
+    .facts div + div { border-top: 1px solid var(--rule); }
+    .tag, .leaders { display: none; }
+    .legend { display: block; }
+    .tries { grid-template-columns: repeat(5, 1fr); }
+    .tries li.ban { grid-column: 1 / -1; }
+    .traps { grid-template-columns: 1fr 1fr; }
+    .timeline { grid-template-columns: 1fr; row-gap: 0; border-left: 2px solid var(--ink); margin-left: 6px; }
+    .timeline li { border-top: none; padding: 0 0 24px 22px; }
+    .timeline li::before { left: -8px; top: 5px; }
+    .fixes thead { display: none; }
+    .fixes tr { display: block; padding: 16px 0; border-bottom: 1px solid var(--rule); }
+    .fixes td { display: block; width: auto !important; padding: 2px 0; border: none; }
+    .fixes td:not(:first-child)::before { content: attr(data-label) ": "; color: var(--ink-3); }
+    pre.term { font-size: 13px; padding: 14px 16px; }
+  }
+
+  /* ---------- print: a compact copy to save as a PDF for an application ---------- */
+  @media print {
+    @page { size: A4; margin: 13mm 14mm; }
+    :root, :root[data-theme="dark"] {
+      --paper: #fff; --paper-2: #eef1ef; --ink: #000; --ink-2: #222; --ink-3: #555; --rule: #c9cfcb;
+      --pass: #1b7a3e; --fail: #a3337a; --on-status: #fff; --bar-strong: #16191b; --bar-soft: #b7c1bb; --led: #1f9d48;
+    }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .top, .skip, .actions, .theme, .leaders, .tag, .pin, .lab-link, .linkish { display: none !important; }
+    body { background: #fff; color: #000; font-size: 9.5pt; line-height: 1.42; }
+    .wrap { max-width: none; padding: 0; }
+    a { text-decoration: none; }
+    .hero { grid-template-columns: 1.15fr 1fr !important; gap: 18pt; padding: 0 0 10pt; align-items: start; }
+    h1 { font-size: 25pt; margin: 0 0 8pt; }
+    .lede { font-size: 10.5pt; margin: 0; }
+    .rack-frame { border-radius: 8px; }
+    .rack-frame img { filter: none !important; }
+    .rack figcaption { font-size: 8pt; margin-top: 5pt; }
+    .legend { display: block; margin-top: 4pt; }
+    .legend li { font-size: 8pt; padding: 2.5pt 0; grid-template-columns: 7.5em 1fr; }
+    .facts { grid-template-columns: repeat(4, 1fr) !important; }
+    .facts div, .facts div + div { font-size: 8.5pt; padding: 5pt 8pt; border-top: none !important; }
+    .facts div:first-child { padding-left: 0; }
+    .facts div + div { border-left: 1px solid var(--rule) !important; }
+    .facts dt { font-size: 7.5pt; }
+    section.block { padding-top: 14pt; }
+    h2 { font-size: 16pt; margin: 0 0 3pt; max-width: none; break-after: avoid; }
+    .intro { font-size: 9.5pt; margin: 0 0 6pt; max-width: none; break-after: avoid; }
+    .ev { grid-template-columns: 1fr 1.15fr !important; gap: 14pt; padding: 8pt 0; break-inside: avoid; }
+    .ev h3 { font-size: 11.5pt; margin: 0 0 3pt; }
+    .ev p { font-size: 8.8pt; margin: 0 0 3pt; }
+    .meta { font-size: 8pt; margin-top: 3pt; }
+    .tested svg { width: 11pt; height: 11pt; }
+    pre.term { font-size: 7.4pt; line-height: 1.45; padding: 6pt 8pt; background: #fff; color: #000; border: 1px solid #bbb; border-radius: 6px; }
+    pre.term .c { color: #666; } pre.term b { color: #000; }
+    .note { font-size: 7.8pt; margin-top: 3pt; }
+    .grades { gap: 8pt; margin-bottom: 6pt; }
+    .grade { width: 30pt; height: 30pt; font-size: 13pt; border-radius: 6pt; }
+    .grade-l, .grades .src, .grades .to { font-size: 7.5pt; }
+    .bar-row { font-size: 8pt; } .track { height: 8pt; } .scale { font-size: 7pt; }
+    .stack { height: 9pt; margin-top: 6pt; } .stack-l { font-size: 8pt; margin-top: 3pt; }
+    .tries li { padding: 4pt 2pt; font-size: 7.5pt; } .tries li svg { width: 10pt; height: 10pt; margin-bottom: 2pt; }
+    .traps li { padding: 3pt 5pt; font-size: 8pt; } .traps li span { font-size: 7pt; }
+    .fixes { font-size: 8.4pt; line-height: 1.38; }
+    .fixes th { font-size: 7.8pt; padding-bottom: 4pt; }
+    .fixes td { padding: 5pt 10pt 5pt 0; }
+    .fixes tr { break-inside: avoid; }
+    .timeline { grid-template-columns: repeat(6, 1fr) !important; }
+    .timeline li { font-size: 8pt; padding: 10pt 8pt 0 0; }
+    .timeline time { font-size: 9pt; }
+    .skills, .ai { grid-template-columns: 1.2fr 1fr !important; gap: 18pt; }
+    .skills h3 { font-size: 10.5pt; }
+    .skills li { font-size: 8.5pt; padding: 3pt 0; grid-template-columns: 8em 1fr; }
+    .ai p { font-size: 9pt; margin-bottom: 6pt; }
+    .epq blockquote { font-size: 13pt; }
+    .epq figcaption { font-size: 8pt; }
+    .contact { padding-bottom: 0; break-inside: avoid; }
+    .email { font-size: 18pt; margin: 2pt 0 6pt; }
+    .other { font-size: 9pt; gap: 4pt 16pt; }
+    .other a[href^="http"]::after { content: " (" attr(href) ")"; color: #555; }
+    .other a[href="/"]::after { content: " (haydnhomelab.com)"; color: #555; }
+    footer { font-size: 7.5pt; padding: 8pt 0 0; margin-top: 10pt; }
+    footer .wrap { display: block; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the content</a>
+
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="#top">Haydn</a>
+    <nav aria-label="Sections">
+      <a href="#evidence">What I’ve built</a>
+      <a href="#fixes">Fixes</a>
+      <a href="#skills">Skills</a>
+      <a href="#contact">Contact</a>
+    </nav>
+    <div class="top-right">
+      <a class="lab-link" href="/"><span class="led" data-live-led></span>Live lab</a>
+      <button class="theme" type="button" aria-label="Switch to dark theme">
+        <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div>
+        <h1 id="hero-title">I built a home lab to learn cyber security.</h1>
+        <p class="lede">I’m Haydn, an IT student in the UK. I’m applying for cyber security degree apprenticeships starting in 2027, so I built my own server to learn the skills properly. I locked it down, then attacked it from Kali Linux to check it held up. Everything I did, including what went wrong, is written up.</p>
+        <div class="actions">
+          <a class="btn primary" href="/">Open the live lab</a>
+          <a class="btn" href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md">Read the build log</a>
+        </div>
+      </div>
+
+      <figure class="rack">
+        <div class="rack-frame">
+          <img src="rack.jpg?v=1" width="1120" height="896" alt="My 10 inch rack. A Raspberry Pi 5 sits in the top panel next to an empty slot for a second Pi. Below it, a 1TB drive rests on a TP-Link switch, then a blank panel and open space at the bottom.">
+          <svg class="leaders" viewBox="0 0 1120 896" preserveAspectRatio="none" aria-hidden="true">
+            <line pathLength="1" style="--d:.15s" x1="350" y1="400" x2="300" y2="287"/>
+            <line pathLength="1" style="--d:.4s"  x1="290" y1="485" x2="200" y2="708"/>
+            <line pathLength="1" style="--d:.65s" x1="480" y1="558" x2="560" y2="708"/>
+            <line pathLength="1" style="--d:.9s"  x1="735" y1="415" x2="790" y2="287"/>
+          </svg>
+          <span class="pin live" data-live-pin style="--x:31.25%; --y:44.64%; --d:.15s"></span>
+          <span class="pin" style="--x:25.89%; --y:54.13%; --d:.4s"></span>
+          <span class="pin" style="--x:42.86%; --y:62.28%; --d:.65s"></span>
+          <span class="pin" style="--x:65.63%; --y:46.32%; --d:.9s"></span>
+          <div class="tag up" style="--x:6%; --y:32%; --d:.15s" aria-hidden="true"><b>Raspberry Pi 5</b><span class="v" data-live="uptime">up for --</span><span class="v" data-live="temp">CPU --</span></div>
+          <div class="tag" style="--x:4%; --y:79%; --d:.4s" aria-hidden="true"><b>1TB drive</b><span class="v" data-live="backup">backup --</span></div>
+          <div class="tag" style="--x:47%; --y:79%; --d:.65s" aria-hidden="true"><b>Managed switch</b><span class="s">VLANs are next</span></div>
+          <div class="tag up" style="--x:58%; --y:32%; --d:.9s" aria-hidden="true"><b>Spare slot</b><span class="s">room for a second Pi</span></div>
+        </div>
+        <figcaption><span class="led" data-live-led></span><span><b data-live="status">Checking the lab.</b> Photo taken 20 October 2026. The readings on it come live from the Pi.</span></figcaption>
+        <ul class="legend">
+          <li><b>Raspberry Pi 5</b><span><span class="mono" data-live="uptime">up for --</span>, <span class="mono" data-live="temp">CPU --</span></span></li>
+          <li><b>1TB drive</b><span class="mono" data-live="backup">backup --</span></li>
+          <li><b>Managed switch</b><span>VLANs are next</span></li>
+          <li><b>Spare slot</b><span>Room for a second Pi</span></li>
+        </ul>
+      </figure>
+    </section>
+
+    <dl class="facts" aria-label="About me in brief">
+      <div><dt>Studying</dt><dd>Cambridge Technical in IT (Double), working at D*D*</dd></div>
+      <div><dt>Extended project</dt><dd>Cyber EPQ on whether AI helps attackers or defenders more, working at A</dd></div>
+      <div><dt>Looking for</dt><dd>A Level 6 cyber security degree apprenticeship from 2027</dd></div>
+      <div><dt>Lab built</dt><dd>14 to 20 October 2026, and still growing</dd></div>
+    </dl>
+
+    <section class="block" id="evidence" aria-labelledby="ev-title">
+      <h2 id="ev-title">What I’ve built, and how I proved it works</h2>
+      <p class="intro">I didn’t want to set things up and just hope they worked. For each part I found a way to prove it, usually by attacking it myself. Each one links to the full write-up on GitHub. I’ve hidden hostnames and IP addresses.</p>
+
+      <article class="ev">
+        <div>
+          <h3>Only my key can log in</h3>
+          <p>SSH is how I control the Pi remotely. I turned off password logins so only my SSH key works, stopped root logging in, and only allowed my own user. I locked myself out once getting there, which is in the fixes further down.</p>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 16 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md#16-october-2026">Write-up</a></div>
+        </div>
+        <div class="proof">
+<pre class="term" aria-label="Terminal output"><span class="c">$</span> ssh -o PubkeyAuthentication=no haydn@&lt;the pi&gt;
+<b>haydn@&lt;the pi&gt;: Permission denied (publickey).</b></pre>
+          <p class="note">Forcing a password login gets refused straight away.</p>
+        </div>
+      </article>
+
+      <article class="ev">
+        <div>
+          <h3>The firewall only shows what I opened</h3>
+          <p>UFW blocks everything coming in unless I’ve allowed it. To check, I scanned all 65,535 ports from another computer on my network. Only the four I’d opened showed up.</p>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 17 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/security-plan.md#nmap-results-home-network">Scan results</a></div>
+        </div>
+        <div class="proof">
+<pre class="term" aria-label="Nmap output"><span class="c">$</span> sudo nmap -p- &lt;the pi&gt;
+Not shown: <b>65531 filtered tcp ports (no-response)</b>
+PORT    STATE SERVICE
+22/tcp  open  ssh
+53/tcp  open  domain
+80/tcp  open  http
+443/tcp open  https</pre>
+          <p class="note">“Filtered” means the firewall drops the packet without replying, so a scanner can’t even tell anything is there. This scan was before I added more services.</p>
+        </div>
+      </article>
+
+      <article class="ev">
+        <div>
+          <h3>Guess my password and you get banned</h3>
+          <p>Fail2ban watches the login logs. Five wrong logins in ten minutes and that IP gets banned in the firewall for an hour, and for longer if it comes back. I tested it by attacking from my Kali Linux VM until it banned me, then unbanned myself.</p>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 18 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md#18-october-2026">Write-up</a></div>
+        </div>
+        <div class="proof">
+          <ol class="tries" aria-label="Five wrong logins from my Kali VM, then a ban">
+            <li class="x"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="n">1</span>wrong</li>
+            <li class="x"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="n">2</span>wrong</li>
+            <li class="x"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="n">3</span>wrong</li>
+            <li class="x"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="n">4</span>wrong</li>
+            <li class="x"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg><span class="n">5</span>wrong</li>
+            <li class="ban"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Banned for an hour</li>
+          </ol>
+          <p class="note">Five wrong SSH logins from my Kali VM. After the fifth, its IP was blocked by the firewall.</p>
+        </div>
+      </article>
+
+      <article class="ev">
+        <div>
+          <h3>Hardened with a security audit</h3>
+          <p>Lynis checks hundreds of settings and gives a hardening score out of 100. I fixed what made sense, like SSH, kernel network settings, file permissions and protocols I don’t use. I also checked the warnings I didn’t fix. Two were false positives.</p>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Audited 18 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/security-plan.md#lynis-audit-18-october-2026">What I fixed and skipped</a></div>
+        </div>
+        <div class="proof">
+          <div class="bars" role="img" aria-label="Lynis hardening score: 63 before, 75 after, out of 100">
+            <div class="bar-row" title="Before hardening: 63 out of 100"><span class="l">Before</span><span class="track"><span class="fill soft" style="width:63%"></span></span><span class="v">63</span></div>
+            <div class="bar-row" title="After hardening: 75 out of 100"><span class="l">After</span><span class="track"><span class="fill good" style="width:75%"></span></span><span class="v">75</span></div>
+            <div class="scale" aria-hidden="true"><span>0</span><span>50</span><span>100</span></div>
+          </div>
+          <p class="note">I left some things on purpose, like a malware scanner that’s too heavy for a 2GB Pi. The reasons are in the write-up.</p>
+        </div>
+      </article>
+
+      <article class="ev">
+        <div>
+          <h3>A public website with no open ports</h3>
+          <p>My live dashboard runs on the Pi, but my router has no ports forwarded. The Pi connects out to Cloudflare through a tunnel instead, so nothing at home is open to the internet. I added security headers and Cloudflare firewall rules, then tested both.</p>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 20 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/security-plan.md#security-headers-20-october-2026">Headers</a><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/security-plan.md#cloudflare-waf-20-october-2026">Firewall rules</a></div>
+        </div>
+        <div class="proof">
+          <div class="grades">
+            <div><div class="grade fail" title="Before: grade F">F</div><div class="grade-l">Before</div></div>
+            <span class="to">to</span>
+            <div><div class="grade pass" title="After: grade A+">A+</div><div class="grade-l">After</div></div>
+            <span class="src">Security headers grade from securityheaders.com</span>
+          </div>
+<pre class="term" aria-label="Testing my Cloudflare firewall rules with curl"><span class="c"># attack paths and POST requests get blocked</span>
+<span class="c">$</span> curl -s -o /dev/null -w "%{http_code}\n" https://haydnhomelab.com/wp-login.php
+<b>403</b>
+<span class="c">$</span> curl -s -o /dev/null -w "%{http_code}\n" -X POST https://haydnhomelab.com/
+<b>403</b></pre>
+          <div class="stack" role="img" aria-label="Rate limit test: of 1,000 requests, 785 were blocked and 215 got through" title="785 blocked, 215 allowed">
+            <span class="blocked" style="width:78.5%"></span><span class="allowed" style="width:21.5%"></span>
+          </div>
+          <div class="stack-l"><span><b>785</b> blocked by the rate limit</span><span><b>215</b> got through</span></div>
+          <p class="note">I sent 1,000 requests, 50 at a time. Anything over 100 requests in 10 seconds from one IP gets blocked.</p>
+        </div>
+      </article>
+
+      <article class="ev">
+        <div>
+          <h3>Blocks ads, and keeps my lookups private</h3>
+          <p>Pi-hole blocks ads and trackers on my devices, including my phone anywhere through Tailscale. Behind it, Unbound looks websites up itself instead of sending every lookup to Google or Cloudflare. It checks DNSSEC signatures too, so faked answers get refused.</p>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 20 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md#20-october-2026">Write-up</a></div>
+        </div>
+        <div class="proof">
+<pre class="term" aria-label="DNSSEC test with dig"><span class="c"># a domain with deliberately broken signatures</span>
+<span class="c">$</span> dig fail01.dnssec.works @127.0.0.1 -p 5335
+;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, <b>status: SERVFAIL</b>
+
+<span class="c"># the same test site, signed properly</span>
+<span class="c">$</span> dig dnssec.works @127.0.0.1 -p 5335
+;; -&gt;&gt;HEADER&lt;&lt;- opcode: QUERY, <b>status: NOERROR</b>
+;; flags: qr rd ra <b>ad</b></pre>
+          <p class="note">Output trimmed. Unbound refused the broken one. The <code>ad</code> flag on the real one means the answer was checked and is genuine.</p>
+        </div>
+      </article>
+
+      <article class="ev">
+        <div>
+          <h3>A honeypot to catch anything poking around</h3>
+          <p>OpenCanary pretends to be eight services that nothing should ever touch, so any connection to them is a warning sign. It runs as its own user with no login, in a locked-down sandbox, on my home network only.</p>
+          <p>While testing it, I noticed what I typed into the fake login would show on my public dashboard. So I changed it to only ever show common attacker usernames, never passwords or IP addresses.</p>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 20 October</span><a href="https://github.com/haydncow/homelab-plan/tree/main/setup/honeypot">How it’s set up</a></div>
+        </div>
+        <div class="proof">
+          <ul class="traps" aria-label="The fake services and their ports">
+            <li>Old SSH server<span>port 2222</span></li>
+            <li>Telnet<span>port 23</span></li>
+            <li>FTP<span>port 21</span></li>
+            <li>MySQL<span>port 3306</span></li>
+            <li>Remote Desktop<span>port 3389</span></li>
+            <li>VNC<span>port 5900</span></li>
+            <li>Redis<span>port 6379</span></li>
+            <li>NAS login page<span>port 8081</span></li>
+          </ul>
+          <p class="note">I attacked it from Kali and the hits were logged straight away. You can watch for new ones on the attack map in my <a href="/">live lab</a> (press A).</p>
+        </div>
+      </article>
+
+      <article class="ev">
+        <div>
+          <h3>Backups I’ve actually restored</h3>
+          <p>Every night the Pi backs up its settings, scripts, Jellyfin and Pi-hole to the 1TB drive and keeps the last 14. A backup is only useful if you can restore from it, so I restored my firewall rules from one and compared them with the real file.</p>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Restored 20 October</span><a href="https://github.com/haydncow/homelab-plan/tree/main/setup/backup">How it works</a></div>
+        </div>
+        <div class="proof">
+<pre class="term" aria-label="Comparing a restored file with diff"><span class="c">$</span> sudo diff &lt;restored copy&gt;/etc/ufw/user.rules /etc/ufw/user.rules
+<span class="c">$</span></pre>
+          <p class="note">No output from <code>diff</code> means the two files are identical, so the backup works.</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="block" id="fixes" aria-labelledby="fix-title">
+      <h2 id="fix-title">Things that went wrong, and how I fixed them</h2>
+      <p class="intro">I learned the most from things breaking. These are the ones I’m proudest of working out.</p>
+      <table class="fixes">
+        <thead><tr><th scope="col">What happened</th><th scope="col">Why</th><th scope="col">What I did</th></tr></thead>
+        <tbody>
+          <tr><td>I locked myself out of the Pi</td><td data-label="Why">I’d copied my old SSH key to the Pi, then made a new one. With passwords off, nothing could log in.</td><td data-label="Fix">Reflashed it and did it in the right order: copy the key, check it works, then turn passwords off.</td></tr>
+          <tr><td>My site worked on my Mac but nowhere else</td><td data-label="Why">I’d typed “http” into Cloudflare’s subdomain box, so the record was <code>http.haydnhomelab.com</code>.</td><td data-label="Fix">Fixed the DNS record, then cleared the old answers my devices had saved.</td></tr>
+          <tr><td>Cloudflare kept showing “bad gateway”</td><td data-label="Why">Python’s simple web server couldn’t keep up with the page asking for new data every 3 seconds.</td><td data-label="Fix">Swapped it for Caddy, a proper web server.</td></tr>
+          <tr><td>My stats script worked by hand but not on a schedule</td><td data-label="Why">Cron runs with a short PATH that doesn’t include <code>/usr/sbin</code>, where <code>ufw</code> lives.</td><td data-label="Fix">Found it in the error log, then set the full PATH in the script.</td></tr>
+          <tr><td>My 1TB drive vanished after a restart</td><td data-label="Why">The USB storage driver hadn’t loaded, so Linux couldn’t see the drive at all.</td><td data-label="Fix">Loaded it with <code>modprobe</code>, then made it load on every boot.</td></tr>
+          <tr><td>The honeypot kept crashing</td><td data-label="Why">Its start script uses <code>sudo</code>, and my sandbox blocks that on purpose.</td><td data-label="Fix">Ran it directly as its own user, so it doesn’t need root at all.</td></tr>
+          <tr><td>Lynis said I had no security updates</td><td data-label="Why">Debian 13 uses a newer sources format that this version of Lynis can’t read.</td><td data-label="Fix">Checked by hand. The updates were there, so it was a false positive.</td></tr>
+          <tr><td>My rate limit didn’t block anything</td><td data-label="Why">I’d matched the path <code>/</code>, which only covers the homepage.</td><td data-label="Fix">Changed it to <code>/*</code> and tested again: 785 of 1,000 requests blocked.</td></tr>
+          <tr><td>I nearly put my own email on my public site</td><td data-label="Why">I’d typed it into the honeypot’s fake login while testing it.</td><td data-label="Fix">Changed the page to only show common attacker usernames.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="block" id="timeline" aria-labelledby="tl-title">
+      <h2 id="tl-title">From a box of parts to all this in a week</h2>
+      <p class="intro">The dates come from my build log, which has every step.</p>
+      <ol class="timeline">
+        <li><time datetime="2026-10-14">14 Oct</time>Ordered the parts. Made my SSH key and turned on 2FA.</li>
+        <li><time datetime="2026-10-15">15 Oct</time>The rack arrived.</li>
+        <li><time datetime="2026-10-16">16 Oct</time>First boot, and my first SSH problem to solve.</li>
+        <li><time datetime="2026-10-17">17 Oct</time>Firewall, automatic updates, Pi-hole, Tailscale and my first Nmap scans.</li>
+        <li><time datetime="2026-10-18">18 Oct</time>Fitted the rack. Put my dashboard online on my own domain. Fail2ban, Lynis and Jellyfin.</li>
+        <li><time datetime="2026-10-20">20 Oct</time>Honeypot, backups, Unbound, security headers to A+ and Cloudflare firewall rules.</li>
+      </ol>
+    </section>
+
+    <section class="block" id="skills" aria-labelledby="sk-title">
+      <h2 id="sk-title">What I can do</h2>
+      <p class="intro">Everything on the left I’ve done in my own lab, with the write-ups to show for it. The right is what I’m working on next.</p>
+      <div class="skills">
+        <div>
+          <h3>Done in my lab</h3>
+          <ul>
+            <li><b>Linux</b><span>Debian 13 on the Pi: services, permissions, cron and logs</span></li>
+            <li><b>Networking</b><span>IP addresses, DNS, DHCP, ports and static IPs</span></li>
+            <li><b>Firewalls</b><span>UFW, plus Cloudflare firewall rules and rate limiting</span></li>
+            <li><b>Hardening</b><span>SSH keys, Fail2ban, Lynis and kernel network settings</span></li>
+            <li><b>Security testing</b><span>Nmap and Kali Linux, against my own lab</span></li>
+            <li><b>VPNs</b><span>Tailscale, including an exit node for public Wi-Fi</span></li>
+            <li><b>DNS</b><span>Pi-hole, Unbound and DNSSEC</span></li>
+            <li><b>Web security</b><span>HTTPS, security headers and a Content Security Policy</span></li>
+            <li><b>Docker</b><span>Docker Compose, kept behind the firewall</span></li>
+            <li><b>Backups</b><span>Nightly backups, with a restore I’ve tested</span></li>
+            <li><b>Documentation</b><span>Git, GitHub and writing up everything I do</span></li>
+          </ul>
+        </div>
+        <div>
+          <h3>Learning next</h3>
+          <ul>
+            <li><b>VLANs</b><span>Separating the lab from the rest of the house on my managed switch</span></li>
+            <li><b>Log analysis</b><span>Pulling logs into one place to spot attacks</span></li>
+            <li><b>Packet analysis</b><span>Wireshark, using port mirroring on my switch</span></li>
+            <li><b>Python</b><span>Starting by changing my own lab’s scripts</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="block" id="ai" aria-labelledby="ai-title">
+      <h2 id="ai-title">How I used AI</h2>
+      <div class="ai">
+        <div>
+          <p>I used Claude, an AI assistant, like a tutor while building this. It explained how things work, gave me the commands to run and wrote the code for my websites, including this page. I ran every command on the Pi myself, tested that things actually worked and wrote down what went wrong.</p>
+          <p>The testing mattered, because not everything worked first time. My Cloudflare rate limit looked right but didn’t block anything until I tested it and found the mistake.</p>
+          <p>My EPQ asks whether AI is more of a defence or a weapon in cyber security, so I’m interested in both sides of it.</p>
+        </div>
+        <figure class="epq">
+          <blockquote>“Is AI a defence mechanism or a tool that is used to weaponize a cyber-attack?”</blockquote>
+          <figcaption>My Cyber EPQ question, City &amp; Guilds. The essay and presentation are due in March 2027.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="block contact" id="contact" aria-labelledby="ct-title">
+      <h2 id="ct-title">Get in touch</h2>
+      <p class="intro">I’m looking for a Level 6 cyber security degree apprenticeship starting in 2027. If you’d like to talk, or ask me anything about the lab, email me.</p>
+      <a class="email" href="mailto:hello@haydnhomelab.com">hello@haydnhomelab.com</a>
+      <div class="other">
+        <a href="https://github.com/haydncow">GitHub: haydncow</a>
+        <a href="https://github.com/haydncow/homelab-plan">The full build on GitHub</a>
+        <a href="/">My live lab</a>
+        <button class="linkish" type="button" data-print>Print or save as PDF</button>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>This page is served by the Raspberry Pi in the photo, through a Cloudflare Tunnel. Claude (AI) wrote the code and helped me write it up. I built the lab and ran every command.</p>
+    <p><a href="https://securityheaders.com/?q=haydnhomelab.com&amp;followRedirects=on">Security headers: A+</a></p>
+  </div>
+</footer>
+</body>
+</html>

@@ -4,6 +4,7 @@ Live at **[haydnhomelab.com](https://haydnhomelab.com)**. A public page showing 
 
 **Claude (an AI assistant) wrote all the code in this folder.** I described what I wanted, checked how it looked and set it up on the Pi with Claude's instructions.
 
+- `about/` is my apprenticeship portfolio at [haydnhomelab.com/about](https://haydnhomelab.com/about/). Every claim on it has its evidence next to it: the real command I ran and its output, a before and after grade, or a link to the write-up. The photo of my rack has live readings from the Pi pinned to the hardware (uptime, CPU temperature, last backup). It works in light and dark mode, on phones, and prints as a clean 4 page PDF. Like the rest of the site, Claude wrote the code and the security policy blocks inline scripts.
 - `robots.txt`, `sitemap.xml` and `og.jpg` help Google find the site and give it a nice preview when the link is shared
 - `index.html` is the page, and `app.js` is its code. They're separate files so the Content Security Policy can block all inline scripts, which got the site an A+ on securityheaders.com.
 - `index.html`: It starts with a power-on intro (a standby light, a CRT-style screen switching on and the rack drawing itself), then shows a one-screen dashboard of tiles: the rack (click a part to zoom in), ads blocked, uptime, a CPU temperature gauge, power and cost, DNS queries, security and what's running. Clicking a tile expands it into a full view with interactive graphs.

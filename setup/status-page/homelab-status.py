@@ -457,6 +457,8 @@ def main():
         "updated": int(now),
         "updated_text": time.strftime("%d %b %Y, %H:%M", time.localtime(now)),
         "uptime": safe(uptime),
+        # exact time the Pi started, so pages can count the uptime up every second
+        "boot": safe(lambda: int(now - float(read("/proc/uptime").split()[0]))),
         "temp": f"{temp:.1f}°C" if temp is not None else None,
         "load": safe(cpu_load),
         "memory": f"{mem:.0f}%" if mem is not None else None,
