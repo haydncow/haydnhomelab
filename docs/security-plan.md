@@ -68,7 +68,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 ## Backups
 
 - Pi-hole Teleporter export, kept off the Pi
-- Nightly backups of the whole Pi config to the media drive, root-only, kept for 14 days (see [backup](backup/))
+- Nightly backups of the whole Pi config to the media drive, root-only, kept for 14 days (see [backup](../backup/))
 - My setup notes are in this repo so I can rebuild it
 
 ## Next

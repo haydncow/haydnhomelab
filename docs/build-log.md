@@ -4,17 +4,17 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 20 October 2026
 
-- Gave my private services proper names: `jellyfin.lan`, `dashboard.lan`, `speed.lan` and `pihole.lan`. Pi-hole's local DNS points them all at the Pi, and Caddy on port 80 sends each one to the right service. I moved Pi-hole's own web page to 8090 (not 8081, the honeypot uses that) so Caddy could have port 80. For my phone away from home, the Pi advertises a Tailscale route to just `192.168.1.5`. See the [Caddyfile](Caddyfile).
+- Gave my private services proper names: `jellyfin.lan`, `dashboard.lan`, `speed.lan` and `pihole.lan`. Pi-hole's local DNS points them all at the Pi, and Caddy on port 80 sends each one to the right service. I moved Pi-hole's own web page to 8090 (not 8081, the honeypot uses that) so Caddy could have port 80. For my phone away from home, the Pi advertises a Tailscale route to just `192.168.1.5`. See the [Caddyfile](../caddy/Caddyfile).
 - Added the Speedtest Tracker tile to Homepage with a read-only API token.
-- Set up Speedtest Tracker in Docker to test my broadband every 2 hours. Its port clashed with Pi-hole, so it only listens on the Pi itself and Caddy passes it through on 8766, with UFW allowing that from home and Tailscale only. Changed the default admin login straight away. See [speedtest](speedtest/).
+- Set up Speedtest Tracker in Docker to test my broadband every 2 hours. Its port clashed with Pi-hole, so it only listens on the Pi itself and Caddy passes it through on 8766, with UFW allowing that from home and Tailscale only. Changed the default admin login straight away. See [speedtest](../speedtest/).
 - Problem: Caddy wouldn't reload. I'd lost the closing `}` on the first block, so Caddy read the new site as a setting inside it. `caddy validate` showed the line. The old config kept running, so the website stayed up.
 - Added an animated network map to the status page (press N). I tried a hidden terminal too but took it out, it didn't fit the look I wanted.
 - Changed my mind about Pi-hole on my phone and set it up through Tailscale: UFW allows DNS on `tailscale0`, Pi-hole listens on all interfaces (UFW still decides who can reach it), the Pi doesn't use Tailscale DNS itself, and the Pi is the global nameserver in Tailscale with "Override DNS servers" on. Ads are blocked on my phone anywhere, even on mobile data. Checked the exit node too: with it on, "what is my IP" shows my home IP.
-- Set up Homepage, a private dashboard for all my services, running in Docker. Used `network_mode: host` because Docker normally publishes ports with its own firewall rules that skip UFW. Secrets are in a `.env` file on the Pi, not on GitHub. See [homepage](homepage/).
+- Set up Homepage, a private dashboard for all my services, running in Docker. Used `network_mode: host` because Docker normally publishes ports with its own firewall rules that skip UFW. Secrets are in a `.env` file on the Pi, not on GitHub. See [homepage](../homepage/).
 - Problems getting Homepage going: my user couldn't `cd` into `/opt/homepage` (the stricter default permissions again), the Jellyfin key was in `.env` without its variable name so Homepage sent the placeholder text instead, and my Jellyfin version needed the widget's `version: 2` because it removed the old `/emby` API paths (that was the 404). The Pi-hole status dot also errored because Pi-hole's web server sends a reply Node's HTTP parser doesn't like, so I removed that check. The Pi-hole tile shows live stats anyway.
 - Learned that API keys are like passwords: I'd pasted mine into a chat, so I made a new one.
 - Docker warned that memory limits weren't working. Raspberry Pi OS turns off the memory cgroup by default, which also meant my honeypot's 200 MB limit wasn't being enforced. Fixed by adding `cgroup_enable=memory cgroup_memory=1` to `/boot/firmware/cmdline.txt`.
-- Set up an OpenCanary honeypot on my home network: fake SSH, Telnet, FTP, MySQL, Remote Desktop, VNC, Redis and a NAS login page. Kept it home network only so nothing is open to the internet. See [honeypot](honeypot/).
+- Set up an OpenCanary honeypot on my home network: fake SSH, Telnet, FTP, MySQL, Remote Desktop, VNC, Redis and a NAS login page. Kept it home network only so nothing is open to the internet. See [honeypot](../honeypot/).
 - Problem: `opencanaryd --copyconfig` couldn't find OpenCanary because it ran the system Python instead of the one in its virtual environment. Then my own user couldn't even read `/opt/opencanary`, because the stricter default permissions from the Lynis fixes made the install root-only. Fixed with `chmod -R a+rX` and copied the default config by hand.
 - Problem: the service kept crashing with "no new privileges flag is set, which prevents sudo". OpenCanary's start script tries to use sudo, and my systemd sandbox blocks that on purpose. Fixed it by running the twistd engine directly as the `canary` user, which doesn't need root at all.
 - Tested it from my Kali VM: SSH to the fake server on port 2222 and logging in to the fake NAS page both got logged straight away.
@@ -22,7 +22,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Made the Pi a Tailscale exit node, so my phone or laptop can send all its traffic through my home connection on public Wi-Fi, like a free VPN. Needed IP forwarding turned on, and a UFW route rule that only allows forwarding from Tailscale out to the internet. Tested on mobile data: "what is my IP" showed my home IP.
 - Rebuilt the network map with zones, device icons, clickable devices and three animated traffic stories that explain how the tunnels and Pi-hole work.
 - Gave the status page a sleeker look: Inter font, calmer background, glassier tiles and a spotlight on the rack.
-- Set up nightly backups of all my settings, scripts, Jellyfin and Pi-hole to the media drive, keeping 14 days. See [backup](backup/).
+- Set up nightly backups of all my settings, scripts, Jellyfin and Pi-hole to the media drive, keeping 14 days. See [backup](../backup/).
 - First backup was 31 MB. Tested restoring my UFW rules from it into a temporary folder and compared them with `diff`: identical, so the backups actually work.
 - Added SD card health checks. Normal SD cards can't report their own health like hard drives do, so it watches the warning signs instead: total data written (from ext4's lifetime write counter), how much gets written per day, card errors in the kernel log, filesystem errors from `tune2fs`, and whether the card has gone read-only. It shows in "What's running" on the status page.
 
@@ -56,7 +56,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Jellyfin is only open to my home network and Tailscale in UFW, not on my public domain.
 - Problem: "What's running" was empty, but worked when I ran the script by hand. The error log showed `No such file or directory: 'ufw'`. Cron runs scripts with a much shorter PATH that doesn't include `/usr/sbin`, where `ufw` lives. Fixed it by setting the full PATH at the top of the script.
 - Set up a Samba share so I can drag films onto the drive from my Mac or PC. Only my user can log in, only from home or Tailscale, and new files automatically get the jellyfin group.
-- Added a script that downloads free public domain films from the Internet Archive every week into a "Classics" library. See [media](media/).
+- Added a script that downloads free public domain films from the Internet Archive every week into a "Classics" library.
 - Problem: the film script said only 25 GB was free. That's the SD card, so the drive wasn't mounted. The Pi had restarted and the drive had vanished. `lsusb` could still see the My Passport, so the cable and power were fine, but the USB storage driver hadn't loaded, so there was no `sda`. Loading it with `modprobe usb-storage` brought the drive back, and I added it to `/etc/modules-load.d/` so it loads on every boot.
 - Changed the film script so it refuses to run if the drive isn't mounted, so it can never fill up the SD card.
 - Removed the free films script in the end. The films available legally for free weren't really what I wanted to watch.
@@ -107,9 +107,9 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 ## 15 October 2026
 
 - The DeskPi RackMate T0 arrived, with the shelf and blank panel in.
-- Took some photos of it against a white background (in [photos](photos/)).
+- Took some photos of it against a white background (in [images](../images/)).
 
-<img src="photos/rack-angle.jpg" alt="Rack from an angle" width="360">
+<img src="../images/rack-angle.jpg" alt="Rack from an angle" width="360">
 
 **Next:** flash the SD card, boot the Pi for the first time, then fit the Pi and switch in the rack.
 
