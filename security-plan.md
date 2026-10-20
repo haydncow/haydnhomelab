@@ -28,6 +28,8 @@ learn more.
 
 ## Remote access
 
+- The Pi is a Tailscale exit node, so my devices can route their traffic through home on untrusted Wi-Fi. Forwarding is only allowed from `tailscale0` out to the internet (`ufw route allow in on tailscale0 out on eth0`), nothing else can be forwarded.
+
 - Use **Tailscale** to access the lab from outside my house
 - **No port forwarding** on my router, so nothing is exposed to the internet
 - Turn on two-factor authentication (2FA) on my Tailscale account

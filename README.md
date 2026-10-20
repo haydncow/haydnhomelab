@@ -78,6 +78,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Lynis security audit (hardening score 63 to 75)
 - [x] Jellyfin media server with a 1TB drive
 - [x] Nightly backups
+- [x] Tailscale exit node (a free VPN through home)
 - [ ] Fit everything in the rack
       
 I'll keep this updated as I go.
