@@ -88,6 +88,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 - [x] Lynis security audit: hardening score went from 63 to 75 (18 October 2026)
 - [x] Honeypot test: SSH and fake NAS logins from my Kali VM were caught and logged (20 October 2026)
 - [x] Security headers on haydnhomelab.com: securityheaders.com grade went from F to A+ (20 October 2026)
+- [x] Cloudflare WAF: attack paths and POST requests get 403, and 1,000 fast requests got 785 blocked by rate limiting (20 October 2026)
 - [x] Backup restore test: restored my UFW rules from the nightly backup and they matched exactly (20 October 2026)
 
 ### Nmap results (home network)
@@ -113,6 +114,20 @@ Added security headers to haydnhomelab.com in Caddy. securityheaders.com went fr
 </p>
 
 It was capped at A because my Content Security Policy still allowed inline scripts (`'unsafe-inline'`), since the page's code was all in one file. I moved the code into `app.js` and took `'unsafe-inline'` out of `script-src`, so now only scripts from my own site can run. Even if someone managed to inject code into the page, the browser would refuse to run it.
+
+### Cloudflare WAF (20 October 2026)
+
+Cloudflare checks every request before it reaches the Pi. My site is read-only and has no WordPress or PHP, so I block anything it never needs. All on the free plan.
+
+| Rule | What it does | Test from my Mac | Result |
+|------|--------------|------------------|--------|
+| Block attack paths | Blocks `/wp-`, `.php`, `/.env`, `/.git` and `phpmyadmin`, which bots scan for constantly | `curl https://haydnhomelab.com/wp-login.php` | 403 |
+| Only GET and HEAD | The site never needs POST, PUT or DELETE | `curl -X POST https://haydnhomelab.com/` | 403 |
+| Too many requests | More than 100 requests in 10 seconds from one IP gets blocked | 1,000 requests, 50 at a time | 215 got through, 785 blocked with 429 |
+
+Also turned on Always Use HTTPS and set the minimum TLS version to 1.2. I left Bot Fight Mode off because it could block shields.io, which draws my README badges.
+
+**Mistake I made:** the rate limit didn't work at first. I'd set the path to `wildcard "/"`, which only matches the homepage exactly, and my test was hitting `/stats.json`. Changing it to `/*` fixed it.
 
 ### Lynis audit (18 October 2026)
 

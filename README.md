@@ -88,6 +88,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] `.lan` names for my services
 - [x] Unbound for private DNS lookups
 - [x] Security headers on my site (F to A+ on securityheaders.com)
+- [x] Cloudflare WAF rules and rate limiting, tested
 - [x] Live badges on this README
 
 ## Next
