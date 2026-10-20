@@ -980,7 +980,7 @@ function honeypotHtml() {
   const esc = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const when = t => { const s = Date.now() / 1000 - t; return s < 3600 ? Math.max(1, Math.round(s / 60)) + "m ago" : s < 86400 ? Math.round(s / 3600) + "h ago" : Math.round(s / 86400) + "d ago"; };
   const list = h && h.recent.length
-    ? `<ul class="hp-list">${h.recent.map(e => `<li><i></i><b>${esc(e.service)}</b>${e.user ? `<span>tried user <code>${esc(e.user)}</code></span>` : "<span>connected</span>"}<em>${when(e.time)}</em></li>`).join("")}</ul>`
+    ? `<ul class="hp-list">${h.recent.map(e => `<li><i></i><b>${esc(e.service)}</b>${e.user === "a username" ? "<span>tried logging in</span>" : e.user ? `<span>tried user <code>${esc(e.user)}</code></span>` : "<span>connected</span>"}<em>${when(e.time)}</em></li>`).join("")}</ul>`
     : `<p class="note">Nothing has touched it yet. That's the idea: on a healthy network, nothing should.</p>`;
   return `<div class="hp-box"><h3>Honeypot</h3><p class="note">Fake services on my home network that nothing should ever touch: an old SSH server, Telnet, FTP, MySQL, Remote Desktop, VNC, Redis and a NAS login page. If anything connects, it gets logged. Only reachable from inside my home, nothing is open to the internet.</p>
     <div class="mgrid" style="margin:10px 0">${st("Alerts (24h)", h ? h.today : "n/a")}${st("Alerts (all time)", h ? h.total : "n/a")}</div>${list}</div>`;

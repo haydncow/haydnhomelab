@@ -6,6 +6,10 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 - Added an animated network map to the status page (press N). I tried a hidden terminal too but took it out, it didn't fit the look I wanted.
 - Set up an OpenCanary honeypot on my home network: fake SSH, Telnet, FTP, MySQL, Remote Desktop, VNC, Redis and a NAS login page. Kept it home network only so nothing is open to the internet. See [honeypot](honeypot/).
+- Problem: `opencanaryd --copyconfig` couldn't find OpenCanary because it ran the system Python instead of the one in its virtual environment. Then my own user couldn't even read `/opt/opencanary`, because the stricter default permissions from the Lynis fixes made the install root-only. Fixed with `chmod -R a+rX` and copied the default config by hand.
+- Problem: the service kept crashing with "no new privileges flag is set, which prevents sudo". OpenCanary's start script tries to use sudo, and my systemd sandbox blocks that on purpose. Fixed it by running the twistd engine directly as the `canary` user, which doesn't need root at all.
+- Tested it from my Kali VM: SSH to the fake server on port 2222 and logging in to the fake NAS page both got logged straight away.
+- Noticed I'd typed my email into the fake NAS login, and the status page would have shown it. Changed it so the public page only shows common attacker usernames like root or admin, and anything else just says "tried logging in".
 - Made the Pi a Tailscale exit node, so my phone or laptop can send all its traffic through my home connection on public Wi-Fi, like a free VPN. Needed IP forwarding turned on, and a UFW route rule that only allows forwarding from Tailscale out to the internet. Tested on mobile data: "what is my IP" showed my home IP.
 - Rebuilt the network map with zones, device icons, clickable devices and three animated traffic stories that explain how the tunnels and Pi-hole work.
 - Gave the status page a sleeker look: Inter font, calmer background, glassier tiles and a spotlight on the rack.
