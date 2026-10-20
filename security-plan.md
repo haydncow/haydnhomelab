@@ -47,6 +47,7 @@ learn more.
 
 - Set a strong password for the Pi-hole admin page
 - Only access the admin page from my home network or through Tailscale
+- My phone uses Pi-hole over Tailscale, so ads and trackers are blocked even on mobile data. DNS is only allowed from my home network and `tailscale0`
 - Keep blocklists updated
 
 ## Firewall

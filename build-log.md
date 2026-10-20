@@ -5,6 +5,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 ## 20 October 2026
 
 - Added an animated network map to the status page (press N). I tried a hidden terminal too but took it out, it didn't fit the look I wanted.
+- Changed my mind about Pi-hole on my phone and set it up through Tailscale: UFW allows DNS on `tailscale0`, Pi-hole listens on all interfaces (UFW still decides who can reach it), the Pi doesn't use Tailscale DNS itself, and the Pi is the global nameserver in Tailscale with "Override DNS servers" on. Ads are blocked on my phone anywhere, even on mobile data. Checked the exit node too: with it on, "what is my IP" shows my home IP.
 - Set up Homepage, a private dashboard for all my services, running in Docker. Used `network_mode: host` because Docker normally publishes ports with its own firewall rules that skip UFW. Secrets are in a `.env` file on the Pi, not on GitHub. See [homepage](homepage/).
 - Problems getting Homepage going: my user couldn't `cd` into `/opt/homepage` (the stricter default permissions again), the Jellyfin key was in `.env` without its variable name so Homepage sent the placeholder text instead, and my Jellyfin version needed the widget's `version: 2` because it removed the old `/emby` API paths (that was the 404). The Pi-hole status dot also errored because Pi-hole's web server sends a reply Node's HTTP parser doesn't like, so I removed that check. The Pi-hole tile shows live stats anyway.
 - Learned that API keys are like passwords: I'd pasted mine into a chat, so I made a new one.

@@ -74,7 +74,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Pi-hole (tested on my Mac)
 - [x] Tailscale remote access
 - [x] Live status page
-- [ ] Pi-hole on my own devices (PC and Mac)
+- [x] Pi-hole on my own devices (Mac, PC, and my phone anywhere over Tailscale)
 - [x] Security testing (Nmap scan, only the ports I opened show up)
 - [x] Fail2ban
 - [x] Lynis security audit (hardening score 63 to 75)
