@@ -3,7 +3,6 @@
         icon: pi-hole.png
         href: http://192.168.1.5/admin/
         description: Network ad blocking
-        siteMonitor: http://127.0.0.1/admin/
         widget:
           type: pihole
           url: http://127.0.0.1
@@ -17,6 +16,7 @@
         siteMonitor: http://127.0.0.1:8096
         widget:
           type: jellyfin
+          version: 2          # newer Jellyfin removed the old /emby paths
           url: http://127.0.0.1:8096
           key: "{{HOMEPAGE_VAR_JELLYFIN_KEY}}"
           enableBlocks: true
