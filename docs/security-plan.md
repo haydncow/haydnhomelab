@@ -48,7 +48,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 - Strong password on the admin page
 - Admin page only reachable from my home network or over Tailscale
 - My phone uses Pi-hole over Tailscale, so ads and trackers are blocked even on mobile data. DNS is only allowed from my home network and `tailscale0`
-- Blocklists update automatically every week
+- Blocklists: the default StevenBlack list, plus HaGeZi Pro (ads and tracking) and HaGeZi Threat Intelligence Feeds Medium (known malware, phishing and scam domains). About 851,000 domains in total, updated automatically every week
 - **Unbound** does the actual lookups itself, starting from the root DNS servers, instead of sending every site I visit to Google or Cloudflare. It checks DNSSEC signatures, so faked answers get refused (tested: `fail01.dnssec.works` gives SERVFAIL). It only listens on `127.0.0.1:5335`, so nothing new is open
 
 ## Firewall

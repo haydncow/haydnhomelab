@@ -2,7 +2,11 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
-**Jump to:** [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+**Jump to:** [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+
+## 21 October 2026
+
+- Added two HaGeZi blocklists to Pi-hole: Pro for ads and tracking, and Threat Intelligence Feeds (Medium) for known malware, phishing and scam domains. Blocked domains went from about 71,500 to 851,589. I picked the Medium threat list over the full one (1.9 million domains) to go easy on the Pi's 2GB of RAM. My first attempt failed because HaGeZi had moved its files, so `pihole -g` said "Not found". The new addresses use the adblock format, which Pi-hole v6 understands.
 
 ## 20 October 2026
 
