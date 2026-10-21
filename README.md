@@ -7,7 +7,8 @@
   <a href="https://haydnhomelab.com"><b>Portfolio</b></a> &nbsp;|&nbsp;
   <a href="https://haydnhomelab.com/lab/"><b>Live lab</b></a> &nbsp;|&nbsp;
   <a href="docs/build-log.md"><b>Build log</b></a> &nbsp;|&nbsp;
-  <a href="docs/security-plan.md"><b>Security testing</b></a>
+  <a href="docs/security-plan.md"><b>Security testing</b></a> &nbsp;|&nbsp;
+  <a href="https://www.linkedin.com/in/haydncowley"><b>LinkedIn</b></a>
 </p>
 
 <p align="center">
@@ -166,4 +167,4 @@ Commits that Claude helped with have Claude listed as a co-author.
 
 ## Contact
 
-I'm looking for a Level 6 cyber security degree apprenticeship starting in 2027. Email me at cowleyhaydn@gmail.com, or have a look at my [portfolio](https://haydnhomelab.com).
+I'm looking for a Level 6 cyber security degree apprenticeship starting in 2027. Email me at cowleyhaydn@gmail.com, connect with me on [LinkedIn](https://www.linkedin.com/in/haydncowley), or have a look at my [portfolio](https://haydnhomelab.com).
