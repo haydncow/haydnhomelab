@@ -42,5 +42,6 @@ Both pages read the same live data from the Pi. The code is in separate `.js` fi
 - **Caddy** serves `/srv/status`, but only on `127.0.0.1:8080`, so it isn't reachable from my network (see the [Caddyfile](../caddy/Caddyfile)). I started with Python's built-in web server, but it couldn't keep up once the page asked for new data every 3 seconds and Cloudflare kept showing "bad gateway".
 - A **Cloudflare Tunnel** (`cloudflared`) connects out from the Pi to Cloudflare and puts the site on my domain. Nothing is port forwarded on my router.
 - `robots.txt`, `sitemap.xml` and `og.jpg` help Google find the site and give it a nice preview when the link is shared.
+- `favicon.ico`, `favicon.svg`, `icon-192.png` and `apple-touch-icon.png` are the site icon in the sizes browsers, phones and Google use. Google can't use an icon built into the page, so it showed a blank globe until these were added. The homepage also tells Google the site's name ("Haydn's Homelab") with a small block of structured data.
 
 I used Tailscale Funnel for this at first, but switched to Cloudflare Tunnel so I could use my own domain.
