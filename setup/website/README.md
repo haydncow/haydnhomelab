@@ -7,7 +7,7 @@ Live at **[haydnhomelab.com](https://haydnhomelab.com)**, served from the Raspbe
 | Address | What it is | Files |
 |---|---|---|
 | [haydnhomelab.com](https://haydnhomelab.com) | My apprenticeship portfolio | `index.html`, `portfolio.js`, `rack.jpg` |
-| [haydnhomelab.com/lab](https://haydnhomelab.com/lab/) | The live dashboard for my homelab | `lab/index.html`, `lab/app.js` |
+| [haydnhomelab.com/lab](https://haydnhomelab.com/lab/) | The live dashboard for my homelab | `lab/index.html`, `lab/app.js`, `lab/theme.js` |
 
 Both pages read the same live data from the Pi. The code is in separate `.js` files so the Content Security Policy can block all inline scripts, which got the site an A+ on securityheaders.com.
 
@@ -21,6 +21,7 @@ Both pages read the same live data from the Pi. The code is in separate `.js` fi
 
 ## Live lab (`/lab/`)
 
+- It looks the same as the portfolio: same fonts, colours and light/dark mode, and the light/dark choice carries across both pages. The network map and attack map stay dark in both modes, like the terminal boxes on the portfolio.
 - It starts with a power-on intro (a standby light, a CRT-style screen switching on and the rack drawing itself), then shows a one-screen dashboard of tiles: the rack (click a part to zoom in), ads blocked, uptime, a CPU temperature gauge, power and cost, DNS queries, security and what's running. Clicking a tile expands it into a full view with interactive graphs.
 - Press **N** for an interactive network map. It has three traffic stories (visiting the site, my remote access over Tailscale, and Pi-hole blocking ads) that animate a packet along the real path step by step, and you can click any device to see what it does.
 - Press **A** for the honeypot attack map, and **H** for **How it works**, a plain English explanation of the lab for people who aren't techy.

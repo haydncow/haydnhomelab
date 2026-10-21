@@ -7,6 +7,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 ## 21 October 2026
 
 - Added two HaGeZi blocklists to Pi-hole: Pro for ads and tracking, and Threat Intelligence Feeds (Medium) for known malware, phishing and scam domains. Blocked domains went from about 71,500 to 851,589. I picked the Medium threat list over the full one (1.9 million domains) to go easy on the Pi's 2GB of RAM. My first attempt failed because HaGeZi had moved its files, so `pihole -g` said "Not found". The new addresses use the adblock format, which Pi-hole v6 understands.
+- Restyled the live lab to match my portfolio, so the two pages feel like one site. Same fonts, colours, header and light/dark mode (the choice is shared between pages), with colour only used for pass, fail and live like on the portfolio. All the features stayed: the tiles, graphs, network map, attack map and the power-on intro.
 
 ## 20 October 2026
 

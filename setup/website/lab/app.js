@@ -36,7 +36,7 @@ function finishBoot() {
   timers.forEach(clearTimeout);
   const boot = $("#boot"); if (boot) boot.classList.add("gone");
   const rack = $("#rack"); rack.classList.remove("tracing", "fillin", "paused");
-  $("#title").textContent = "haydnhomelab";
+  $("#title").textContent = "Live lab";
   showRest();
   try { sessionStorage.setItem("booted", "1"); } catch (e) {}
   powerOn();
@@ -59,7 +59,7 @@ async function runBoot() {
   document.body.classList.add("crt");
   later(() => document.body.classList.remove("crt"), 1200);
   later(() => boot.classList.add("gone"), 700);
-  decrypt($("#title"), "haydnhomelab", 900);
+  decrypt($("#title"), "Live lab", 900);
   await sleep(1900);                                  // rack draws itself
   rack.classList.replace("tracing", "fillin");
   await sleep(900);
@@ -139,7 +139,7 @@ function boxFor(el) {
 
 /* ---------- info tile: what each rack part is ---------- */
 const PARTS = {
-  intro: ["welcome", () => `
+  intro: ["Welcome", () => `
     <h2>My homelab</h2>
     <p class="tag">A small server I built to learn networking and security</p>
     <div class="vis-line" id="vis-line">${visLine()}</div>
@@ -149,7 +149,7 @@ const PARTS = {
       <button class="chip" data-go="spare">Spare slot</button><button class="chip" data-go="blank">Blank panel</button>
       <button class="chip" data-go="empty">Open space</button>
     </div>`],
-  pi: ["u1 &middot; kksb panel", () => `
+  pi: ["U1 &middot; KKSB panel", () => `
     <h2>Raspberry Pi 5 (2GB)</h2>
     <p class="tag">The server. This page is running on it right now.</p>
     <ul>
@@ -159,12 +159,12 @@ const PARTS = {
       <li><b>UFW + Fail2ban</b> keep everything else out</li>
     </ul>
     <div class="chips"><button class="chip" data-open="pi">All live stats &#8599;</button></div>`],
-  switch: ["u2 &middot; shelf", () => `
+  switch: ["U2 &middot; shelf", () => `
     <h2>TP-Link TL-SG105E</h2>
     <p class="tag">5 port gigabit managed switch</p>
     <p>The black cable goes to the Pi, the orange one out to the router. The moving dots are traffic, and they speed up when Pi-hole is busier.</p>
     <p>It's managed, so it can do <b>VLANs</b>. That's next on my list.</p>`],
-  drive: ["u2 &middot; on the switch", () => `
+  drive: ["U2 &middot; on the switch", () => `
     <h2>WD My Passport 1TB</h2>
     <p class="tag">Storage, plugged into the Pi's blue USB 3 port</p>
     <ul>
@@ -172,12 +172,12 @@ const PARTS = {
       <li><b>Nightly backups</b> of the Pi, kept for 14 days</li>
     </ul>
     <p>It sits on top of the switch. If it's unplugged the Pi still boots, it just won't have the films.</p>`],
-  spare: ["u1 &middot; kksb panel", () => `
+  spare: ["U1 &middot; KKSB panel", () => `
     <h2>Spare slot</h2>
     <p class="tag">Room for a second Pi</p>
     <p>The panel holds two Pis. This one's empty for now, ready for a backup Pi-hole or a media server.</p>`],
-  blank: ["u3", () => `<h2>Blank panel</h2><p class="tag">Came with the rack</p><p>Covers the gap under the switch so it looks tidy.</p>`],
-  empty: ["u4", () => `<h2>Open space</h2><p class="tag">Room to grow</p><p>Space for an SSD, a patch panel or whatever comes next.</p>`],
+  blank: ["U3", () => `<h2>Blank panel</h2><p class="tag">Came with the rack</p><p>Covers the gap under the switch so it looks tidy.</p>`],
+  empty: ["U4", () => `<h2>Open space</h2><p class="tag">Room to grow</p><p>Space for an SSD, a patch panel or whatever comes next.</p>`],
 };
 function show(part, animate = true) {
   current = part;
@@ -234,7 +234,7 @@ function setGauge(t) {
   const g = $("#gauge");
   $("#gauge-t").textContent = t == null ? "--" : t.toFixed(1);
   g.style.strokeDashoffset = 100 - Math.max(0, Math.min(1, ((t ?? 30) - 30) / 55)) * 100;
-  g.setAttribute("stroke", t >= 75 ? "var(--bad)" : t >= 62 ? "var(--amber)" : "var(--led)");
+  g.setAttribute("stroke", t >= 75 ? "var(--bad)" : t >= 62 ? "var(--amber)" : "var(--pass)");
 }
 function render() {
   if (!stats) return;
