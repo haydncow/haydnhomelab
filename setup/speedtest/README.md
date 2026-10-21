@@ -17,4 +17,12 @@ It's private, like Homepage: only reachable from my home network and over Tailsc
 
 Caddy wouldn't reload after I added the new site. The first block had lost its closing `}`, so Caddy read `:8766` as a setting inside it. `caddy validate` showed the exact line, and the old config kept running until I fixed it, so my website never went down.
 
+## Updating
+
+```
+cd /opt/speedtest && sudo docker compose pull && sudo docker compose up -d
+```
+
+21 October 2026: stopped it after the NCSC's PHP warning, because the newest image still had the unpatched PHP 8.5.11. It's only reachable from my home network and Tailscale, but there was no reason to leave it running until the fix is out.
+
 Claude (AI) wrote these config files. I set it up on the Pi.

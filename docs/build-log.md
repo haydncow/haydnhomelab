@@ -6,6 +6,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 21 October 2026
 
+- The NCSC put out a warning about two critical PHP flaws (CVE-2026-109618 and CVE-2026-109619) that could let an attacker run code on a web server. Claude helped me check what was affected. My website has no PHP, Pi-hole v6 doesn't use it, and Cloudflare already blocks `.php` addresses. But Speedtest Tracker is a PHP app, and its container had PHP 8.5.11 from 25 September, before the fix. It can only be reached from my home network and Tailscale, so the risk was low. I pulled the newest image, but no fixed one was out yet, so I stopped the container until there is one. "Speedtest" will show as down on the live lab until then.
 - Added two HaGeZi blocklists to Pi-hole: Pro for ads and tracking, and Threat Intelligence Feeds (Medium) for known malware, phishing and scam domains. Blocked domains went from about 71,500 to 851,589. I picked the Medium threat list over the full one (1.9 million domains) to go easy on the Pi's 2GB of RAM. My first attempt failed because HaGeZi had moved its files, so `pihole -g` said "Not found". The new addresses use the adblock format, which Pi-hole v6 understands.
 - Restyled the live lab to match my portfolio, so the two pages feel like one site. Same fonts, colours, header and light/dark mode (the choice is shared between pages), with colour only used for pass, fail and live like on the portfolio. All the features stayed: the tiles, graphs, network map, attack map and the power-on intro.
 
