@@ -2,7 +2,11 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
-**Jump to:** [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+**Jump to:** [23 Oct](#23-october-2026) | [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+
+## 23 October 2026
+
+- Added secret scanning to this repo. A GitHub Actions workflow runs gitleaks on every push and every Monday, and scans the whole history, not just the newest commit. The first scan checked all 88 commits and found nothing. To make sure it actually catches things, Claude committed a fake GitHub token to a throwaway repo and gitleaks flagged it. The download is checked against the official checksum so it can't be swapped for something else. There's a "Secret scan" badge on the README that goes red if it ever finds something.
 
 ## 21 October 2026
 

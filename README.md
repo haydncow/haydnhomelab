@@ -21,6 +21,7 @@
   <br>
   <img alt="Lynis score 75" src="https://img.shields.io/badge/Lynis%20score-75-blue">
   <img alt="Security headers A+" src="https://img.shields.io/badge/security%20headers-A%2B-brightgreen">
+  <a href="https://github.com/haydncow/homelab-plan/actions/workflows/secret-scan.yml"><img alt="Secret scan" src="https://github.com/haydncow/homelab-plan/actions/workflows/secret-scan.yml/badge.svg"></a>
 </p>
 
 I'm Haydn, an IT student in West Yorkshire applying for cyber security degree apprenticeships starting in 2027. This is my homelab: a Raspberry Pi 5 in a 10 inch rack that blocks ads on my devices, lets me reach my home network safely from anywhere, runs a honeypot to catch anything poking around and hosts my website. The badges above are live from the Pi.
@@ -77,6 +78,7 @@ I didn't want to set things up and just hope they worked, so I tested each part,
 | Cloudflare firewall | `curl` attack paths, then 1,000 fast requests | Attack paths got 403, and 785 requests were rate limited |
 | Honeypot | Connected to the fake services from Kali | Every hit was logged straight away |
 | Backups | Restored my firewall rules from a backup | `diff` showed the files were identical |
+| Secrets on GitHub | gitleaks scans every commit on every push | All 88 commits clean, and a fake token in a test repo was caught |
 
 The commands, results and screenshots are in the [security plan](docs/security-plan.md).
 

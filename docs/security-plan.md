@@ -92,6 +92,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 - [x] Security headers on haydnhomelab.com: securityheaders.com grade went from F to A+ (20 October 2026)
 - [x] Cloudflare WAF: attack paths and POST requests get 403, and 1,000 fast requests got 785 blocked by rate limiting (20 October 2026)
 - [x] Backup restore test: restored my UFW rules from the nightly backup and they matched exactly (20 October 2026)
+- [x] Secret scanning: gitleaks checked all 88 commits in this repo and found no passwords, keys or tokens. It now runs on every push with GitHub Actions. To check it really works, a fake GitHub token in a throwaway repo was caught straight away (23 October 2026)
 
 ### Nmap results (home network)
 
