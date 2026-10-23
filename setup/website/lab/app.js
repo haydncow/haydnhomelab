@@ -108,6 +108,11 @@ function startPackets() {
     make("#cable-router", "#ffb38f", i * dur / 3, false);
     make("#cable-router", "#5cff3a", i * dur / 3 + dur / 6, true);
   }
+  // my PC: lookups go up to the switch, answers come back down
+  for (let i = 0; i < 2; i++) {
+    make("#cable-pc", "#e8eae6", i * dur / 2 + dur / 4, true);
+    make("#cable-pc", "#5cff3a", i * dur / 2, false);
+  }
 }
 
 /* ---------- zoom into a part ---------- */
@@ -163,7 +168,7 @@ const PARTS = {
   switch: ["U2 &middot; shelf", () => `
     <h2>TP-Link TL-SG105E</h2>
     <p class="tag">5 port gigabit managed switch</p>
-    <p>The black cable goes to the Pi, the orange one out to the router. The moving dots are traffic, and they speed up when Pi-hole is busier.</p>
+    <p>Port 1 (orange) goes out to the router, port 2 to the Pi, and port 3 to my PC (both black). The moving dots are traffic, and they speed up when Pi-hole is busier.</p>
     <p>It's managed, so it can do <b>VLANs</b>. That's next on my list.</p>`],
   drive: ["U2 &middot; on the switch", () => `
     <h2>WD My Passport 1TB</h2>
