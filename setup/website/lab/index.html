@@ -827,6 +827,26 @@
     .t-sec .sec-list { grid-template-columns: 1fr 1fr; }
     .t-rack { aspect-ratio: 460 / 600; }
   }
+  /* network map: same cards, lines and colours as the rest of the site, and fits on one screen */
+  .nm { background: var(--card); border: 1px solid var(--rule); border-radius: 18px; max-height: 46vh; margin: 0 auto; }
+  .nm-dot { fill: var(--rule); }
+  .nm-zone { fill: none; stroke: var(--rule); }
+  .nm-zone.home { fill: color-mix(in srgb, var(--pass) 4%, transparent); stroke: color-mix(in srgb, var(--pass) 35%, transparent); }
+  .nm-zone.rack { fill: color-mix(in srgb, var(--pass) 7%, transparent); stroke: color-mix(in srgb, var(--pass) 55%, transparent); }
+  .nm-zl { fill: var(--ink-3); }
+  .nm-link { stroke: color-mix(in srgb, var(--ink-3) 45%, transparent); }
+  .nm-box { fill: var(--card); stroke: var(--rule); }
+  .nm-node:hover .nm-box, .nm-node:focus-visible .nm-box { stroke: var(--ink-3); }
+  .nm-node.lit .nm-box { fill: var(--card); stroke: var(--flow); }
+  .nm-node.picked .nm-box { stroke: var(--ink); stroke-width: 1.8; }
+  .nm-node.pi .nm-box { filter: none; }
+  .nm-ico svg { stroke: var(--ink); } .nm-t { fill: var(--ink); } .nm-s { fill: var(--ink-3); }
+  .nm-pkt { fill: var(--card); }
+  .nm-flows { margin-bottom: 10px; }
+  .nm-under { margin-top: 10px; gap: 12px; }
+  .nm-steps { gap: 5px; } .nm-steps li { padding: 7px 10px; font-size: 13px; }
+  .nm-info { padding: 12px 14px; }
+  @media (max-width: 800px) { .nm { max-height: none; } }
   /* keep it tidy on very tall and fairly short screens */
   @media (min-width: 1101px) { .app { max-height: 900px; } }
   @media (min-width: 1101px) and (max-height: 860px) { .t-info .body p:last-child { display: none; } }

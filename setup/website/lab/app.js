@@ -614,7 +614,7 @@ function netRun() {
   const pts = f.route.map(id => [NODES[id].x, NODES[id].y]);
   const pkt = root.querySelector(".nm-pkt"), lis = [...root.querySelectorAll("#nm-steps li")];
   // Timeline: move along each link, and pause at the nodes where a step happens there
-  const SPEED = 240, HOLD = 1600, END = 1800;
+  const SPEED = 130, HOLD = 3600, END = 3000;   // slow enough to read each step
   const holds = new Set(f.steps.filter(s => s[0] === s[1]).map(s => s[0]));
   const plan = [];
   pts.slice(1).forEach((p, i) => {
