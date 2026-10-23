@@ -149,12 +149,7 @@ const PARTS = {
     <h2>My homelab</h2>
     <p class="tag">A small server I built to learn networking and security</p>
     <div class="vis-line" id="vis-line">${visLine()}</div>
-    <p>Click a part of the rack to zoom in, or click any tile for more. New to this? <button class="chip" data-go-how>How it works</button></p>
-    <div class="chips">
-      <button class="chip" data-go="pi">Raspberry Pi</button><button class="chip" data-go="switch">Switch</button><button class="chip" data-go="drive">Drive</button>
-      <button class="chip" data-go="spare">Spare slot</button><button class="chip" data-go="blank">Blank panel</button>
-      <button class="chip" data-go="empty">Open space</button>
-    </div>`],
+    <p>Click a part of the rack to zoom in, or click any tile for more. New to this? <button class="chip" data-go-how>How it works</button></p>`],
   pi: ["U1 &middot; KKSB panel", () => `
     <h2>Raspberry Pi 5 (2GB)</h2>
     <p class="tag">The server. This page is running on it right now.</p>
@@ -929,17 +924,6 @@ setInterval(() => {
   const s = Math.max(0, Math.round(Date.now() / 1000 - t));
   $("#ago").textContent = s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`;
 }, 1000);
-
-/* ---------- 3D tilt on the rack ---------- */
-if (!reduceMotion && matchMedia("(hover: hover) and (min-width: 1100px)").matches) {
-  const rt = $(".t-rack"), rs = $("#rack");
-  rt.addEventListener("pointermove", e => {
-    if (rt.classList.contains("zoomed")) return;
-    const r = rt.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - .5, py = (e.clientY - r.top) / r.height - .5;
-    rs.style.transform = `perspective(900px) rotateY(${px * 7}deg) rotateX(${-py * 5}deg)`;
-  });
-  rt.addEventListener("pointerleave", () => (rs.style.transform = ""));
-}
 
 let rz; addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => modalOpen && !["network", "attacks", "how"].includes(modalOpen) && drawModal(modalOpen, false), 200); });
 
