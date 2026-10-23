@@ -6,6 +6,9 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 23 October 2026
 
+- Spotted a real attack in the new blocked-request feed: a scanner on a rented Google Cloud server in France tried dozens of `phpinfo.php`, `.env` and `.bak` paths in about 10 seconds, pretending to be Chrome on Windows. My Cloudflare attack-path rule blocked every request, and my site has no PHP anyway. Over 5 days Cloudflare blocked about 3,400 requests, 785 of them my own rate limit test. Wrote it up as [a write-up](https://haydnhomelab.com/writeups/phpinfo-scanner/).
+- Cloudflare refused the first version of the feed with "does not have access to the path". Asking its API which data my plan includes showed the free plan does have the blocked-request list (30 days of it), just not one of the summary tables. Switched to the one it allows.
+- Made the write-ups and status page easier to find: the portfolio's top bar now only has Write-ups and Status, and they stay visible on phones.
 - Made the website more advanced:
   - **Write-ups** at [haydnhomelab.com/writeups](https://haydnhomelab.com/writeups/): eight short articles about things I built and tested, like SSH, the Cloudflare firewall rules, the honeypot, the encrypted backups and the NCSC PHP alert. Each one has what went wrong and what I learned, and says how I used AI.
   - **Status page** at [haydnhomelab.com/status](https://haydnhomelab.com/status/) with 90-day uptime bars for every service, like big companies have. Services I've stopped on purpose (like Speedtest) show as maintenance with the reason, not as down.

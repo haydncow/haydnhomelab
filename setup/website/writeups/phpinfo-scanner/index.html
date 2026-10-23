@@ -1,0 +1,109 @@
+<!doctype html>
+<!-- Part of my apprenticeship portfolio, served by the Raspberry Pi in my rack.
+     Claude (an AI assistant) wrote the code. I built the lab, ran every command and tested it.
+     The whole build is written up at https://github.com/haydncow/homelab-plan -->
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A bot hunted my site for phpinfo.php. Here's what stopped it | Haydn's Homelab</title>
+<meta name="description" content="In about ten seconds, a scanner tried dozens of paths looking for a page that leaks a server&#x27;s setup. My firewall blocked every one before it reached my house.">
+<link rel="canonical" href="https://haydnhomelab.com/writeups/phpinfo-scanner/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://haydnhomelab.com/writeups/phpinfo-scanner/">
+<meta property="og:title" content="A bot hunted my site for phpinfo.php. Here's what stopped it | Haydn's Homelab">
+<meta property="og:description" content="In about ten seconds, a scanner tried dozens of paths looking for a page that leaks a server&#x27;s setup. My firewall blocked every one before it reached my house.">
+<meta property="og:image" content="https://haydnhomelab.com/og.jpg">
+<meta property="og:site_name" content="Haydn's Homelab">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f4f6f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1311" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/theme.js"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"A bot hunted my site for phpinfo.php. Here's what stopped it","description":"In about ten seconds, a scanner tried dozens of paths looking for a page that leaks a server's setup. My firewall blocked every one before it reached my house.","datePublished":"2026-10-23","url":"https://haydnhomelab.com/writeups/phpinfo-scanner/","author":{"@type":"Person","name":"Haydn","url":"https://haydnhomelab.com/"},"isPartOf":{"@type":"WebSite","name":"Haydn's Homelab","url":"https://haydnhomelab.com/"}}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="/">Haydn</a>
+    <nav aria-label="Site"><a href="/">Portfolio</a><a href="/writeups/" aria-current="page">Write-ups</a><a href="/status/">Status</a></nav>
+    <div class="top-right">
+      <a class="lab-link" href="/lab/"><span class="led" data-live-led></span><span class="t">Live lab</span></a>
+      <button class="theme" type="button" aria-label="Switch theme">
+        <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+<main id="main">
+<div class="wrap narrow"><article>
+  <div class="page-head">
+    <p class="eyebrow"><a href="/writeups/">Write-ups</a></p>
+    <h1>A bot hunted my site for phpinfo.php. Here's what stopped it</h1>
+    <p class="lede">In about ten seconds, a scanner tried dozens of paths looking for a page that leaks a server's setup. My firewall blocked every one before it reached my house.</p>
+    <div class="meta"><span><time datetime="2026-10-23">23 October 2026</time></span><span>2 min read</span><span>By <b>Haydn</b></span></div>
+  </div>
+  <dl class="summary"><div><dt>Goal</dt><dd>Find out what was attacking my site, and check my defences held</dd></div><div><dt>Result</dt><dd>Every request blocked</dd></div><div><dt>Tools</dt><dd>Cloudflare WAF, Cloudflare GraphQL API, AbuseIPDB</dd></div></dl>
+  <h2>What I saw</h2>
+<p>The day I added a feed of blocked requests to my <a href="/lab/">live lab</a>, the newest entries weren't my own tests. At 13:30 on 23 October something requested these, a few milliseconds apart:</p>
+<pre class="term">/notifications/.env
+/job/.env
+/phpinfo.php.bak
+/staging/phpinfo.php
+/uat/phpinfo.php
+/administrator/phpinfo.php
+/docs/phpinfo.php
+<span class="c"># ...and more like them, all within about 10 seconds</span></pre>
+<p>Every one was blocked by my Cloudflare rule for attack paths, so none of them reached the Pi.</p>
+
+<h2>What it was looking for</h2>
+<ul>
+<li><strong><code>phpinfo.php</code></strong> is a test page developers sometimes forget to delete. It shows a server's whole setup: software versions, file paths, and sometimes passwords stored in settings.</li>
+<li><strong><code>.env</code></strong> files are where apps often keep passwords and API keys. Leaving one where the web server can reach it is a common, serious mistake.</li>
+<li><code>.bak</code> files are old copies that might still contain the original code.</li>
+</ul>
+<p>Folder names like <code>staging</code>, <code>uat</code> and <code>docs</code> are guesses from a word list. It doesn't know anything about my site. It's trying the same list everywhere.</p>
+
+<h2>Who was behind it</h2>
+<p>Cloudflare logs more detail than my public pages show, so I looked privately:</p>
+<ul>
+<li><strong>Network:</strong> Google Cloud, in France. Not Google's search crawler, which identifies itself as Googlebot. Someone rented a cloud server and ran a scanner on it.</li>
+<li><strong>User agent:</strong> claimed to be Chrome on Windows. A real browser can't request ten pages a second, so that's faked to look less suspicious.</li>
+<li><strong>Target:</strong> almost certainly not me personally. New domains get found quickly because every HTTPS certificate is published in public logs, and scanners watch them.</li>
+</ul>
+<p>Sites like AbuseIPDB collect reports about addresses that attack people, which is a quick way to see if a scanner is already known. I didn't scan it or try to attack it back. That would be illegal, even though it scanned me first.</p>
+
+<h2>Why nothing was at risk</h2>
+<ul>
+<li><strong>Cloudflare blocked it first.</strong> My rule blocks any path containing <code>.php</code>, <code>/.env</code>, <code>/.git</code>, <code>/wp-</code> or <code>phpmyadmin</code>, so the requests never used my home connection.</li>
+<li><strong>There was nothing to find anyway.</strong> My site has no PHP, and the files with secrets (like the Cloudflare token) are root-only, outside the web folder.</li>
+</ul>
+<p>Over five days my firewall blocked about 3,400 requests. 785 were my own rate limit test. The rest were bots like this one.</p>
+
+<h2>What I learned</h2>
+<ul>
+<li>A public website gets scanned within days, even a small one nobody has heard of.</li>
+<li>Layers matter: the firewall stopped it, but even without it there was nothing to leak.</li>
+<li>Logging blocked traffic turns "my firewall works" from a guess into evidence.</li>
+</ul>
+  <p class="ai-note"><b>How I used AI:</b> Claude wrote the code that pulls the blocked requests from Cloudflare and helped me read them. I spotted the scan in my live lab, pulled the details and checked my defences held. The full, unedited notes are in my <a href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md">build log</a>.</p>
+  <nav class="next-prev" aria-label="More write-ups"><a href="/writeups/php-alert/"><small>&larr; Older</small><span>Responding to an NCSC alert the same day</span></a><span></span></nav>
+</article></div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <span>Served from a Raspberry Pi 5 in my rack, through a Cloudflare Tunnel. No open ports at home.</span>
+    <span><a href="/">Portfolio</a> &middot; <a href="/lab/">Live lab</a> &middot; <a href="https://github.com/haydncow/homelab-plan">GitHub</a> &middot; <a href="https://www.linkedin.com/in/haydncowley">LinkedIn</a></span>
+  </div>
+</footer>
+</body>
+</html>
