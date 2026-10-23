@@ -586,17 +586,19 @@ def cf_firewall():
             return cached["data"]
     except (OSError, ValueError, KeyError):
         cached = None
-    data = None
+    data, problems = None, []
     for hours in (24, 6, 1):
         try:
             data = cf_firewall_fetch(hours)
             break
-        except RuntimeError:
-            continue
+        except RuntimeError as e:          # Cloudflare said no, e.g. range too long or no permission
+            problems.append(f"{hours}h: {e}")
         except Exception:
             traceback.print_exc()
             break
     if data is None:
+        if problems:
+            print(time.strftime("%Y-%m-%d %H:%M:%S"), "Cloudflare security events failed:", "; ".join(problems), file=sys.stderr)
         return cached["data"] if cached else None
     os.makedirs(STATE_DIR, exist_ok=True)
     json.dump({"fetched": time.time(), "data": data}, open(CF_FW_CACHE, "w"))
