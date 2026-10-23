@@ -268,9 +268,10 @@ function render() {
         `<div class="svc ${s.up ? "up" : "down"}" title="${ABOUT[s.name] || ""}"><i></i>${SVC_SHORT[s.name] || s.name}</div>`).join("")}</div></div>`).join("")
     : `<span class="note">not available yet</span>`;
   const hp = stats.honeypot;
-  const cfToday = hist && hist.firewall ? (hist.firewall.feed || []).filter(e => Date.now() / 1000 - e.time < 86400).length : null;
+  const cfDay = hist && (hist.days || []).find(d => d.date === new Date().toISOString().slice(0, 10));   // Cloudflare's days are UTC
+  const cfToday = hist && hist.firewall ? (cfDay && cfDay.cf_blocked != null ? cfDay.cf_blocked : (hist.firewall.feed || []).filter(e => Date.now() / 1000 - e.time < 86400).length) : null;
   $("#hp-line").innerHTML = (hp ? `honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in 24h` : "")
-    + (cfToday != null ? ` &middot; Cloudflare blocked <b>${cfToday >= 25 ? "25+" : cfToday}</b>` : "");
+    + (cfToday != null ? ` &middot; Cloudflare blocked <b>${Number(cfToday).toLocaleString()}</b> today` : "");
   const vl = $("#vis-line"); if (vl) vl.innerHTML = visLine();
   if (modalOpen && !["network", "attacks", "how", "history"].includes(modalOpen)) drawModal(modalOpen, false);
   if (modalOpen === "network") netInfo();

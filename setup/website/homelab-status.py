@@ -529,8 +529,9 @@ CF_FW_QUERY = """query($zone: String!, $since: Time!) {
     events: firewallEventsAdaptive(limit: 60, filter: {datetime_geq: $since}, orderBy: [datetime_DESC]) {
       datetime action source clientCountryName clientRequestPath clientRequestHTTPMethodName
     }
-    groups: firewallEventsAdaptiveGroups(limit: 50, filter: {datetime_geq: $since}, orderBy: [date_ASC]) {
-      count dimensions { date action }
+    groups: firewallEventsAdaptiveByTimeGroups(limit: 40, orderBy: [date_ASC], filter: {datetime_geq: $since,
+            action_in: ["block", "drop", "managed_challenge", "challenge", "jschallenge", "connection_close"]}) {
+      count dimensions { date }
     }
   } }
 }"""
@@ -570,16 +571,16 @@ def cf_firewall_fetch(hours):
             "rule": RULE_NAMES.get(e.get("source"), "Cloudflare"),
         })
     per_day = {}
-    for g in zone["groups"]:
-        if g["dimensions"]["action"] in BLOCKING:
-            d = g["dimensions"]["date"]
-            per_day[d] = per_day.get(d, 0) + g["count"]
+    for g in zone["groups"]:   # already filtered to blocking actions by Cloudflare
+        d = g["dimensions"]["date"]
+        per_day[d] = per_day.get(d, 0) + g["count"]
     return {"feed": feed[:25], "per_day": per_day, "hours": hours}
 
 
 def cf_firewall():
-    # Ask Cloudflare every 5 minutes. Free plans can only look back a limited
-    # time, so try a day first, then shorter windows.
+    # Ask Cloudflare every 5 minutes. The free plan keeps 30 days of security
+    # events, so look back 29 days (which fills the history straight away),
+    # then try shorter windows if Cloudflare ever refuses.
     try:
         cached = json.load(open(CF_FW_CACHE))
         if time.time() - cached["fetched"] < 300:
@@ -587,7 +588,7 @@ def cf_firewall():
     except (OSError, ValueError, KeyError):
         cached = None
     data, problems = None, []
-    for hours in (24, 6, 1):
+    for hours in (29 * 24, 24, 6):
         try:
             data = cf_firewall_fetch(hours)
             break
