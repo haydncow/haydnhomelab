@@ -524,12 +524,19 @@ def update_daily(data, now, firewall):
 # Requests Cloudflare blocked before they reached the Pi. Only the path, country,
 # method and which rule stopped it. Never the IP address or browser details.
 CF_FW_CACHE = os.path.join(STATE_DIR, "firewall.json")
-CF_FW_QUERY = """query($zone: String!, $since: Time!) {
+# Two windows in one request: the last 24 hours is live, but Cloudflare answers
+# longer ranges from a summary that can be about an hour behind. So the feed
+# and today's count use the last 24 hours, and older days come from 29 days.
+CF_FW_QUERY = """query($zone: String!, $recent: Time!, $since: Time!) {
   viewer { zones(filter: {zoneTag: $zone}) {
-    events: firewallEventsAdaptive(limit: 60, filter: {datetime_geq: $since}, orderBy: [datetime_DESC]) {
+    events: firewallEventsAdaptive(limit: 60, filter: {datetime_geq: $recent}, orderBy: [datetime_DESC]) {
       datetime action source clientCountryName clientRequestPath clientRequestHTTPMethodName
     }
-    groups: firewallEventsAdaptiveByTimeGroups(limit: 40, orderBy: [date_ASC], filter: {datetime_geq: $since,
+    recent: firewallEventsAdaptiveByTimeGroups(limit: 5, orderBy: [date_ASC], filter: {datetime_geq: $recent,
+            action_in: ["block", "drop", "managed_challenge", "challenge", "jschallenge", "connection_close"]}) {
+      count dimensions { date }
+    }
+    older: firewallEventsAdaptiveByTimeGroups(limit: 40, orderBy: [date_ASC], filter: {datetime_geq: $since,
             action_in: ["block", "drop", "managed_challenge", "challenge", "jschallenge", "connection_close"]}) {
       count dimensions { date }
     }
@@ -548,10 +555,11 @@ def clean_path(p):
     return p[:60] + "..." if len(p) > 60 else p
 
 
-def cf_firewall_fetch(hours):
+def cf_firewall_fetch(days):
     cfg = json.load(open(CF_FILE))
-    since = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - hours * 3600))
-    body = json.dumps({"query": CF_FW_QUERY, "variables": {"zone": cfg["zone"], "since": since}}).encode()
+    stamp = lambda secs: time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - secs))
+    body = json.dumps({"query": CF_FW_QUERY, "variables": {"zone": cfg["zone"], "recent": stamp(86400),
+                                                           "since": stamp(days * 86400)}}).encode()
     req = urllib.request.Request("https://api.cloudflare.com/client/v4/graphql", data=body, method="POST",
                                  headers={"Authorization": "Bearer " + cfg["token"], "Content-Type": "application/json"})
     with urllib.request.urlopen(req, timeout=15) as r:
@@ -571,16 +579,17 @@ def cf_firewall_fetch(hours):
             "rule": RULE_NAMES.get(e.get("source"), "Cloudflare"),
         })
     per_day = {}
-    for g in zone["groups"]:   # already filtered to blocking actions by Cloudflare
-        d = g["dimensions"]["date"]
-        per_day[d] = per_day.get(d, 0) + g["count"]
-    return {"feed": feed[:25], "per_day": per_day, "hours": hours}
+    for part in ("older", "recent"):   # already filtered to blocking actions by Cloudflare
+        for g in zone[part]:
+            d = g["dimensions"]["date"]
+            per_day[d] = max(per_day.get(d, 0), g["count"])   # the live window wins when it's higher
+    return {"feed": feed[:25], "per_day": per_day, "days": days}
 
 
 def cf_firewall():
     # Ask Cloudflare every 5 minutes. The free plan keeps 30 days of security
-    # events, so look back 29 days (which fills the history straight away),
-    # then try shorter windows if Cloudflare ever refuses.
+    # events, so look back 29 days for older daily totals (which fills the
+    # history straight away), and only 1 day if Cloudflare ever refuses that.
     try:
         cached = json.load(open(CF_FW_CACHE))
         if time.time() - cached["fetched"] < 300:
@@ -588,12 +597,12 @@ def cf_firewall():
     except (OSError, ValueError, KeyError):
         cached = None
     data, problems = None, []
-    for hours in (29 * 24, 24, 6):
+    for days in (29, 1):
         try:
-            data = cf_firewall_fetch(hours)
+            data = cf_firewall_fetch(days)
             break
         except RuntimeError as e:          # Cloudflare said no, e.g. range too long or no permission
-            problems.append(f"{hours}h: {e}")
+            problems.append(f"{days} days: {e}")
         except Exception:
             traceback.print_exc()
             break
