@@ -65,7 +65,7 @@ img { max-width: 100%; }
 .theme .moon { display: none; }
 .theme[data-mode="dark"] .sun { display: none; } .theme[data-mode="dark"] .moon { display: block; }
 @media (max-width: 720px) { .top .wrap { gap: 16px; } .top nav { gap: 14px; font-size: 15px; } }
-@media (max-width: 420px) { .top .wrap { gap: 12px; } .top nav { gap: 12px; } .top nav a:first-child { display: none; } .top .theme { display: none; } .lab-link { padding: 5px 11px; font-size: 14.5px; } }
+@media (max-width: 420px) { .top .wrap { gap: 12px; } .top nav { gap: 12px; } .top .theme { display: none; } .lab-link { padding: 5px 11px; font-size: 14.5px; } }
 .lab-link .led:not(.on):not(.off) { display: none; }
 
 /* headings */
