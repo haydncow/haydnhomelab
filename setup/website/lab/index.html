@@ -781,15 +781,25 @@
   .t-dns .note b { color: var(--ink); }
   .t-dns .spark { height: 52%; }
 
-  /* Pi health */
-  .pi-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; flex: 1; min-height: 0; margin-top: 6px; }
-  .pi-c { display: flex; flex-direction: column; gap: 2px; min-width: 0; border-radius: 12px; padding: 6px 6px 4px; margin: -6px -6px 0; cursor: pointer; outline: none; }
-  .pi-c:hover, .pi-c:focus-visible { background: var(--paper-2); }
-  .pi-c > b { font-size: clamp(17px, 1.6vw, 22px); font-weight: 800; letter-spacing: -0.02em; white-space: nowrap; }
-  .pi-c .note { font-size: 12px; line-height: 1.35; }
-  .pi-c .note b { color: var(--ink); }
-  .pi-c .spark { height: auto; flex: 1; min-height: 24px; margin-top: 4px; }
-  .pi-c .gauge { max-width: 120px; margin: 4px auto 0; }
+  /* Pi health, one tile */
+  .pi-main { display: grid; grid-template-columns: minmax(96px, 0.8fr) minmax(0, 1.4fr); gap: 14px; align-items: center; margin-top: 6px; }
+  .pi-temp { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .pi-temp .gauge { max-width: 104px; margin: 0; }
+  .pi-temp .k-l { margin-top: -2px; }
+  .pi-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; }
+  .pi-stats div { display: flex; flex-direction: column; min-width: 0; }
+  .pi-stats b { font-size: 16px; font-weight: 800; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pi-foot { display: flex; justify-content: space-between; gap: 8px; margin-top: 6px; }
+  #sec-feed li[hidden] { display: none; }
+  .pi-foot .mini-h { margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pi-foot b { color: var(--ink); }
+  .t-pi .spark { flex: 1 1 0; height: auto; min-height: 18px; margin-top: 4px; }
+  .t-pi > * { flex: none; }
+  /* history button in the security tile */
+  .sec-hist { margin-left: auto; font: inherit; font-size: 12px; font-weight: 600; color: var(--ink); background: var(--paper-2);
+    border: 1px solid var(--rule); border-radius: 999px; padding: 3px 10px; cursor: pointer; letter-spacing: 0; text-transform: none; }
+  .sec-hist:hover, .sec-hist:focus-visible { border-color: var(--ink-3); }
+  .t-sec .sec-top { cursor: zoom-in; }
 
   /* smaller screens */
   @media (max-width: 1100px) {
@@ -810,7 +820,6 @@
     .sec-top { grid-template-columns: 1fr; }
     .t-sec .sec-list { grid-template-columns: 1fr 1fr; }
     .t-rack { aspect-ratio: 460 / 600; }
-    .pi-grid { grid-template-columns: 1fr 1fr 1fr; }
   }
   /* keep it tidy on very tall and fairly short screens */
   @media (min-width: 1101px) { .app { max-height: 900px; } }
@@ -844,7 +853,6 @@
         <button class="hbtn" id="open-how" title="How it works (press H)">How it works</button>
         <button class="hbtn" id="open-net" title="Network map (press N)">Network map</button>
         <button class="hbtn" id="open-atk" title="Honeypot attack map (press A)">Attack map</button>
-        <button class="hbtn" id="open-hist" title="30-day security history (press S)">History</button>
       </nav>
     </div>
   </div>
@@ -1093,8 +1101,8 @@
     </section>
 
     <section class="tile t-sec click" style="--i:3" tabindex="0" role="button" data-open="security" aria-label="Security. Open details.">
-      <div class="label">Security <span class="ex">&#8599;</span></div>
-      <div class="sec-top">
+      <div class="label">Security <button class="sec-hist" id="open-hist" data-hist title="30-day security history (press S)">30-day history &#8599;</button></div>
+      <div class="sec-top" data-hist title="Open the 30-day history">
         <div class="sec-chart"><div class="mini-h">Cloudflare blocks, last 14 days</div><svg class="mini-bars" id="sec-bars" viewBox="0 0 280 60" preserveAspectRatio="none" aria-hidden="true"></svg></div>
         <div class="sec-feed"><div class="mini-h">Latest blocked requests</div><ul id="sec-feed"><li class="none">Loading...</li></ul></div>
       </div>
@@ -1121,28 +1129,26 @@
       <svg class="spark" id="spark-dns" preserveAspectRatio="none" aria-hidden="true"></svg>
     </section>
 
-    <section class="tile t-pi" style="--i:6" aria-label="Raspberry Pi health">
-      <div class="label">Raspberry Pi <span class="livetag">live</span></div>
-      <div class="pi-grid">
-        <div class="pi-c" tabindex="0" role="button" data-open="pi" aria-label="Uptime and CPU. Open details.">
-          <span class="k-l">Uptime</span><b id="uptime">-</b>
-          <span class="note">CPU <b id="cpu">-</b> &middot; RAM <b id="mem">-</b></span>
-          <svg class="spark" id="spark-cpu" preserveAspectRatio="none" aria-hidden="true"></svg>
-        </div>
-        <div class="pi-c" tabindex="0" role="button" data-open="temp" aria-label="CPU temperature. Open graph.">
-          <span class="k-l">CPU temp</span>
+    <section class="tile t-pi click" style="--i:6" tabindex="0" role="button" data-open="pi" aria-label="Raspberry Pi health. Open details.">
+      <div class="label">Raspberry Pi <span class="livetag">live</span><span class="ex">&#8599;</span></div>
+      <div class="pi-main">
+        <div class="pi-temp">
           <svg class="gauge" viewBox="0 0 120 74" aria-hidden="true">
             <path class="bg" d="M12 64 A48 48 0 0 1 108 64"/>
             <path class="fg" id="gauge" d="M12 64 A48 48 0 0 1 108 64" stroke="var(--pass)" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
             <text x="60" y="60" id="gauge-t">--</text><text class="u" x="60" y="72">°C</text>
           </svg>
+          <span class="k-l">CPU temp</span>
         </div>
-        <div class="pi-c" tabindex="0" role="button" data-open="power" aria-label="Power use. Open graph.">
-          <span class="k-l">Power</span><b><span data-count="power" data-dec="1">0</span> W</b>
-          <span class="note">about <b id="cost">-</b> a year</span>
-          <svg class="spark" id="spark-pow" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <div class="pi-stats">
+          <div><span class="k-l">Uptime</span><b id="uptime">-</b></div>
+          <div><span class="k-l">Power</span><b><span data-count="power" data-dec="1">0</span> W</b></div>
+          <div><span class="k-l">CPU</span><b id="cpu">-</b></div>
+          <div><span class="k-l">RAM</span><b id="mem">-</b></div>
         </div>
       </div>
+      <div class="pi-foot"><span class="mini-h">CPU use</span><span class="mini-h">about <b id="cost">-</b> a year to run</span></div>
+      <svg class="spark" id="spark-cpu" preserveAspectRatio="none" aria-hidden="true"></svg>
     </section>
   </main>
 

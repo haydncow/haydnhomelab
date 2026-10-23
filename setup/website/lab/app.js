@@ -222,6 +222,7 @@ function countTo(el, target, dec = 0) {
   requestAnimationFrame(step);
 }
 function spark(svg, series) {
+  if (!svg) return;
   const w = 200, h = 50; svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
   const all = series.flatMap(s => s.data); if (all.length < 2) { svg.innerHTML = ""; return; }
   const lo = Math.min(...all), hi = Math.max(...all), n = series[0].data.length;
@@ -237,6 +238,13 @@ function setGauge(t) {
   g.style.strokeDashoffset = 100 - Math.max(0, Math.min(1, ((t ?? 30) - 30) / 55)) * 100;
   g.setAttribute("stroke", t >= 75 ? "var(--bad)" : t >= 62 ? "var(--amber)" : "var(--pass)");
 }
+// "0d 3h 15m" -> "3h 15m", and "104d 6h 2m" -> "104d 6h" so it never gets too wide
+function shortUptime(u) {
+  if (!u) return "n/a";
+  const d = +((u.match(/(\d+)d/) || [])[1] || 0), h = +((u.match(/(\d+)h/) || [])[1] || 0), m = +((u.match(/(\d+)m/) || [])[1] || 0);
+  if (!/\d/.test(u)) return u;
+  return d ? `${d}d ${h}h` : h ? `${h}h ${m}m` : `${m}m`;
+}
 function render() {
   if (!stats) return;
   // a missing reading keeps the last number on screen instead of dropping to 0
@@ -249,7 +257,7 @@ function render() {
     $("#pct").textContent = stats.percent;
     const ring = $("#ring"); if (ring) ring.style.strokeDashoffset = 207.3 * (1 - Math.min(num(stats.percent), 100) / 100);
   }
-  $("#uptime").textContent = stats.uptime ?? "n/a";
+  $("#uptime").textContent = shortUptime(stats.uptime);
   if (!liveOk) { $("#cpu").textContent = stats.load ? "load " + stats.load : "-"; $("#mem").textContent = stats.memory ?? "-"; }
   $("#cost").textContent = stats.cost_year ?? "n/a";
   if (!liveOk) setGauge(stats.temp ? num(stats.temp) : null);
@@ -813,7 +821,17 @@ function renderTop(svc, up, cfToday) {
   if (feed) feed.innerHTML = f && f.length
     ? f.slice(0, 4).map(e => `<li><code>${escH(e.path)}</code><em>${escH(country(e.country))} &middot; ${agoShort(e.time)}</em></li>`).join("")
     : `<li class="none">${hist ? "Nothing blocked recently" : "Loading..."}</li>`;
+  fitFeed();
 }
+// only show the blocked requests that fit, so none are cut in half
+function fitFeed() {
+  const top = $(".t-sec .sec-top"), items = document.querySelectorAll("#sec-feed li");
+  if (!top) return;
+  items.forEach(li => li.hidden = false);
+  const limit = top.getBoundingClientRect().bottom;
+  items.forEach((li, i) => { if (i && li.getBoundingClientRect().bottom > limit + 1) li.hidden = true; });
+}
+addEventListener("resize", () => requestAnimationFrame(fitFeed));
 // links inside clickable tiles shouldn't open the tile as well
 document.addEventListener("click", e => { if (e.target.closest("[data-stop]")) e.stopPropagation(); }, true);
 
@@ -941,7 +959,12 @@ document.addEventListener("click", e => {
   if (e.target.closest("[data-go-hist]")) openModal("history", $("#open-hist"));
 });
 $("#open-net").onclick = e => openModal("network", e.currentTarget);
-$("#open-hist").onclick = e => openModal("history", e.currentTarget);
+// the history button and the chart/feed inside the security tile open the history, not the tile's own view
+document.addEventListener("click", e => {
+  const h = e.target.closest("[data-hist]");
+  if (!h) return;
+  e.stopPropagation(); openModal("history", $("#open-hist"));
+}, true);
 addEventListener("keydown", e => {
   if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "n" || e.key === "N") openModal("network", $("#open-net"));
