@@ -517,9 +517,9 @@ const NODES = {
            info: "Links the rack to the router over Wi-Fi, so the rack doesn't need a long cable to the router." },
   sw:    { x: 900, y: 240, icon: "switch", t: "Switch", s: "TL-SG105E",
            info: "5 port managed switch in the rack. It supports VLANs, which I'll use to separate the lab from the rest of the house." },
-  pi:    { x: 900, y: 385, icon: "pi", t: "Raspberry Pi 5", s: "this website", pi: true,
+  pi:    { x: 1075, y: 240, icon: "pi", t: "Raspberry Pi 5", s: "this website", pi: true,
            info: "The server. Runs Pi-hole with Unbound, Caddy (this website), the Cloudflare Tunnel, Tailscale, Jellyfin and Fail2ban. The firewall blocks everything I haven't allowed." },
-  pc:    { x: 720, y: 385, icon: "pc", t: "My PC", s: "on the switch",
+  pc:    { x: 900, y: 385, icon: "pc", t: "My PC", s: "on the switch",
            info: "My PC, wired into the switch. It uses Pi-hole for its DNS, so ads and trackers get blocked." },
   drive: { x: 1075, y: 385, icon: "drive", t: "My Passport", s: "1TB, USB",
            info: "Plugged into the Pi. Holds Jellyfin films and the nightly backups. The backups folder is root-only." },
@@ -543,7 +543,7 @@ const FLOWS = {
 };
 let netFlow = "site", netAnim = null, netPick = "pi";
 function netmap() {
-  const n = NODES, W = 1170, H = 470;
+  const n = NODES, W = 1170, H = 500;
   const node = (id) => {
     const d = n[id];
     return `<g class="nm-node${d.pi ? " pi" : ""}" data-node="${id}" tabindex="0" role="button" aria-label="${d.t}" transform="translate(${d.x},${d.y})">
@@ -554,22 +554,25 @@ function netmap() {
   };
   const link = ([a, b, kind]) => `<line class="nm-link${kind ? " " + kind : ""}" data-a="${a}" data-b="${b}" x1="${n[a].x}" y1="${n[a].y}" x2="${n[b].x}" y2="${n[b].y}"/>`;
   const tunnels = `
-    <path class="nm-tun cf" d="M ${n.pi.x + 30} ${n.pi.y - 26} C 1080 120, 760 40, ${n.cf.x + 74} ${n.cf.y}"/>
-    <path class="nm-tun ts" d="M ${n.pi.x - 20} ${n.pi.y + 26} C 820 470, 520 470, ${n.ts.x + 74} ${n.ts.y + 8}"/>`;
+    <path class="nm-tun cf" d="M ${n.pi.x} ${n.pi.y - 26} C ${n.pi.x} 90, 760 40, ${n.cf.x + 74} ${n.cf.y}"/>
+    <path class="nm-tun ts" d="M ${n.pi.x - 74} ${n.pi.y + 14} C 990 300, 1000 470, 820 470 L 560 470 C 470 470, 440 440, ${n.ts.x + 74} ${n.ts.y + 8}"/>`;
   return `<div class="nm-wrap">
     <div class="nm-flows" role="tablist">${Object.entries(FLOWS).map(([k, f]) =>
       `<button class="nm-flow${k === netFlow ? " on" : ""}" data-flow="${k}" role="tab" style="--c:${f.colour}">${f.name}</button>`).join("")}</div>
     <div class="nm-scroll"><svg class="nm" viewBox="0 0 ${W} ${H}" role="img" aria-label="Network map of my homelab">
-      <rect class="nm-zone" x="18" y="24" width="425" height="426" rx="22"/><text class="nm-zl" x="40" y="50">THE INTERNET</text>
-      <rect class="nm-zone home" x="458" y="160" width="700" height="290" rx="22"/><text class="nm-zl" x="480" y="186">MY HOME</text>
-      <rect class="nm-zone rack" x="812" y="196" width="176" height="236" rx="16"/><text class="nm-zl" x="832" y="425">THE RACK</text>
+      <defs><pattern id="nm-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" class="nm-dot"/></pattern></defs>
+      <rect width="${W}" height="${H}" fill="url(#nm-dots)"/>
+      <rect class="nm-zone" x="18" y="24" width="425" height="430" rx="22"/><text class="nm-zl" x="40" y="50">THE INTERNET</text>
+      <rect class="nm-zone home" x="458" y="160" width="700" height="294" rx="22"/><text class="nm-zl" x="480" y="186">MY HOME</text>
+      <path class="nm-zone rack" d="M 826 200 H 1146 Q 1156 200 1156 210 V 434 Q 1156 444 1146 444 H 1004 Q 994 444 994 434 V 296 Q 994 286 984 286 H 826 Q 816 286 816 276 V 210 Q 816 200 826 200 Z"/><text class="nm-zl" x="1004" y="306">THE RACK</text>
       ${LINKS.map(link).join("")}
       ${tunnels}
       <text class="nm-tl cf" x="700" y="64">Cloudflare Tunnel, started by the Pi</text>
-      <text class="nm-tl ts" x="560" y="462">WireGuard tunnel (Tailscale)</text>
+      <text class="nm-tl ts" x="560" y="490">WireGuard tunnel (Tailscale), started by the Pi</text>
       ${Object.keys(n).map(node).join("")}
       <circle class="nm-pkt" r="6" cx="-20" cy="-20"/>
     </svg></div>
+    <div class="nm-key" aria-hidden="true"><span><i class="k-cable"></i>cable</span><span><i class="k-wifi"></i>Wi-Fi</span><span><i class="k-usb"></i>USB</span><span><i class="k-tun"></i>encrypted tunnel</span><span>Click any device for details</span></div>
     <p class="nm-swipe">swipe the map sideways to see it all</p>
     <div class="nm-under">
       <ol class="nm-steps" id="nm-steps"></ol>
