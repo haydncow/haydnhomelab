@@ -149,7 +149,7 @@ const PARTS = {
     <h2>My homelab</h2>
     <p class="tag">A small server I built to learn networking and security</p>
     <div class="vis-line" id="vis-line">${visLine()}</div>
-    <p>Click a part of the rack to zoom in, or click any tile for more. New to this? <button class="chip" data-go-how>How it works</button></p>`],
+    <p>Click the rack or any tile to see more. <button class="chip" data-go-how>How it works</button></p>`],
   pi: ["U1 &middot; KKSB panel", () => `
     <h2>Raspberry Pi 5 (2GB)</h2>
     <p class="tag">The server. This page is running on it right now.</p>
@@ -247,7 +247,7 @@ function render() {
   });
   if (stats.percent != null) {
     $("#pct").textContent = stats.percent;
-    $("#ring").style.strokeDashoffset = 207.3 * (1 - Math.min(num(stats.percent), 100) / 100);
+    const ring = $("#ring"); if (ring) ring.style.strokeDashoffset = 207.3 * (1 - Math.min(num(stats.percent), 100) / 100);
   }
   $("#uptime").textContent = stats.uptime ?? "n/a";
   if (!liveOk) { $("#cpu").textContent = stats.load ? "load " + stats.load : "-"; $("#mem").textContent = stats.memory ?? "-"; }
@@ -271,8 +271,9 @@ function render() {
   const cfDay = hist && (hist.days || []).find(d => d.date === new Date().toISOString().slice(0, 10));   // Cloudflare's days are UTC
   const cfToday = hist && hist.firewall ? (cfDay && cfDay.cf_blocked != null ? cfDay.cf_blocked : (hist.firewall.feed || []).filter(e => Date.now() / 1000 - e.time < 86400).length) : null;
   $("#hp-line").innerHTML = (hp ? `honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in 24h` : "")
-    + (cfToday != null ? ` &middot; Cloudflare blocked <b>${Number(cfToday).toLocaleString()}</b> today` : "");
+    ;
   const vl = $("#vis-line"); if (vl) vl.innerHTML = visLine();
+  renderTop(svc, up, cfToday);
   if (modalOpen && !["network", "attacks", "how", "history"].includes(modalOpen)) drawModal(modalOpen, false);
   if (modalOpen === "network") netInfo();
   if (modalOpen === "attacks") atkUpdate();
@@ -783,6 +784,38 @@ function atkFeed(e, t, animate) {
 }
 $("#open-atk").onclick = e => openModal("attacks", e.currentTarget);
 document.addEventListener("click", e => { if (e.target.closest("[data-go-atk]")) openModal("attacks", $("#open-atk")); });
+
+/* ---------- headline numbers and the security tile ---------- */
+function renderTop(svc, up, cfToday) {
+  const hp = stats && stats.honeypot, n = v => Number(v).toLocaleString();
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set("kpi-cf", cfToday != null ? n(cfToday) : "-");
+  set("kpi-hp", hp ? n(hp.today) : "-");
+  const kh = $("#kpi-hp"); if (kh) kh.classList.toggle("hot", !!(hp && hp.today));
+  set("kpi-svc", svc.length ? `${up} / ${svc.length}` : "-");
+  const days = hist ? last30().filter(d => !d.missing) : [], ups = days.map(dayUptime).filter(v => v != null);
+  const avg = ups.length ? ups.reduce((a, b) => a + b, 0) / ups.length : null;
+  set("kpi-up", avg != null ? avg.toFixed(2) + "%" : "-");
+  if (ups.length) set("kpi-up-s", `all services, ${ups.length} day${ups.length === 1 ? "" : "s"}`);
+  const su = $("#svc-up");
+  if (su) su.innerHTML = avg != null ? `Uptime over the last ${ups.length} day${ups.length === 1 ? "" : "s"}: <b>${avg.toFixed(2)}%</b> &middot; <a href="/status/" data-stop>status page</a>` : "";
+  // last 14 days of Cloudflare blocks, newest on the right
+  const bars = $("#sec-bars");
+  if (bars) {
+    const d14 = hist ? last30().slice(-14) : [], vals = d14.map(d => d.cf_blocked ?? null), max = Math.max(1, ...vals.filter(v => v != null));
+    const W = 280, H = 60, bw = W / Math.max(1, d14.length);
+    bars.innerHTML = d14.map((d, i) => {
+      const v = vals[i], h = v == null ? 2 : Math.max(2, v / max * (H - 2)), cls = v == null ? "none" : i === d14.length - 1 ? "today" : "";
+      return `<rect class="${cls}" x="${(i * bw + 1.5).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${d.date}: ${v == null ? "not recorded" : n(v) + " blocked"}</title></rect>`;
+    }).join("");
+  }
+  const feed = $("#sec-feed"), f = hist && hist.firewall && hist.firewall.feed;
+  if (feed) feed.innerHTML = f && f.length
+    ? f.slice(0, 4).map(e => `<li><code>${escH(e.path)}</code><em>${escH(country(e.country))} &middot; ${agoShort(e.time)}</em></li>`).join("")
+    : `<li class="none">${hist ? "Nothing blocked recently" : "Loading..."}</li>`;
+}
+// links inside clickable tiles shouldn't open the tile as well
+document.addEventListener("click", e => { if (e.target.closest("[data-stop]")) e.stopPropagation(); }, true);
 
 /* ---------- security history ---------- */
 const escH = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
