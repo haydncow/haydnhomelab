@@ -7,6 +7,7 @@
   <a href="https://haydnhomelab.com"><b>Portfolio</b></a> &nbsp;|&nbsp;
   <a href="https://haydnhomelab.com/lab/"><b>Live lab</b></a> &nbsp;|&nbsp;
   <a href="docs/build-log.md"><b>Build log</b></a> &nbsp;|&nbsp;
+  <a href="https://haydnhomelab.com/writeups/"><b>Write-ups</b></a> &nbsp;|&nbsp;
   <a href="docs/security-plan.md"><b>Security testing</b></a> &nbsp;|&nbsp;
   <a href="https://www.linkedin.com/in/haydncowley"><b>LinkedIn</b></a>
 </p>
@@ -115,7 +116,7 @@ The Pi sits in a KKSB panel at the top, with room for a second one. The 1TB driv
 
 | Folder | What's in it |
 |---|---|
-| [website](setup/website/) | My portfolio at haydnhomelab.com, the live lab at /lab, and the scripts that feed them live stats |
+| [website](setup/website/) | My portfolio at haydnhomelab.com, the live lab, status page and write-ups, and the scripts that feed them live stats |
 | [honeypot](setup/honeypot/) | Fake services that alert me if anything pokes around my network |
 | [backup](setup/backup/) | Nightly backups and how to restore |
 | [homepage](setup/homepage/) | My private dashboard |
@@ -157,6 +158,8 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Security headers on my site (F to A+ on securityheaders.com)
 - [x] Cloudflare WAF rules and rate limiting, tested
 - [x] Live badges on this README
+- [x] Secret scanning on every push
+- [x] Status page with 90-day uptime, security history and write-ups on my site
 
 </details>
 

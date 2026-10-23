@@ -1,4 +1,4 @@
-// Light and dark mode for my live lab, the same as on my portfolio.
+// Light and dark mode for my live lab, status page and write-ups, the same as on my portfolio.
 // It follows the system setting unless the visitor picks one, and the choice is
 // shared with the portfolio (both pages use the same "theme" key).
 // In its own file so the Content Security Policy can block inline scripts. Code written by Claude (AI).

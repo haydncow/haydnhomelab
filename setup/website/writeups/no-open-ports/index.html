@@ -1,0 +1,90 @@
+<!doctype html>
+<!-- Part of my apprenticeship portfolio, served by the Raspberry Pi in my rack.
+     Claude (an AI assistant) wrote the code. I built the lab, ran every command and tested it.
+     The whole build is written up at https://github.com/haydncow/homelab-plan -->
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Putting a website online without opening a single port | Haydn's Homelab</title>
+<meta name="description" content="My site runs on a Raspberry Pi at home, but my router has no ports open. An Nmap scan proves the firewall does what I think it does.">
+<link rel="canonical" href="https://haydnhomelab.com/writeups/no-open-ports/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://haydnhomelab.com/writeups/no-open-ports/">
+<meta property="og:title" content="Putting a website online without opening a single port | Haydn's Homelab">
+<meta property="og:description" content="My site runs on a Raspberry Pi at home, but my router has no ports open. An Nmap scan proves the firewall does what I think it does.">
+<meta property="og:image" content="https://haydnhomelab.com/og.jpg">
+<meta property="og:site_name" content="Haydn's Homelab">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f4f6f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1311" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/theme.js"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Putting a website online without opening a single port","description":"My site runs on a Raspberry Pi at home, but my router has no ports open. An Nmap scan proves the firewall does what I think it does.","datePublished":"2026-10-18","url":"https://haydnhomelab.com/writeups/no-open-ports/","author":{"@type":"Person","name":"Haydn","url":"https://haydnhomelab.com/"},"isPartOf":{"@type":"WebSite","name":"Haydn's Homelab","url":"https://haydnhomelab.com/"}}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="/">Haydn</a>
+    <nav aria-label="Site"><a href="/">Portfolio</a><a href="/writeups/" aria-current="page">Write-ups</a><a href="/status/">Status</a></nav>
+    <div class="top-right">
+      <a class="lab-link" href="/lab/"><span class="led" data-live-led></span><span class="t">Live lab</span></a>
+      <button class="theme" type="button" aria-label="Switch theme">
+        <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+<main id="main">
+<div class="wrap narrow"><article>
+  <div class="page-head">
+    <p class="eyebrow"><a href="/writeups/">Write-ups</a></p>
+    <h1>Putting a website online without opening a single port</h1>
+    <p class="lede">My site runs on a Raspberry Pi at home, but my router has no ports open. An Nmap scan proves the firewall does what I think it does.</p>
+    <div class="meta"><span><time datetime="2026-10-18">18 October 2026</time></span><span>2 min read</span><span>By <b>Haydn</b></span></div>
+  </div>
+  <dl class="summary"><div><dt>Goal</dt><dd>Host a public website at home without exposing my home network</dd></div><div><dt>Result</dt><dd>65,531 ports filtered</dd></div><div><dt>Tools</dt><dd>Cloudflare Tunnel, UFW, Nmap</dd></div></dl>
+  <h2>The usual way, and why I didn't</h2>
+<p>Normally, to host a website at home you'd forward a port on your router, opening a door from the whole internet into your house. Instead the Pi runs a Cloudflare Tunnel: it connects <em>out</em> to Cloudflare, and visitors reach my site through that connection. Nothing comes in through my router.</p>
+<p>The web server itself only listens on the Pi (<code>127.0.0.1</code>), so even devices on my own network can't reach it directly. The tunnel is the only way in.</p>
+
+<div class="callout mistake"><p><strong>Mistake I made:</strong> the site worked on my Mac but nowhere else. The DNS record was called <code>http.haydnhomelab.com</code>, because I'd typed "http" in the subdomain box. Fixing it and clearing my devices' saved "not found" answers sorted it.</p></div>
+
+<h2>Proving the firewall works</h2>
+<p>UFW blocks everything coming in by default and only allows what I've opened. I scanned every TCP port from another device on my network:</p>
+<pre class="term">$ sudo nmap -p- &lt;the pi&gt;
+Not shown: <b>65531 filtered</b> tcp ports (no-response)
+PORT    STATE SERVICE
+22/tcp  open  ssh
+53/tcp  open  domain
+80/tcp  open  http
+443/tcp open  https</pre>
+<p>Only the four ports I opened at the time showed up. The rest are <strong>filtered</strong>, not closed: the firewall drops the packets without replying, so a scanner can't even tell if anything is there. I scanned over Tailscale too, and that matched my rules for Tailscale.</p>
+
+<h2>What I learned</h2>
+<ul>
+<li>Outbound tunnels are a big shift: you can publish a service without accepting inbound connections.</li>
+<li>"Filtered" vs "closed" matters. Silence gives an attacker less information.</li>
+<li>Scan yourself after every firewall change. It's the only real proof.</li>
+</ul>
+  <p class="ai-note"><b>How I used AI:</b> Claude guided me through setting up the tunnel and UFW. I ran the Nmap scans myself and checked the results against my rules. The full, unedited notes are in my <a href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md">build log</a>.</p>
+  <nav class="next-prev" aria-label="More write-ups"><a href="/writeups/ssh-lockout/"><small>&larr; Older</small><span>Locking down SSH, and locking myself out</span></a><a href="/writeups/honeypot/" style="text-align:right"><small>Newer &rarr;</small><span>Building a honeypot on my home network</span></a></nav>
+</article></div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <span>Served from a Raspberry Pi 5 in my rack, through a Cloudflare Tunnel. No open ports at home.</span>
+    <span><a href="/">Portfolio</a> &middot; <a href="/lab/">Live lab</a> &middot; <a href="https://github.com/haydncow/homelab-plan">GitHub</a> &middot; <a href="https://www.linkedin.com/in/haydncowley">LinkedIn</a></span>
+  </div>
+</footer>
+</body>
+</html>

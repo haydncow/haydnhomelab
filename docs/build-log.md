@@ -6,6 +6,11 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 23 October 2026
 
+- Made the website more advanced:
+  - **Write-ups** at [haydnhomelab.com/writeups](https://haydnhomelab.com/writeups/): eight short articles about things I built and tested, like SSH, the Cloudflare firewall rules, the honeypot, the encrypted backups and the NCSC PHP alert. Each one has what went wrong and what I learned, and says how I used AI.
+  - **Status page** at [haydnhomelab.com/status](https://haydnhomelab.com/status/) with 90-day uptime bars for every service, like big companies have. Services I've stopped on purpose (like Speedtest) show as maintenance with the reason, not as down.
+  - **Security history** on the live lab (press S): 30 days of Cloudflare blocks, ads blocked, honeypot hits and uptime, plus a feed of the latest requests Cloudflare blocked. It shows the path, country and rule only, never IP addresses.
+  - The stats script now keeps 90 days of daily history. Claude tested it against fake data (including Cloudflare refusing a long time range) before it went on the Pi.
 - Added secret scanning to this repo. A GitHub Actions workflow runs gitleaks on every push and every Monday, and scans the whole history, not just the newest commit. The first scan checked all 88 commits and found nothing. To make sure it actually catches things, Claude committed a fake GitHub token to a throwaway repo and gitleaks flagged it. The download is checked against the official checksum so it can't be swapped for something else. There's a "Secret scan" badge on the README that goes red if it ever finds something.
 
 ## 21 October 2026

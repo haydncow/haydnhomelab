@@ -1,0 +1,92 @@
+<!doctype html>
+<!-- Part of my apprenticeship portfolio, served by the Raspberry Pi in my rack.
+     Claude (an AI assistant) wrote the code. I built the lab, ran every command and tested it.
+     The whole build is written up at https://github.com/haydncow/homelab-plan -->
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From F to A+ on securityheaders.com | Haydn's Homelab</title>
+<meta name="description" content="Six HTTP headers took my site from an F to an A+. The last step meant moving every bit of JavaScript out of the page.">
+<link rel="canonical" href="https://haydnhomelab.com/writeups/security-headers/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://haydnhomelab.com/writeups/security-headers/">
+<meta property="og:title" content="From F to A+ on securityheaders.com | Haydn's Homelab">
+<meta property="og:description" content="Six HTTP headers took my site from an F to an A+. The last step meant moving every bit of JavaScript out of the page.">
+<meta property="og:image" content="https://haydnhomelab.com/og.jpg">
+<meta property="og:site_name" content="Haydn's Homelab">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#f4f6f4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1311" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/site.css">
+<script src="/assets/theme.js"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"From F to A+ on securityheaders.com","description":"Six HTTP headers took my site from an F to an A+. The last step meant moving every bit of JavaScript out of the page.","datePublished":"2026-10-20","url":"https://haydnhomelab.com/writeups/security-headers/","author":{"@type":"Person","name":"Haydn","url":"https://haydnhomelab.com/"},"isPartOf":{"@type":"WebSite","name":"Haydn's Homelab","url":"https://haydnhomelab.com/"}}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="/">Haydn</a>
+    <nav aria-label="Site"><a href="/">Portfolio</a><a href="/writeups/" aria-current="page">Write-ups</a><a href="/status/">Status</a></nav>
+    <div class="top-right">
+      <a class="lab-link" href="/lab/"><span class="led" data-live-led></span><span class="t">Live lab</span></a>
+      <button class="theme" type="button" aria-label="Switch theme">
+        <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+        <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+<main id="main">
+<div class="wrap narrow"><article>
+  <div class="page-head">
+    <p class="eyebrow"><a href="/writeups/">Write-ups</a></p>
+    <h1>From F to A+ on securityheaders.com</h1>
+    <p class="lede">Six HTTP headers took my site from an F to an A+. The last step meant moving every bit of JavaScript out of the page.</p>
+    <div class="meta"><span><time datetime="2026-10-20">20 October 2026</time></span><span>2 min read</span><span>By <b>Haydn</b></span></div>
+  </div>
+  <dl class="summary"><div><dt>Goal</dt><dd>Make browsers enforce safe behaviour on my site</dd></div><div><dt>Result</dt><dd>F to A+</dd></div><div><dt>Tools</dt><dd>Caddy, Content Security Policy, curl</dd></div></dl>
+  <h2>Why headers matter</h2>
+<p>Security headers are instructions the server sends with every page, telling the browser how to protect visitors. My site started with none, and securityheaders.com gave it an <strong>F</strong>.</p>
+
+<h2>What I added in Caddy</h2>
+<ul>
+<li><strong>Strict-Transport-Security:</strong> only ever load the site over HTTPS.</li>
+<li><strong>Content-Security-Policy:</strong> the page can only load scripts, styles and fonts from places I list.</li>
+<li><strong>X-Frame-Options:</strong> other sites can't put my page in a frame (stops clickjacking).</li>
+<li><strong>X-Content-Type-Options:</strong> the browser mustn't guess file types.</li>
+<li><strong>Referrer-Policy</strong> and <strong>Permissions-Policy:</strong> share less, and turn off camera, microphone and location.</li>
+</ul>
+<p>I also hid the <code>Server</code> header so the site doesn't advertise what it runs. That got an <strong>A</strong>.</p>
+
+<h2>A to A+</h2>
+<p>It was capped at A because the policy still allowed inline scripts (<code>'unsafe-inline'</code>), since all the page's code was inside the HTML. That's exactly what cross-site scripting attacks rely on. I moved the code into separate <code>.js</code> files and removed <code>'unsafe-inline'</code> from <code>script-src</code>. Now even if someone managed to inject code into the page, the browser would refuse to run it.</p>
+<pre class="term">$ curl -sI https://haydnhomelab.com | grep -i content-security
+content-security-policy: default-src 'self'; <b>script-src 'self'</b> https://static.cloudflareinsights.com; style-src ... frame-ancestors 'none'</pre>
+
+<div class="callout mistake"><p><strong>What tripped me up:</strong> the first rescan still showed the old grade. <code>curl -sI</code> on the Pi proved the new header was live, and scanning over <code>https://</code> gave A+.</p></div>
+
+<h2>What I learned</h2>
+<ul>
+<li>A Content Security Policy is only strong if it doesn't allow inline scripts.</li>
+<li>Check the real response with <code>curl</code> instead of trusting a cached scan.</li>
+</ul>
+  <p class="ai-note"><b>How I used AI:</b> Claude wrote the Caddy config and moved the page's code into separate files. I deployed it on the Pi and ran the scans. The full, unedited notes are in my <a href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md">build log</a>.</p>
+  <nav class="next-prev" aria-label="More write-ups"><a href="/writeups/private-dns/"><small>&larr; Older</small><span>Private DNS with Unbound, and proving it rejects fakes</span></a><a href="/writeups/cloudflare-waf/" style="text-align:right"><small>Newer &rarr;</small><span>Testing my Cloudflare firewall rules (and finding my mistake)</span></a></nav>
+</article></div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <span>Served from a Raspberry Pi 5 in my rack, through a Cloudflare Tunnel. No open ports at home.</span>
+    <span><a href="/">Portfolio</a> &middot; <a href="/lab/">Live lab</a> &middot; <a href="https://github.com/haydncow/homelab-plan">GitHub</a> &middot; <a href="https://www.linkedin.com/in/haydncowley">LinkedIn</a></span>
+  </div>
+</footer>
+</body>
+</html>

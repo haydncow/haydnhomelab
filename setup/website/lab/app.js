@@ -8,6 +8,7 @@ let stats = null, current = "intro";
 // standby light blinks, the screen switches on like an old CRT monitor,
 // the rack draws itself in green outlines, fills in, then the lights come on.
 let booted = false, timers = [];
+let hist = null;   // 90-day history from /history.json
 const sleep = ms => new Promise(r => timers.push(setTimeout(r, ms)));
 const later = (fn, ms) => timers.push(setTimeout(fn, ms));
 function prepTrace() {
@@ -267,9 +268,11 @@ function render() {
         `<div class="svc ${s.up ? "up" : "down"}" title="${ABOUT[s.name] || ""}"><i></i>${SVC_SHORT[s.name] || s.name}</div>`).join("")}</div></div>`).join("")
     : `<span class="note">not available yet</span>`;
   const hp = stats.honeypot;
-  $("#hp-line").innerHTML = hp ? `honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in the last 24h` : "";
+  const cfToday = hist && hist.firewall ? (hist.firewall.feed || []).filter(e => Date.now() / 1000 - e.time < 86400).length : null;
+  $("#hp-line").innerHTML = (hp ? `honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in 24h` : "")
+    + (cfToday != null ? ` &middot; Cloudflare blocked <b>${cfToday >= 25 ? "25+" : cfToday}</b>` : "");
   const vl = $("#vis-line"); if (vl) vl.innerHTML = visLine();
-  if (modalOpen && !["network", "attacks", "how"].includes(modalOpen)) drawModal(modalOpen, false);
+  if (modalOpen && !["network", "attacks", "how", "history"].includes(modalOpen)) drawModal(modalOpen, false);
   if (modalOpen === "network") netInfo();
   if (modalOpen === "attacks") atkUpdate();
 }
@@ -387,6 +390,7 @@ const MODALS = {
     ${svcGroups().map(g => `<section class="svc-group"><h3>${g.name} ${svcCount(g.list)}</h3>${g.about ? `<p>${g.about}</p>` : ""}<div class="svc-big">${g.list.map(card).join("")}</div></section>`).join("")}`;
   },
   how: () => howHtml(),
+  history: () => historyHtml(),
   attacks: () => `<h2 id="m-title">Honeypot attack map</h2><p class="tag">Every time something touches one of my fake services, it lands here. The honeypot is only on my home network, so most days it's quiet. That's the good outcome.</p>${atkMap()}`,
   network: () => `<h2 id="m-title">Network map</h2><p class="tag">How everything connects. Pick a story to watch the traffic, or click a device.</p>${netmap()}`,
   security: () => `<h2 id="m-title">Security</h2><p class="tag">How the Pi is locked down, and how I tested it.</p>
@@ -399,7 +403,7 @@ const MODALS = {
       <div><b>Only safe info here</b><p>No IP addresses, hostnames or software versions on this page.</p></div>
     </div>
     ${honeypotHtml()}
-    <div class="am-btns" style="margin:-4px 0 12px"><button class="hbtn" data-go-atk>open the attack map <kbd>A</kbd></button></div>
+    <div class="am-btns" style="margin:-4px 0 12px"><button class="hbtn" data-go-atk>open the attack map <kbd>A</kbd></button><button class="hbtn" data-go-hist>30-day security history <kbd>S</kbd></button></div>
     <pre class="scan"><span class="f"># every TCP port, scanned from another device on my network</span>
 $ sudo nmap -p- &lt;the pi&gt;
 Not shown: <span class="f">65531 filtered tcp ports (no-response)</span>
@@ -435,7 +439,8 @@ function drawModal(kind, animate = true) {
   drawLive(animate);
   if (kind === "network") netSetup();
   if (kind === "attacks") atkSetup();
-  $("#modal .sheet").classList.toggle("wide", kind === "network" || kind === "attacks" || kind === "how");
+  if (kind === "history") histSetup();
+  $("#modal .sheet").classList.toggle("wide", kind === "network" || kind === "attacks" || kind === "how" || kind === "history");
   if (!animate) document.querySelectorAll("#m-body .draw").forEach(p => p.classList.remove("draw"));
 }
 let modalOpen = null, opener = null;
@@ -778,6 +783,61 @@ function atkFeed(e, t, animate) {
 $("#open-atk").onclick = e => openModal("attacks", e.currentTarget);
 document.addEventListener("click", e => { if (e.target.closest("[data-go-atk]")) openModal("attacks", $("#open-atk")); });
 
+/* ---------- security history ---------- */
+const escH = t => String(t ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+let regionNames = null;
+try { regionNames = new Intl.DisplayNames(["en-GB"], { type: "region" }); } catch (e) {}
+const country = c => { if (!c || c === "XX" || c === "T1") return "unknown"; try { return regionNames ? regionNames.of(c) : c; } catch (e) { return c; } };
+const agoShort = t => { const s = Date.now() / 1000 - t; return s < 3600 ? Math.max(1, Math.round(s / 60)) + "m ago" : s < 86400 ? Math.round(s / 3600) + "h ago" : Math.round(s / 86400) + "d ago"; };
+function last30() {
+  const days = (hist && hist.days) || [], out = [], have = Object.fromEntries(days.map(d => [d.date, d]));
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 86400000), key = d.toLocaleDateString("en-CA");
+    out.push(have[key] || { date: key, missing: true });
+  }
+  return out;
+}
+const dayUptime = d => {
+  const v = Object.values(d.uptime || {}).filter(x => typeof x === "number");
+  return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+};
+function dayBars(id, title, sub, days, get, fmt = v => Number(v).toLocaleString(), opts = {}) {
+  const W = 600, H = 120, B = 18, vals = days.map(get), max = opts.max ?? Math.max(1, ...vals.filter(v => v != null)), bw = W / days.length;
+  const lo = opts.min ?? 0;
+  const bars = days.map((d, i) => {
+    const v = vals[i];
+    if (v == null) return `<rect class="none" x="${(i * bw + 1).toFixed(1)}" y="${H - B - 2}" width="${(bw - 2).toFixed(1)}" height="2"><title>${d.date}: not recorded</title></rect>`;
+    const h = Math.max(2, (v - lo) / (max - lo || 1) * (H - B - 6));
+    return `<rect class="${opts.bad && opts.bad(v) ? "bad" : ""}" x="${(i * bw + 1).toFixed(1)}" y="${(H - B - h).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${d.date}: ${fmt(v)}</title></rect>`;
+  }).join("");
+  const label = d => new Date(d.date + "T12:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const total = opts.total ? opts.total(vals.filter(v => v != null)) : null;
+  return `<div class="chart hchart" id="${id}"><h4>${title}${total != null ? `<span class="htotal">${total}</span>` : ""}</h4><p class="sub">${sub}</p>
+    <svg class="hbars" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="${title}, last 30 days">${bars}
+    <text class="axis" x="0" y="${H - 3}">${label(days[0])}</text><text class="axis" x="${W}" y="${H - 3}" text-anchor="end">today</text></svg></div>`;
+}
+function historyHtml() {
+  if (!hist) return `<h2 id="m-title">Security history</h2><p class="tag">The Pi hasn't sent any history yet. It starts collecting once the new stats script is running.</p>`;
+  const days = last30(), sum = a => a.reduce((x, y) => x + y, 0), n = v => Number(v).toLocaleString();
+  const recorded = days.filter(d => !d.missing).length;
+  const ups = days.map(dayUptime).filter(v => v != null);
+  const fw = hist.firewall;
+  const feed = fw && fw.feed && fw.feed.length
+    ? `<ul class="cf-feed">${fw.feed.map(e => `<li><span class="m">${escH(e.method)}</span><code>${escH(e.path)}</code><span class="r">${escH(e.rule)}</span><span class="c">${escH(country(e.country))}</span><em>${agoShort(e.time)}</em></li>`).join("")}</ul>`
+    : `<p class="note">${fw ? "Nothing blocked in the last few hours." : "Not connected to Cloudflare's security log yet."}</p>`;
+  return `<h2 id="m-title">Security history</h2><p class="tag">The last 30 days, collected by the Pi every minute.${recorded < 30 && hist.days.length ? ` It started recording on ${new Date((hist.days[0] || {}).date + "T12:00").toLocaleDateString("en-GB", { day: "numeric", month: "long" })}, so older days are empty.` : ""}</p>
+    <div class="mgrid">${st("Blocked by Cloudflare", n(sum(days.map(d => d.cf_blocked || 0))))}${st("Ads and trackers blocked", n(sum(days.map(d => d.blocked || 0))))}${st("Honeypot hits", n(sum(days.map(d => d.honeypot || 0))))}${st("Average uptime", ups.length ? (sum(ups) / ups.length).toFixed(2) + "%" : "n/a")}</div>
+    <div class="hgrid">
+      ${dayBars("hb-cf", "Blocked by Cloudflare", "Requests stopped before they reached my house", days, d => d.cf_blocked ?? null)}
+      ${dayBars("hb-ads", "Ads and trackers blocked", "Pi-hole, all my devices", days, d => d.blocked ?? null)}
+      ${dayBars("hb-hp", "Honeypot hits", "Anything touching my fake services", days, d => d.honeypot ?? (d.missing ? null : 0), undefined, { bad: v => v > 0 })}
+      ${dayBars("hb-up", "Uptime", "Average across every service, checked every minute", days, dayUptime, v => v.toFixed(2) + "%", { min: 90, max: 100, bad: v => v < 99 })}
+    </div>
+    <div class="hp-box"><h3>Recently blocked by Cloudflare</h3><p class="note">Real requests my firewall rules and rate limit stopped. Only the path, country and rule are shown, never IP addresses. Some are my own tests. Updated every 5 minutes.</p>${feed}</div>
+    <p class="hw-note">Uptime per service is on the <a href="/status/">status page</a>.</p>`;
+}
+function histSetup() {}
+
 /* ---------- how it works (for people who aren't techy) ---------- */
 function visLine() {
   const v = stats && stats.visitors;
@@ -844,13 +904,16 @@ $("#open-how").onclick = e => openModal("how", e.currentTarget);
 document.addEventListener("click", e => {
   if (e.target.closest("[data-go-how]")) openModal("how", $("#open-how"));
   if (e.target.closest("[data-go-net]")) openModal("network", $("#open-net"));
+  if (e.target.closest("[data-go-hist]")) openModal("history", $("#open-hist"));
 });
 $("#open-net").onclick = e => openModal("network", e.currentTarget);
+$("#open-hist").onclick = e => openModal("history", e.currentTarget);
 addEventListener("keydown", e => {
   if (e.target.matches("input, textarea") || e.metaKey || e.ctrlKey || e.altKey) return;
   if (e.key === "n" || e.key === "N") openModal("network", $("#open-net"));
   if (e.key === "a" || e.key === "A") openModal("attacks", $("#open-atk"));
   if (e.key === "h" || e.key === "H") openModal("how", $("#open-how"));
+  if (e.key === "s" || e.key === "S") openModal("history", $("#open-hist"));
 });
 
 /* ---------- "updated 2s ago" ticker ---------- */
@@ -938,6 +1001,19 @@ async function load() {
 }
 const _showRest = showRest;
 showRest = function () { _showRest(); setTimeout(() => { render(); loadLive(); }, 300); };
+
+/* ---------- 90-day history (uptime, daily totals, Cloudflare blocks) ---------- */
+async function loadHist() {
+  try {
+    const r = await fetch("/history.json", { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    hist = await r.json();
+    if (booted) render();
+    if (modalOpen === "history") drawModal("history", false);
+  } catch (e) { /* older Pi script without history yet, the rest of the page still works */ }
+}
+loadHist();
+setInterval(loadHist, 300000);
 
 show("intro", false);
 runBoot();

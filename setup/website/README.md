@@ -7,7 +7,11 @@ Live at **[haydnhomelab.com](https://haydnhomelab.com)**, served from the Raspbe
 | Address | What it is | Files |
 |---|---|---|
 | [haydnhomelab.com](https://haydnhomelab.com) | My apprenticeship portfolio | `index.html`, `portfolio.js`, `rack.jpg` |
-| [haydnhomelab.com/lab](https://haydnhomelab.com/lab/) | The live dashboard for my homelab | `lab/index.html`, `lab/app.js`, `lab/theme.js` |
+| [haydnhomelab.com/lab](https://haydnhomelab.com/lab/) | The live dashboard for my homelab | `lab/index.html`, `lab/app.js` |
+| [haydnhomelab.com/status](https://haydnhomelab.com/status/) | 90-day uptime for every service | `status/index.html`, `status/status.js` |
+| [haydnhomelab.com/writeups](https://haydnhomelab.com/writeups/) | Write-ups of each thing I built and tested | `writeups/` |
+
+`assets/site.css` and `assets/theme.js` are shared by the status page and write-ups (and `theme.js` by the lab too), so every page has the same look and light/dark mode.
 
 Both pages read the same live data from the Pi. The code is in separate `.js` files so the Content Security Policy can block all inline scripts, which got the site an A+ on securityheaders.com.
 
@@ -24,6 +28,7 @@ Both pages read the same live data from the Pi. The code is in separate `.js` fi
 - It looks the same as the portfolio: same fonts, colours and light/dark mode, and the light/dark choice carries across both pages. The network map and attack map stay dark in both modes, like the terminal boxes on the portfolio.
 - It starts with a power-on intro (a standby light, a CRT-style screen switching on and the rack drawing itself), then shows a one-screen dashboard of tiles: the rack (click a part to zoom in), ads blocked, uptime, a CPU temperature gauge, power and cost, DNS queries, security and what's running. Clicking a tile expands it into a full view with interactive graphs.
 - Press **N** for an interactive network map. It has three traffic stories (visiting the site, my remote access over Tailscale, and Pi-hole blocking ads) that animate a packet along the real path step by step, and you can click any device to see what it does.
+- Press **S** for the security history: 30 days of Cloudflare blocks, ads blocked, honeypot hits and uptime, plus the latest requests Cloudflare blocked (path, country and rule only, never IP addresses).
 - Press **A** for the honeypot attack map, and **H** for **How it works**, a plain English explanation of the lab for people who aren't techy.
 - The "What's running" tile is split into sections, most important first: security, network and DNS, apps, this website, and looking after the Pi. It checks 11 services with systemd and my 2 Docker apps (Homepage and Speedtest Tracker) with `docker inspect` and shows extra details: how many domains Pi-hole blocks, how many of my Tailscale devices are online, Fail2ban bans, when updates last ran, how many firewall rules there are, and how long each service has been up. It also shows the nightly backup and SD card health (data written, writes per day, card and filesystem errors, and whether it's gone read-only).
 
@@ -35,6 +40,8 @@ Both pages read the same live data from the Pi. The code is in separate `.js` fi
 - It logs in to Pi-hole's API with an app password stored in a root-only file, then logs out again.
 - It also writes tiny JSON files to `/srv/status/badges/` every minute. [shields.io](https://shields.io/badges/endpoint-badge) reads them from my domain to draw the live badges at the top of my GitHub README.
 - **Visitor counts** come from Cloudflare's own analytics API, which already counts unique visitors to my domain. The script asks for the daily totals every 15 minutes using a read-only API token kept in a root-only file (`/etc/homelab-status/cloudflare.json`). The Pi never sees or stores anyone's IP address.
+- **History:** every minute it also adds to `/var/lib/homelab-status/daily.json`, which keeps 90 days of uptime per service and daily totals (DNS lookups, ads blocked, honeypot hits, Cloudflare blocks, visitors), and publishes them as `/srv/status/history.json` for the status page and the lab. Services I've stopped on purpose can be listed in `/etc/homelab-status/maintenance.json`, so they show as maintenance instead of down.
+- **Cloudflare blocks** come from Cloudflare's security events API every 5 minutes, using the same read-only token. Only the path (without anything after a `?`), method, country and which rule blocked it are kept. Never the IP address or browser details.
 - It only shows harmless info. No IP addresses, hostnames or software versions, because those would help an attacker.
 
 ## Serving it

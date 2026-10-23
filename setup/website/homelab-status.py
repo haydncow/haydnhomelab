@@ -6,7 +6,9 @@ My portfolio (/) and the live lab (/lab/) both read it, and a Cloudflare
 Tunnel shares them on the internet.
 
 It only shows harmless info (uptime, temperature, memory, power use,
-ads blocked, whether each service is running). No IP addresses, hostnames, ports or
+ads blocked, whether each service is running). It also writes history.json:
+90 days of uptime and daily totals for /status/ and the lab, plus the paths
+Cloudflare blocked recently. No IP addresses, hostnames, ports or
 software versions, because those help attackers.
 """
 import calendar
@@ -442,6 +444,199 @@ def visitors():
     return data
 
 
+# ---------- 90-day history, for the status page and the lab's security history ----------
+# Every minute this adds one "check" for today and records which services were up.
+# Daily totals (DNS lookups, ads blocked, honeypot hits, Cloudflare blocks, visitors)
+# come from 24 hour windows that slide along, so each day keeps the biggest
+# number it has seen. Kept for 90 days in /var/lib/homelab-status/daily.json.
+DAILY_FILE = os.path.join(STATE_DIR, "daily.json")
+KEEP_DAYS = 90
+# Optional: services I've stopped on purpose, so they show as "maintenance"
+# instead of "down". Example: {"Speedtest Tracker": "Stopped until PHP is patched"}
+MAINT_FILE = "/etc/homelab-status/maintenance.json"
+
+
+def maintenance():
+    try:
+        m = json.load(open(MAINT_FILE))
+    except (OSError, ValueError):
+        return {}
+    return {str(k)[:60]: str(v)[:200] for k, v in m.items()} if isinstance(m, dict) else {}
+
+
+def day_of(ts):
+    return time.strftime("%Y-%m-%d", time.localtime(ts))
+
+
+def update_daily(data, now, firewall):
+    days = (safe(lambda: json.load(open(DAILY_FILE)), {}) if os.path.exists(DAILY_FILE) else {}) or {}
+    maint = maintenance()
+
+    def entry(day):
+        return days.setdefault(day, {"checks": 0, "up": {}, "maint": {}})
+
+    def keep_max(day, key, value):
+        if value is not None:
+            e = entry(day)
+            e[key] = max(e.get(key, 0), int(value))
+
+    today = entry(day_of(now))
+    today["checks"] += 1
+    for svc in data.get("services") or []:
+        name = svc["name"]
+        if svc["up"]:
+            today["up"][name] = today["up"].get(name, 0) + 1
+        elif name in maint:
+            today["maint"][name] = today["maint"].get(name, 0) + 1
+        else:
+            today["up"].setdefault(name, 0)
+
+    sums = {}
+    for ts, total, blocked in data.get("dns_history") or []:
+        q, b = sums.get(day_of(ts), (0, 0))
+        sums[day_of(ts)] = (q + total, b + blocked)
+    for day, (q, b) in sums.items():
+        keep_max(day, "queries", q)
+        keep_max(day, "blocked", b)
+
+    hits = {}
+    for e in (data.get("honeypot") or {}).get("week", []):
+        hits[day_of(e["time"])] = hits.get(day_of(e["time"]), 0) + 1
+    for day, n in hits.items():
+        keep_max(day, "honeypot", n)
+
+    for date, uniques, _views in (data.get("visitors") or {}).get("days", []):
+        keep_max(date, "visitors", uniques)
+
+    for date, n in (firewall or {}).get("per_day", {}).items():
+        keep_max(date, "cf_blocked", n)
+
+    keep = sorted(days)[-KEEP_DAYS:]
+    days = {d: days[d] for d in keep}
+    os.makedirs(STATE_DIR, exist_ok=True)
+    tmp = DAILY_FILE + ".tmp"
+    with open(tmp, "w") as f:
+        json.dump(days, f)
+    os.replace(tmp, DAILY_FILE)
+    return days, maint
+
+
+# Requests Cloudflare blocked before they reached the Pi. Only the path, country,
+# method and which rule stopped it. Never the IP address or browser details.
+CF_FW_CACHE = os.path.join(STATE_DIR, "firewall.json")
+CF_FW_QUERY = """query($zone: String!, $since: Time!) {
+  viewer { zones(filter: {zoneTag: $zone}) {
+    events: firewallEventsAdaptive(limit: 60, filter: {datetime_geq: $since}, orderBy: [datetime_DESC]) {
+      datetime action source clientCountryName clientRequestPath clientRequestHTTPMethodName
+    }
+    groups: firewallEventsAdaptiveGroups(limit: 50, filter: {datetime_geq: $since}, orderBy: [date_ASC]) {
+      count dimensions { date action }
+    }
+  } }
+}"""
+BLOCKING = {"block", "drop", "managed_challenge", "challenge", "jschallenge", "connection_close"}
+RULE_NAMES = {"firewallCustom": "My firewall rule", "firewallrules": "My firewall rule", "ratelimit": "Rate limit",
+              "firewallManaged": "Managed rules", "waf": "Managed rules", "securitylevel": "Security level",
+              "securityLevel": "Security level", "bic": "Browser check", "l7ddos": "DDoS protection",
+              "botFight": "Bot fight mode", "uablock": "User agent block", "validation": "Bad request"}
+
+
+def clean_path(p):
+    p = (p or "/").split("?")[0]
+    p = "".join(ch for ch in p if 32 < ord(ch) < 127) or "/"
+    return p[:60] + "..." if len(p) > 60 else p
+
+
+def cf_firewall_fetch(hours):
+    cfg = json.load(open(CF_FILE))
+    since = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() - hours * 3600))
+    body = json.dumps({"query": CF_FW_QUERY, "variables": {"zone": cfg["zone"], "since": since}}).encode()
+    req = urllib.request.Request("https://api.cloudflare.com/client/v4/graphql", data=body, method="POST",
+                                 headers={"Authorization": "Bearer " + cfg["token"], "Content-Type": "application/json"})
+    with urllib.request.urlopen(req, timeout=15) as r:
+        out = json.load(r)
+    if out.get("errors"):
+        raise RuntimeError(out["errors"][0].get("message", "Cloudflare API error"))
+    zone = out["data"]["viewer"]["zones"][0]
+    feed = []
+    for e in zone["events"]:
+        if e.get("action") not in BLOCKING:
+            continue
+        feed.append({
+            "time": calendar.timegm(time.strptime(e["datetime"][:19], "%Y-%m-%dT%H:%M:%S")),
+            "path": clean_path(e.get("clientRequestPath")),
+            "method": str(e.get("clientRequestHTTPMethodName") or "")[:8],
+            "country": str(e.get("clientCountryName") or "")[:2].upper(),
+            "rule": RULE_NAMES.get(e.get("source"), "Cloudflare"),
+        })
+    per_day = {}
+    for g in zone["groups"]:
+        if g["dimensions"]["action"] in BLOCKING:
+            d = g["dimensions"]["date"]
+            per_day[d] = per_day.get(d, 0) + g["count"]
+    return {"feed": feed[:25], "per_day": per_day, "hours": hours}
+
+
+def cf_firewall():
+    # Ask Cloudflare every 5 minutes. Free plans can only look back a limited
+    # time, so try a day first, then shorter windows.
+    try:
+        cached = json.load(open(CF_FW_CACHE))
+        if time.time() - cached["fetched"] < 300:
+            return cached["data"]
+    except (OSError, ValueError, KeyError):
+        cached = None
+    data = None
+    for hours in (24, 6, 1):
+        try:
+            data = cf_firewall_fetch(hours)
+            break
+        except RuntimeError:
+            continue
+        except Exception:
+            traceback.print_exc()
+            break
+    if data is None:
+        return cached["data"] if cached else None
+    os.makedirs(STATE_DIR, exist_ok=True)
+    json.dump({"fetched": time.time(), "data": data}, open(CF_FW_CACHE, "w"))
+    return data
+
+
+def write_history(data, now):
+    firewall = safe(cf_firewall) if os.path.exists(CF_FILE) else None
+    days, maint = update_daily(data, now, firewall)
+    names = [s["name"] for s in data.get("services") or []]
+    out_days = []
+    for date in sorted(days):
+        d = days[date]
+        checks = d.get("checks", 0)
+        uptime = {}
+        for name in names:
+            m = d.get("maint", {}).get(name, 0)
+            if name not in d.get("up", {}) and not m:
+                uptime[name] = None          # not tracked that day
+            elif checks - m <= 0:
+                uptime[name] = "maint"       # stopped on purpose all day
+            else:
+                uptime[name] = round(100 * d["up"].get(name, 0) / (checks - m), 2)
+        out_days.append({"date": date, "checks": checks, "uptime": uptime,
+                         "maint": {k: v for k, v in d.get("maint", {}).items() if k in names},
+                         **{k: d[k] for k in ("queries", "blocked", "honeypot", "cf_blocked", "visitors") if k in d}})
+    public = {
+        "updated": int(now),
+        "services": [{"name": s["name"], "up": s["up"], "maint": maint.get(s["name"]) if not s["up"] else None}
+                     for s in data.get("services") or []],
+        "days": out_days,
+        "firewall": firewall,
+    }
+    tmp = os.path.join(OUT_DIR, ".history.json.tmp")
+    with open(tmp, "w") as f:
+        json.dump(public, f)
+    os.chmod(tmp, 0o644)
+    os.replace(tmp, os.path.join(OUT_DIR, "history.json"))
+
+
 def main():
     now = time.time()
     temp = safe(temp_c)
@@ -481,6 +676,7 @@ def main():
     os.chmod(tmp, 0o644)
     os.replace(tmp, os.path.join(OUT_DIR, "stats.json"))  # swap in one go
     safe(lambda: write_badges(data))
+    safe(lambda: write_history(data, now))
 
 
 if __name__ == "__main__":
