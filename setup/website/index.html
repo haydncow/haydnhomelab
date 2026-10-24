@@ -2,7 +2,7 @@
 <!--
   Hi! This is my apprenticeship portfolio. It's served by the Raspberry Pi in the photo.
   Claude (an AI assistant) wrote the code. I built the lab, ran every command and tested it.
-  The whole build is written up at https://github.com/haydncow/homelab-plan
+  The whole build is written up at https://github.com/haydncow/haydnhomelab
 -->
 <html lang="en-GB">
 <head>
@@ -389,7 +389,7 @@
         <p class="lede">I’m Haydn, an IT student in West Yorkshire. I’m applying for cyber security degree apprenticeships starting in 2027, so I built my own server to learn the skills properly. I locked it down, then attacked it from Kali Linux to check it held up. Everything I did, including what went wrong, is written up.</p>
         <div class="actions">
           <a class="btn primary" href="/lab/">Open the live lab</a>
-          <a class="btn" href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md">Read the build log</a>
+          <a class="btn" href="https://github.com/haydncow/haydnhomelab/blob/main/docs/build-log.md">Read the build log</a>
         </div>
       </div>
 
@@ -437,7 +437,7 @@
         <div>
           <h3>Only my key can log in</h3>
           <p>SSH is how I control the Pi remotely. I turned off password logins so only my SSH key works, stopped root logging in, and only allowed my own user. I locked myself out once getting there, which is in the fixes further down.</p>
-          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 16 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md#16-october-2026">Write-up</a></div>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 16 October</span><a href="https://github.com/haydncow/haydnhomelab/blob/main/docs/build-log.md#16-october-2026">Write-up</a></div>
         </div>
         <div class="proof">
 <pre class="term" aria-label="Terminal output"><span class="c">$</span> ssh -o PubkeyAuthentication=no haydn@&lt;the pi&gt;
@@ -450,7 +450,7 @@
         <div>
           <h3>The firewall only shows what I opened</h3>
           <p>UFW blocks everything coming in unless I’ve allowed it. To check, I scanned all 65,535 ports from another computer on my network. Only the four I’d opened showed up.</p>
-          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 17 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/security-plan.md#nmap-results-home-network">Scan results</a></div>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 17 October</span><a href="https://github.com/haydncow/haydnhomelab/blob/main/docs/security-plan.md#nmap-results-home-network">Scan results</a></div>
         </div>
         <div class="proof">
 <pre class="term" aria-label="Nmap output"><span class="c">$</span> sudo nmap -p- &lt;the pi&gt;
@@ -468,7 +468,7 @@ PORT    STATE SERVICE
         <div>
           <h3>Guess my password and you get banned</h3>
           <p>Fail2ban watches the login logs. Five wrong logins in ten minutes and that IP gets banned in the firewall for an hour, and for longer if it comes back. I tested it by attacking from my Kali Linux VM until it banned me, then unbanned myself.</p>
-          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 18 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md#18-october-2026">Write-up</a></div>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 18 October</span><a href="https://github.com/haydncow/haydnhomelab/blob/main/docs/build-log.md#18-october-2026">Write-up</a></div>
         </div>
         <div class="proof">
           <ol class="tries" aria-label="Five wrong logins from my Kali VM, then a ban">
@@ -487,7 +487,7 @@ PORT    STATE SERVICE
         <div>
           <h3>Hardened with a security audit</h3>
           <p>Lynis checks hundreds of settings and gives a hardening score out of 100. I fixed what made sense, like SSH, kernel network settings, file permissions and protocols I don’t use. I also checked the warnings I didn’t fix. Two were false positives.</p>
-          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Audited 18 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/security-plan.md#lynis-audit-18-october-2026">What I fixed and skipped</a></div>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Audited 18 October</span><a href="https://github.com/haydncow/haydnhomelab/blob/main/docs/security-plan.md#lynis-audit-18-october-2026">What I fixed and skipped</a></div>
         </div>
         <div class="proof">
           <div class="bars" role="img" aria-label="Lynis hardening score: 63 before, 75 after, out of 100">
@@ -503,7 +503,7 @@ PORT    STATE SERVICE
         <div>
           <h3>A public website with no open ports</h3>
           <p>My live dashboard runs on the Pi, but my router has no ports forwarded. The Pi connects out to Cloudflare through a tunnel instead, so nothing at home is open to the internet. I added security headers and Cloudflare firewall rules, then tested both.</p>
-          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 20 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/security-plan.md#security-headers-20-october-2026">Headers</a><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/security-plan.md#cloudflare-waf-20-october-2026">Firewall rules</a></div>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 20 October</span><a href="https://github.com/haydncow/haydnhomelab/blob/main/docs/security-plan.md#security-headers-20-october-2026">Headers</a><a href="https://github.com/haydncow/haydnhomelab/blob/main/docs/security-plan.md#cloudflare-waf-20-october-2026">Firewall rules</a></div>
         </div>
         <div class="proof">
           <div class="grades">
@@ -529,7 +529,7 @@ PORT    STATE SERVICE
         <div>
           <h3>Blocks ads, and keeps my lookups private</h3>
           <p>Pi-hole blocks ads and trackers on my devices, including my phone anywhere through Tailscale. Behind it, Unbound looks websites up itself instead of sending every lookup to Google or Cloudflare. It checks DNSSEC signatures too, so faked answers get refused.</p>
-          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 20 October</span><a href="https://github.com/haydncow/homelab-plan/blob/main/docs/build-log.md#20-october-2026">Write-up</a></div>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 20 October</span><a href="https://github.com/haydncow/haydnhomelab/blob/main/docs/build-log.md#20-october-2026">Write-up</a></div>
         </div>
         <div class="proof">
 <pre class="term" aria-label="DNSSEC test with dig"><span class="c"># a domain with deliberately broken signatures</span>
@@ -549,7 +549,7 @@ PORT    STATE SERVICE
           <h3>A honeypot to catch anything poking around</h3>
           <p>OpenCanary pretends to be eight services that nothing should ever touch, so any connection to them is a warning sign. It runs as its own user with no login, in a locked-down sandbox, on my home network only.</p>
           <p>While testing it, I noticed what I typed into the fake login would show on my public dashboard. So I changed it to only ever show common attacker usernames, never passwords or IP addresses.</p>
-          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 20 October</span><a href="https://github.com/haydncow/homelab-plan/tree/main/setup/honeypot">How it’s set up</a></div>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Tested 20 October</span><a href="https://github.com/haydncow/haydnhomelab/tree/main/setup/honeypot">How it’s set up</a></div>
         </div>
         <div class="proof">
           <ul class="traps" aria-label="The fake services and their ports">
@@ -570,7 +570,7 @@ PORT    STATE SERVICE
         <div>
           <h3>Backups I’ve actually restored</h3>
           <p>Every night the Pi backs up its settings, scripts, Jellyfin and Pi-hole to the 1TB drive and keeps the last 14. A backup is only useful if you can restore from it, so I restored my firewall rules from one and compared them with the real file.</p>
-          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Restored 20 October</span><a href="https://github.com/haydncow/homelab-plan/tree/main/setup/backup">How it works</a></div>
+          <div class="meta"><span class="tested"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Restored 20 October</span><a href="https://github.com/haydncow/haydnhomelab/tree/main/setup/backup">How it works</a></div>
         </div>
         <div class="proof">
 <pre class="term" aria-label="Comparing a restored file with diff"><span class="c">$</span> sudo diff &lt;restored copy&gt;/etc/ufw/user.rules /etc/ufw/user.rules
@@ -665,7 +665,7 @@ PORT    STATE SERVICE
       <a class="email" href="mailto:cowleyhaydn@gmail.com">cowleyhaydn@gmail.com</a>
       <div class="other">
         <a href="https://github.com/haydncow">GitHub: haydncow</a>
-        <a href="https://github.com/haydncow/homelab-plan">The full build on GitHub</a>
+        <a href="https://github.com/haydncow/haydnhomelab">The full build on GitHub</a>
         <a href="/lab/">My live lab</a>
         <button class="linkish" type="button" data-print>Print or save as PDF</button>
       </div>

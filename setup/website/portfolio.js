@@ -38,7 +38,7 @@
     if (printBtn) printBtn.addEventListener("click", function () { window.print(); });
     startLive();
     console.log("%cHi! You opened the console, so you're probably my kind of person.", "font-weight:bold");
-    console.log("Everything about this lab, including what went wrong, is at https://github.com/haydncow/homelab-plan");
+    console.log("Everything about this lab, including what went wrong, is at https://github.com/haydncow/haydnhomelab");
   });
 
   // ---- live readings ----
