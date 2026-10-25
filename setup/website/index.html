@@ -27,9 +27,18 @@
 <link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta property="og:site_name" content="Haydn's Homelab">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@400;600&family=Atkinson+Hyperlegible+Next:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<!-- fonts served from the Pi itself, so the page doesn't wait on Google Fonts -->
+<link rel="preload" href="/fonts/atkinson-hyperlegible-next-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/atkinson-hyperlegible-next-latin-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+@font-face{font-family:"Atkinson Hyperlegible Next";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/atkinson-hyperlegible-next-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible Next";font-style:italic;font-weight:400;font-display:swap;src:url(/fonts/atkinson-hyperlegible-next-latin-400-italic.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible Next";font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/atkinson-hyperlegible-next-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible Next";font-style:normal;font-weight:700;font-display:swap;src:url(/fonts/atkinson-hyperlegible-next-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible Next";font-style:normal;font-weight:800;font-display:swap;src:url(/fonts/atkinson-hyperlegible-next-latin-800-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible Mono";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/atkinson-hyperlegible-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible Mono";font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/atkinson-hyperlegible-mono-latin-600-normal.woff2) format("woff2")}
+</style>
 <!-- Loaded in the head (not deferred) so the saved theme applies before the page draws -->
 <script src="portfolio.js?v=3"></script>
 <style>

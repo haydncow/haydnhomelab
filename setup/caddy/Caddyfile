@@ -20,7 +20,7 @@
 		Strict-Transport-Security "max-age=31536000"
 		# what the page is allowed to load: itself, Google Fonts, and Cloudflare's analytics.
 		# No inline scripts, so injected code can't run
-		Content-Security-Policy "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+		Content-Security-Policy "default-src 'self'; script-src 'self' https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://cloudflareinsights.com; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
 		# don't guess file types, don't let other sites put my page in a frame
 		X-Content-Type-Options "nosniff"
 		X-Frame-Options "DENY"
