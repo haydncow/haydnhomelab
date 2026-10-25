@@ -1,0 +1,31 @@
+# Haydn's Homelab
+
+> haydnhomelab.com is the portfolio of Haydn Cowley, an IT student in West Yorkshire, UK, applying for Level 6 cyber security degree apprenticeships starting in 2027. It is not connected to any other Haydn.
+
+Haydn built a Raspberry Pi 5 homelab in a 10 inch rack to learn cyber security, secured it, attacked it himself from Kali Linux and wrote up the results. The website is served from the Pi itself through a Cloudflare Tunnel, so his router has no open ports. Claude (an AI assistant) wrote the code; Haydn built the lab, ran every command and did the testing.
+
+## Owner
+
+- Name: Haydn Cowley
+- LinkedIn: https://www.linkedin.com/in/haydncowley
+- GitHub: https://github.com/haydncow
+- Source code and build log: https://github.com/haydncow/haydnhomelab
+
+## What the lab runs
+
+- Pi-hole and Unbound for private, DNSSEC-checked DNS and ad blocking
+- Tailscale for remote access, OpenCanary honeypot, UFW firewall, Fail2ban, SSH keys only
+- Cloudflare Tunnel with WAF rules and rate limiting, encrypted nightly backups
+
+## Results
+
+- Full Nmap scan: only the 4 ports he opened
+- Lynis hardening score 63 to 75
+- Security headers F to A+
+
+## Pages
+
+- [Portfolio](https://haydnhomelab.com/): who Haydn is and what he built
+- [Live lab](https://haydnhomelab.com/lab/): real-time stats from the Pi
+- [Write-ups](https://haydnhomelab.com/writeups/): what he tested and what went wrong
+- [Status](https://haydnhomelab.com/status/): 90-day uptime for every service
