@@ -25,4 +25,6 @@ cd /opt/speedtest && sudo docker compose pull && sudo docker compose up -d
 
 21 October 2026: stopped it after the NCSC's PHP warning, because the newest image still had the unpatched PHP 8.5.11. It's only reachable from my home network and Tailscale, but there was no reason to leave it running until the fix is out.
 
+27 October 2026: PHP 8.5.12 fixed both flaws (released 21 October). I pulled the newest image, checked its PHP version before starting it, then started it again and took it out of maintenance on the status page.
+
 Claude (AI) wrote these config files. I set it up on the Pi.

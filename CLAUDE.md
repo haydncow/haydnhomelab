@@ -8,7 +8,7 @@ Whenever something changes in the homelab or the website (a new service, a new p
 ## The setup
 - Raspberry Pi 5 (2GB), Debian 13, umask 027: new files need `chmod 644`, new folders `chmod 755`.
 - Switch port 1 to router (via a TP-Link wireless box to the EE hub), port 2 to the Pi, port 3 to the PC. 1TB My Passport on the Pi's USB (runs at USB 2 speed).
-- Services: Pi-hole (admin 8090) + Unbound (127.0.0.1:5335), Tailscale, UFW, Fail2ban, SSH keys only, OpenCanary honeypot (2222, 3389, 8081), Jellyfin, Homepage and Speedtest Tracker in Docker (Speedtest stopped until PHP is patched), Samba, nightly age-encrypted backups, ntfy phone alerts.
+- Services: Pi-hole (admin 8090) + Unbound (127.0.0.1:5335), Tailscale, UFW, Fail2ban, SSH keys only, OpenCanary honeypot (2222, 3389, 8081), Jellyfin, Homepage and Speedtest Tracker in Docker, Samba, nightly age-encrypted backups, ntfy phone alerts.
 - Website: Caddy (`/etc/caddy/Caddyfile`) serves `/srv/status` through a Cloudflare Tunnel. No open router ports. Strict CSP, no inline scripts.
 
 ## Where things are
@@ -35,4 +35,4 @@ Only the homepage is indexed by Google; every other page has `noindex` on purpos
 - Keys, tokens and the ntfy topic never go in chat or the repo.
 
 ## Ideas not done yet
-Copy backups off the Pi (3-2-1), VLANs on the switch, SSD instead of the SD card, USB 3 cable for the drive, remove the old UFW 8443 rule, restart Speedtest when PHP is patched.
+Copy backups off the Pi (3-2-1), VLANs on the switch, SSD instead of the SD card, USB 3 cable for the drive, remove the old UFW 8443 rule.
