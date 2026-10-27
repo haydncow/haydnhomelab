@@ -798,12 +798,40 @@ function atkFeed(e, t, animate) {
 $("#open-atk").onclick = e => openModal("attacks", e.currentTarget);
 document.addEventListener("click", e => { if (e.target.closest("[data-go-atk]")) openModal("attacks", $("#open-atk")); });
 
+/* ---------- live ticker of blocked attacks and honeypot hits ---------- */
+function renderTicker(feed, hp) {
+  const track = $("#ticker-track"); if (!track) return;
+  const items = [];
+  (feed || []).slice(0, 10).forEach(e => items.push({ t: e.time, hp: false,
+    html: `<i></i>Blocked <b>${escH(e.path)}</b><em>from ${escH(country(e.country))}, ${agoShort(e.time)}</em>` }));
+  ((hp && hp.recent) || []).slice(0, 4).forEach(e => items.push({ t: e.time, hp: true,
+    html: `<i></i>Honeypot: <b>${escH(e.service)}</b><em>touched, ${agoShort(e.time)}</em>` }));
+  if (!items.length) return;
+  items.sort((a, b) => b.t - a.t);
+  const sig = items.map(x => x.html).join("");
+  if (track.dataset.sig === sig) return;
+  track.dataset.sig = sig;
+  const one = items.map(x => `<span class="t-item${x.hp ? " hp" : ""}">${x.html}</span>`).join("");
+  track.innerHTML = one + one.replace(/class="t-item/g, 'aria-hidden="true" class="t-item');   // twice, so the loop is seamless
+  track.style.setProperty("--dur", Math.max(30, items.length * 7) + "s");
+  track.classList.add("run");
+}
+
 /* ---------- headline numbers and the security tile ---------- */
 function renderTop(svc, up, cfToday) {
   const hp = stats && stats.honeypot, n = v => Number(v).toLocaleString();
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  set("kpi-cf", cfToday != null ? n(cfToday) : "-");
-  set("kpi-hp", hp ? n(hp.today) : "-");
+  // headline numbers count up the first time, then bump when they change
+  const num = (id, v) => {
+    const el = document.getElementById(id); if (!el) return;
+    if (v == null) { el.textContent = "-"; return; }
+    const old = el.dataset.v;
+    el.dataset.v = v; el.dataset.count = "kpi-" + id;
+    if (old == null) { countTo(el, Number(v)); return; }
+    if (Number(old) !== Number(v)) { el.textContent = n(v); el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+  };
+  num("kpi-cf", cfToday);
+  num("kpi-hp", hp ? hp.today : null);
   const kh = $("#kpi-hp"); if (kh) kh.classList.toggle("hot", !!(hp && hp.today));
   set("kpi-svc", svc.length ? `${up} / ${svc.length}` : "-");
   const days = hist ? last30().filter(d => !d.missing) : [], ups = days.map(dayUptime).filter(v => v != null);
@@ -814,17 +842,23 @@ function renderTop(svc, up, cfToday) {
   if (su) su.innerHTML = avg != null ? `Uptime over the last ${ups.length} day${ups.length === 1 ? "" : "s"}: <b>${avg.toFixed(2)}%</b> &middot; <a href="/status/" data-stop>status page</a>` : "";
   // last 14 days of Cloudflare blocks, newest on the right
   const bars = $("#sec-bars");
-  if (bars) {
-    const d14 = hist ? last30().slice(-14) : [], vals = d14.map(d => d.cf_blocked ?? null), max = Math.max(1, ...vals.filter(v => v != null));
+  const d14s = hist ? last30().slice(-14) : [], sig14 = JSON.stringify(d14s.map(d => d.cf_blocked ?? null));
+  if (bars && bars.dataset.sig !== sig14) {   // only redraw (and re-animate) when the numbers change
+    bars.dataset.sig = sig14;
+    const d14 = d14s, vals = d14.map(d => d.cf_blocked ?? null), max = Math.max(1, ...vals.filter(v => v != null));
     const W = 280, H = 60, bw = W / Math.max(1, d14.length);
     bars.innerHTML = d14.map((d, i) => {
       const v = vals[i], h = v == null ? 2 : Math.max(2, v / max * (H - 2)), cls = v == null ? "none" : i === d14.length - 1 ? "today" : "";
-      return `<rect class="${cls}" x="${(i * bw + 1.5).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${d.date}: ${v == null ? "not recorded" : n(v) + " blocked"}</title></rect>`;
+      return `<rect style="--i:${i}" class="${cls}" x="${(i * bw + 1.5).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${d.date}: ${v == null ? "not recorded" : n(v) + " blocked"}</title></rect>`;
     }).join("");
   }
   const feed = $("#sec-feed"), f = hist && hist.firewall && hist.firewall.feed;
+  renderTicker(f, hp);
+  const sigF = JSON.stringify((f || []).slice(0, 6).map(e => [e.time, e.path])) + agoShort((f && f[0] && f[0].time) || 0);
+  if (feed && feed.dataset.sig === sigF) return fitFeed();
+  if (feed) feed.dataset.sig = sigF;
   if (feed) feed.innerHTML = f && f.length
-    ? f.slice(0, 4).map(e => `<li><code>${escH(e.path)}</code><em>${escH(country(e.country))} &middot; ${agoShort(e.time)}</em></li>`).join("")
+    ? f.slice(0, 4).map((e, i) => `<li style="--i:${i}"><code>${escH(e.path)}</code><em>${escH(country(e.country))} &middot; ${agoShort(e.time)}</em></li>`).join("")
     : `<li class="none">${hist ? "Nothing blocked recently" : "Loading..."}</li>`;
   fitFeed();
 }

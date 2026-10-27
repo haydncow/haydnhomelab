@@ -170,3 +170,75 @@
     }, { passive: true });
   });
 })();
+
+// ---- 2026 refresh: reveal on scroll, reading progress and live numbers. Code written by Claude (AI). ----
+(function () {
+  "use strict";
+  var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!calm && "IntersectionObserver" in window) document.documentElement.classList.add("js-rv");
+  function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+
+  function countUp(el, to, fmt) {
+    if (calm) { el.textContent = fmt(to); return; }
+    var t0 = performance.now(), D = 1600;
+    (function step(now) {
+      var p = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - p, 3);
+      el.textContent = fmt(to * e);
+      if (p < 1) requestAnimationFrame(step);
+    })(t0);
+  }
+  function whenSeen(el, fn) {
+    if (!("IntersectionObserver" in window)) return fn();
+    var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { io.disconnect(); fn(); } }, { threshold: 0.35 });
+    io.observe(el);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    // reveal sections as they scroll into view
+    var items = all(".block > h2, .block > .intro, .ev, .fixes, .timeline li, .facts > div, .pulse, .skills > *, .block .card");
+    items.forEach(function (el, i) { el.classList.add("rv"); });
+    all(".facts > div").forEach(function (el, i) { el.style.setProperty("--rd", (i * 0.07) + "s"); });
+    all(".timeline li").forEach(function (el, i) { el.style.setProperty("--rd", (i % 4 * 0.08) + "s"); });
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+      items.forEach(function (el) { io.observe(el); });
+    } else items.forEach(function (el) { el.classList.add("in"); });
+
+    // thin reading progress bar along the top
+    var bar = document.createElement("div"); bar.className = "read-progress"; document.body.appendChild(bar);
+    var ticking = false;
+    function prog() {
+      var h = document.documentElement.scrollHeight - window.innerHeight;
+      bar.style.transform = "scaleX(" + (h > 0 ? Math.min(1, window.scrollY / h) : 0) + ")"; ticking = false;
+    }
+    window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(prog); } }, { passive: true });
+
+    // live numbers strip
+    var strip = document.querySelector(".pulse"); if (!strip) return;
+    function get(u) { return fetch(u, { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.json(); }); }
+    Promise.all([get("/stats.json").catch(function () { return null; }), get("/history.json").catch(function () { return null; })]).then(function (res) {
+      var s = res[0], h = res[1], days = (h && h.days) || [], last = days.slice(-30);
+      var attacks = last.reduce(function (a, d) { return a + (d.cf_blocked || 0); }, 0);
+      var ups = last.map(function (d) {
+        var v = Object.keys(d.uptime || {}).map(function (k) { return d.uptime[k]; }).filter(function (x) { return typeof x === "number"; });
+        return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : null;
+      }).filter(function (v) { return v != null; });
+      var vals = {
+        attacks: h ? [attacks, function (v) { return Math.round(v).toLocaleString("en-GB"); }] : null,
+        ads: s && s.blocked ? [Number(String(s.blocked).replace(/,/g, "")), function (v) { return Math.round(v).toLocaleString("en-GB"); }] : null,
+        uptime: ups.length ? [ups.reduce(function (a, b) { return a + b; }, 0) / ups.length, function (v) { return v.toFixed(2) + "%"; }] : null,
+        cve: s && s.security && s.security.cve_critical != null ? [s.security.cve_critical, function (v) { return String(Math.round(v)); }] : null
+      };
+      whenSeen(strip, function () {
+        Object.keys(vals).forEach(function (k) {
+          var el = strip.querySelector('[data-pulse="' + k + '"]');
+          if (!el) return;
+          if (!vals[k]) { el.parentNode.style.display = "none"; return; }   // hide anything the Pi didn't report
+          countUp(el, vals[k][0], vals[k][1]);
+        });
+      });
+    });
+  });
+})();
