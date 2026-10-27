@@ -153,3 +153,13 @@ pre.term b { color: var(--term-hi); font-weight: 600; }
 .next-prev { display: flex; justify-content: space-between; gap: 16px; margin-top: 40px; font-size: 16px; }
 .next-prev a { text-decoration: none; } .next-prev a:hover span { text-decoration: underline; }
 .next-prev small { display: block; color: var(--ink-3); }
+
+@media (max-width: 760px) { .theme { display: none !important; } }
+
+/* back to top button on long pages, phones only (added by theme.js) */
+.to-top { position: fixed; right: 16px; bottom: 20px; z-index: 50; width: 46px; height: 46px; border-radius: 999px;
+  display: grid; place-items: center; background: var(--ink); color: var(--paper); border: none; cursor: pointer;
+  box-shadow: 0 8px 24px -8px #000a; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .2s, transform .2s; }
+.to-top.show { opacity: 1; transform: none; pointer-events: auto; }
+.to-top svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+@media (min-width: 761px) { .to-top { display: none; } }

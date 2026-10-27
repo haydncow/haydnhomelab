@@ -38,6 +38,7 @@
 @font-face{font-family:"Atkinson Hyperlegible Next";font-style:normal;font-weight:800;font-display:swap;src:url(/fonts/atkinson-hyperlegible-next-latin-800-normal.woff2) format("woff2")}
 @font-face{font-family:"Atkinson Hyperlegible Mono";font-style:normal;font-weight:400;font-display:swap;src:url(/fonts/atkinson-hyperlegible-mono-latin-400-normal.woff2) format("woff2")}
 @font-face{font-family:"Atkinson Hyperlegible Mono";font-style:normal;font-weight:600;font-display:swap;src:url(/fonts/atkinson-hyperlegible-mono-latin-600-normal.woff2) format("woff2")}
+  @media (max-width: 760px) { .theme { display: none !important; } }
 </style>
 <!-- Loaded in the head (not deferred) so the saved theme applies before the page draws -->
 <script src="portfolio.js?v=3"></script>
@@ -367,6 +368,13 @@
     footer { font-size: 7.5pt; padding: 8pt 0 0; margin-top: 10pt; }
     footer .wrap { display: block; }
   }
+  /* back to top button on long pages, phones only (added by theme.js) */
+  .to-top { position: fixed; right: 16px; bottom: 20px; z-index: 50; width: 46px; height: 46px; border-radius: 999px;
+    display: grid; place-items: center; background: var(--ink); color: var(--paper); border: none; cursor: pointer;
+    box-shadow: 0 8px 24px -8px #000a; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .2s, transform .2s; }
+  .to-top.show { opacity: 1; transform: none; pointer-events: auto; }
+  .to-top svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  @media (min-width: 761px) { .to-top { display: none; } }
 </style>
 </head>
 <body>

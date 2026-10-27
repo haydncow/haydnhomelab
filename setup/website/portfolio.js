@@ -10,6 +10,9 @@
   var saved = null;
   try { saved = localStorage.getItem("theme"); } catch (e) { /* storage blocked, fine */ }
   if (saved === "light" || saved === "dark") root.setAttribute("data-theme", saved);
+  // phones always get dark mode (easier on the eyes, and one less button on a small screen)
+  var phone = window.matchMedia && matchMedia("(max-width: 760px)").matches;
+  if (phone) root.setAttribute("data-theme", "dark");
   var darkQuery = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
   function currentTheme() {
     var t = root.getAttribute("data-theme");
@@ -147,4 +150,23 @@
     setInterval(refresh, 30000);
     setInterval(tick, 1000);
   }
+})();
+
+// Back to top button for long pages on phones. Code written by Claude (AI).
+(function () {
+  "use strict";
+  if (!window.matchMedia || !matchMedia("(max-width: 760px)").matches) return;
+  document.addEventListener("DOMContentLoaded", function () {
+    if (document.documentElement.scrollHeight < window.innerHeight * 3) return;   // short pages don't need it
+    var b = document.createElement("button");
+    b.className = "to-top"; b.type = "button"; b.setAttribute("aria-label", "Back to top");
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+    b.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+    document.body.appendChild(b);
+    var shown = false;
+    window.addEventListener("scroll", function () {
+      var s = window.scrollY > window.innerHeight * 1.5;
+      if (s !== shown) { shown = s; b.classList.toggle("show", s); }
+    }, { passive: true });
+  });
 })();

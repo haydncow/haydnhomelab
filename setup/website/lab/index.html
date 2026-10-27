@@ -851,6 +851,24 @@
   /* keep it tidy on very tall and fairly short screens */
   @media (min-width: 1101px) { .app { max-height: 900px; } }
   @media (min-width: 1101px) and (max-height: 860px) { .t-info .body p:last-child { display: none; } }
+  @media (max-width: 760px) { .theme { display: none !important; } }
+  /* phones: the numbers people care about first, the rack drawing after */
+  @media (max-width: 700px) {
+    .bento { display: flex !important; flex-direction: column; }
+    .t-kpi { order: 1; } .t-sec { order: 2; } .t-svc { order: 3; } .t-pi { order: 4; }
+    .t-dns { order: 5; } .t-rack { order: 6; } .t-info { order: 7; }
+    .kpi .k-l { white-space: normal; line-height: 1.25; }
+    .views { -webkit-mask-image: none; mask-image: none; justify-content: space-between; }
+    .views .hbtn { padding-left: 8px; padding-right: 8px; font-size: 14px; }
+    .kpi, .tile.click, .pi-c, .sec-hist { -webkit-tap-highlight-color: transparent; }
+  }
+  /* back to top button on long pages, phones only (added by theme.js) */
+  .to-top { position: fixed; right: 16px; bottom: 20px; z-index: 50; width: 46px; height: 46px; border-radius: 999px;
+    display: grid; place-items: center; background: var(--ink); color: var(--paper); border: none; cursor: pointer;
+    box-shadow: 0 8px 24px -8px #000a; opacity: 0; transform: translateY(12px); pointer-events: none; transition: opacity .2s, transform .2s; }
+  .to-top.show { opacity: 1; transform: none; pointer-events: auto; }
+  .to-top svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  @media (min-width: 761px) { .to-top { display: none; } }
 </style>
 </head>
 <body class="intro">
