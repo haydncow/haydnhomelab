@@ -17,7 +17,7 @@ Whenever something changes in the homelab or the website (a new service, a new p
 | `setup/website/index.html` portfolio | `/srv/status/index.html` |
 | `setup/website/lab/` live lab (index.html, app.js) | `/srv/status/lab/` |
 | `setup/website/status/`, `writeups/`, `assets/`, `fonts/` | same under `/srv/status/` |
-| `setup/website/homelab-status.py` stats, alerts, history | `/usr/local/bin/homelab-status` (root cron, every minute) |
+| `setup/website/homelab-status.py` stats, alerts, history | `/usr/local/bin/homelab-status.py` (root cron, every minute; always deploy to this exact name) |
 | `setup/backup/homelab-backup.sh` | nightly backup |
 | `setup/caddy/Caddyfile` | `/etc/caddy/Caddyfile` |
 
