@@ -7,6 +7,8 @@
   var root = document.documentElement;
   var saved = null;
   try { saved = localStorage.getItem("theme"); } catch (e) { /* storage blocked, fine */ }
+  var locked = root.getAttribute("data-lock-theme");   // the live lab is always dark
+  if (locked) saved = locked;
   if (saved === "light" || saved === "dark") root.setAttribute("data-theme", saved);
   // phones always get dark mode (easier on the eyes, and one less button on a small screen)
   var phone = window.matchMedia && matchMedia("(max-width: 760px)").matches;
