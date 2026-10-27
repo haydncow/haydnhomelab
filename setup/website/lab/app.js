@@ -338,6 +338,8 @@ function lineChart(el, { title, sub, series, unit = "", min = null, fmt = v => v
 const ABOUT = {
   "Firewall (UFW)": "Blocks everything coming in unless I've allowed it",
   "Fail2ban": "Bans anyone who gets the SSH login wrong 5 times",
+  "CrowdSec": "Spots attacks in my logs and blocks them, with a shared blocklist",
+  "Vulnerability scan": "Trivy checks my Docker apps for known CVEs every week",
   "Honeypot": "Fake services that alert me if anything pokes around",
   "SSH": "How I log in remotely. Keys only, no passwords",
   "Auto updates": "Installs security fixes by itself every day",
@@ -357,7 +359,7 @@ const ABOUT = {
 // "What's running" is split into sections, most important first
 const SVC_GROUPS = [
   { name: "Security", about: "Keeping attackers out, and catching anything that gets in.",
-    items: ["Firewall (UFW)", "Fail2ban", "Honeypot", "SSH", "Auto updates"] },
+    items: ["Firewall (UFW)", "Fail2ban", "CrowdSec", "Honeypot", "SSH", "Auto updates", "Vulnerability scan"] },
   { name: "Network and DNS", about: "Blocking ads, private lookups and safe remote access.",
     items: ["Pi-hole", "Unbound", "Tailscale", "Cloudflare Tunnel"] },
   { name: "Apps", about: "Things I actually use day to day. Home network and Tailscale only.",
@@ -367,7 +369,7 @@ const SVC_GROUPS = [
   { name: "Looking after the Pi", about: "Backups and SD card health, so nothing is lost if it breaks.",
     items: ["Nightly backup", "SD card"] },
 ];
-const SVC_SHORT = { "Firewall (UFW)": "Firewall", "Web server (Caddy)": "Caddy", "Web server": "Web server", "Cloudflare Tunnel": "Cloudflare",
+const SVC_SHORT = { "Firewall (UFW)": "Firewall", "Vulnerability scan": "CVE scan", "Web server (Caddy)": "Caddy", "Web server": "Web server", "Cloudflare Tunnel": "Cloudflare",
   "Speedtest Tracker": "Speedtest", "Nightly backup": "Backup", "Auto updates": "Updates" };
 function svcGroups() {
   const all = stats && stats.services || [], used = new Set();

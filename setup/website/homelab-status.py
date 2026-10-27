@@ -268,6 +268,33 @@ def sd_health():
                    "card_errors": card_errors, "fs_errors": fs_errors, "read_only": read_only}}
 
 
+def crowdsec_status():
+    # Only shown once CrowdSec is installed, so it never shows as "down" before then
+    if not os.path.exists("/etc/crowdsec"):
+        return None
+    up = run("systemctl", "is-active", "crowdsec").strip() == "active"
+    bouncer = run("systemctl", "is-active", "crowdsec-firewall-bouncer").strip() == "active"
+    detail = None
+    if up:
+        n = run("cscli", "decisions", "list", "-o", "raw").strip().splitlines()
+        detail = f"{max(len(n) - 1, 0)} IPs blocked locally" + ("" if bouncer else ", bouncer not running")
+    return {"name": "CrowdSec", "up": up and bouncer, "detail": detail,
+            "for": safe(lambda: running_for("crowdsec")) if up else None}
+
+
+TRIVY_FILE = "/var/lib/homelab-trivy/last.json"
+
+
+def trivy_status():
+    # Weekly Docker image scan. "Up" means it ran in the last 8 days.
+    if not os.path.exists(TRIVY_FILE):
+        return None
+    t = json.load(open(TRIVY_FILE))
+    return {"name": "Vulnerability scan", "up": time.time() - t["time"] < 8 * 86400,
+            "detail": f"{t['critical']} critical, {t['high']} high, last ran {ago(time.time() - t['time'])} ago",
+            "for": None}
+
+
 def services(gravity=None):
     details = {
         "tailscale": detail_tailscale,
@@ -289,6 +316,9 @@ def services(gravity=None):
     fw = run("ufw", "status")
     out.append({"name": "Firewall (UFW)", "up": "Status: active" in fw,
                 "detail": safe(detail_firewall), "for": None})
+    for extra in (safe(crowdsec_status), safe(trivy_status)):
+        if extra:
+            out.append(extra)
     out += safe(docker_services, [])
     backup = safe(backup_status)
     if backup:
