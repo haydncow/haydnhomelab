@@ -295,6 +295,18 @@ def trivy_status():
             "for": None}
 
 
+def security_summary():
+    # A few headline numbers for my private Homepage dashboard
+    out = {}
+    if os.path.exists(TRIVY_FILE):
+        t = json.load(open(TRIVY_FILE))
+        out.update({"cve_critical": t["critical"], "cve_high": t["high"]})
+    if os.path.exists("/etc/crowdsec"):
+        n = run("cscli", "decisions", "list", "-o", "raw").strip().splitlines()
+        out["crowdsec_blocked"] = max(len(n) - 1, 0)
+    return out
+
+
 def services(gravity=None):
     details = {
         "tailscale": detail_tailscale,
@@ -776,6 +788,7 @@ def main():
         "dns_history": ph.get("dns_history", []),
         "pi_history": safe(lambda: history(now, temp, mem, watts), []),
         "visitors": safe(visitors) if os.path.exists(CF_FILE) else None,
+        "security": safe(security_summary, {}),
     }
     os.makedirs(OUT_DIR, exist_ok=True)
     tmp = os.path.join(OUT_DIR, ".stats.json.tmp")

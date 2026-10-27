@@ -56,6 +56,35 @@
               label: All time
               format: number
 
+    - Vulnerability scan:
+        icon: mdi-shield-search
+        href: https://haydnhomelab.com/status/
+        description: Trivy checks my Docker apps every Monday
+        widget:
+          type: customapi
+          url: http://127.0.0.1:8080/stats.json
+          refreshInterval: 300000
+          mappings:
+            - field: { security: cve_critical }
+              label: Critical
+              format: number
+            - field: { security: cve_high }
+              label: High
+              format: number
+
+    - CrowdSec:
+        icon: crowdsec.png
+        href: https://app.crowdsec.net
+        description: Spots attacks in my logs and blocks them
+        widget:
+          type: customapi
+          url: http://127.0.0.1:8080/stats.json
+          refreshInterval: 60000
+          mappings:
+            - field: { security: crowdsec_blocked }
+              label: IPs blocked
+              format: number
+
     - Live lab:
         icon: mdi-chart-box-outline
         href: https://haydnhomelab.com/lab/

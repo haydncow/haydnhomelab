@@ -86,7 +86,7 @@ The commands, results and screenshots are in the [security plan](docs/security-p
 ## What it runs
 
 <table>
-  <tr><td><b>Security</b></td><td>UFW firewall, Fail2ban, OpenCanary honeypot, SSH with keys only, automatic security updates</td></tr>
+  <tr><td><b>Security</b></td><td>UFW firewall, Fail2ban, CrowdSec, OpenCanary honeypot, SSH with keys only, automatic security updates, weekly Trivy vulnerability scans</td></tr>
   <tr><td><b>Network and DNS</b></td><td>Pi-hole, Unbound with DNSSEC, Tailscale (remote access and an exit node), Cloudflare Tunnel</td></tr>
   <tr><td><b>Apps</b></td><td>Jellyfin media server, Homepage dashboard and Speedtest Tracker in Docker, and a Samba share</td></tr>
   <tr><td><b>Web</b></td><td>Caddy serving my portfolio and live lab, plus <code>.lan</code> names for my private services</td></tr>
@@ -121,6 +121,8 @@ The Pi sits in a KKSB panel at the top, with room for a second one. The 1TB driv
 | [backup](setup/backup/) | Nightly backups and how to restore |
 | [homepage](setup/homepage/) | My private dashboard |
 | [speedtest](setup/speedtest/) | Tests my broadband every 2 hours |
+| [trivy](setup/trivy/) | Weekly vulnerability scan of my Docker images |
+| [crowdsec](setup/crowdsec/) | Spots attacks in my logs and blocks them |
 | [caddy](setup/caddy/) | Web server config for my website and the `.lan` names |
 
 ## How I built this
@@ -161,6 +163,8 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Secret scanning on every push
 - [x] Status page with 90-day uptime, security history and write-ups on my site
 - [x] Phone alerts with ntfy if a service goes down or the honeypot is touched
+- [x] Weekly Trivy vulnerability scan of my Docker images (first run found 2 critical, now patched)
+- [x] CrowdSec intrusion prevention with a community blocklist
 
 </details>
 
