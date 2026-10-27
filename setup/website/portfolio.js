@@ -195,6 +195,12 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     // reveal sections as they scroll into view
+    // wrap each terminal line so the lines can appear one after another
+    if (document.documentElement.classList.contains("js-rv")) all(".ev pre.term").forEach(function (pre) {
+      pre.innerHTML = pre.innerHTML.split("\n").map(function (line, i) {
+        return '<span class="ln" style="--l:' + i + '">' + (line || " ") + "</span>";
+      }).join("\n");
+    });
     var items = all(".block > h2, .block > .intro, .ev, .fixes, .timeline li, .facts > div, .pulse, .skills > *, .block .card");
     items.forEach(function (el, i) { el.classList.add("rv"); });
     all(".facts > div").forEach(function (el, i) { el.style.setProperty("--rd", (i * 0.07) + "s"); });

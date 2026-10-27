@@ -393,10 +393,10 @@
     @keyframes sweep { to { transform: translateX(100%); } }
     .js-rv .rv { opacity: 0; transform: translateY(22px); transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); transition-delay: var(--rd, 0s); }
     .js-rv .rv.in { opacity: 1; transform: none; }
-    /* terminal output prints line by line */
-    .js-rv .ev pre.term { clip-path: inset(0 0 100% 0); }
-    .js-rv .ev.in pre.term { animation: print 1.2s steps(7, end) .35s forwards; }
-    @keyframes print { to { clip-path: inset(0 0 0 0); } }
+    /* terminal output appears line by line, smoothly */
+    .js-rv .ev pre.term .ln { display: inline-block; opacity: 0; transform: translateY(6px); filter: blur(2px);
+      transition: opacity .45s ease, transform .45s cubic-bezier(.2,.8,.2,1), filter .45s ease; transition-delay: calc(.3s + var(--l, 0) * 110ms); }
+    .js-rv .ev.in pre.term .ln { opacity: 1; transform: none; filter: none; }
     /* bars grow, grades and tries pop in */
     .js-rv .ev .fill { transform: scaleX(0); transform-origin: left; transition: transform 1.2s cubic-bezier(.2,.8,.2,1) .4s; }
     .js-rv .ev.in .fill { transform: none; }
