@@ -160,6 +160,7 @@ Commits that Claude helped with have Claude listed as a co-author.
 - [x] Live badges on this README
 - [x] Secret scanning on every push
 - [x] Status page with 90-day uptime, security history and write-ups on my site
+- [x] Phone alerts with ntfy if a service goes down or the honeypot is touched
 
 </details>
 
@@ -167,7 +168,6 @@ Commits that Claude helped with have Claude listed as a co-author.
 
 - VLANs on the managed switch
 - Copy backups off the Pi (3-2-1 rule)
-- Alerts to my phone if something goes down
 - An SSD instead of the SD card
 
 ## Contact

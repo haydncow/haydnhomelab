@@ -649,6 +649,72 @@ def write_history(data, now):
     os.replace(tmp, os.path.join(OUT_DIR, "history.json"))
 
 
+# ---------- phone alerts with ntfy ----------
+# Sends a notification to my phone when a service goes down (after 2 checks
+# in a row, so a quick restart doesn't spam me), when it comes back, when the
+# honeypot is touched, and when the Pi runs hot. The topic name works like a
+# password, so it lives in a root-only file, never in this repo:
+#   /etc/homelab-status/ntfy.json  {"topic": "long-random-name"}
+NTFY_FILE = "/etc/homelab-status/ntfy.json"
+ALERT_STATE = os.path.join(STATE_DIR, "alerts.json")
+HOT_C = 75
+
+
+def ntfy(cfg, title, body, priority="default", tags=""):
+    server = cfg.get("server", "https://ntfy.sh").rstrip("/")
+    req = urllib.request.Request(server + "/" + cfg["topic"], data=body.encode(), method="POST",
+                                 headers={"Title": title, "Priority": priority, "Tags": tags})
+    urllib.request.urlopen(req, timeout=10).read()
+
+
+def alerts(data, temp, now):
+    cfg = json.load(open(NTFY_FILE))
+    if not cfg.get("topic"):
+        return
+    try:
+        st = json.load(open(ALERT_STATE))
+    except (OSError, ValueError):
+        st = {}
+    maint = maintenance()
+    fails, down = st.get("fails", {}), set(st.get("down", []))
+    sent = []
+    for s in data.get("services") or []:
+        name = s["name"]
+        if s["up"] or name in maint:
+            if name in down:
+                ntfy(cfg, f"{name} is back up", f"{name} is running again on the Pi.", "default", "white_check_mark")
+                down.discard(name)
+            fails.pop(name, None)
+            continue
+        fails[name] = fails.get(name, 0) + 1
+        if fails[name] == 2 and name not in down:
+            sent.append(name)
+            down.add(name)
+    if sent:
+        ntfy(cfg, f"{len(sent)} service{'s' if len(sent) > 1 else ''} down on the Pi",
+             ", ".join(sent) + " failed 2 checks in a row.", "high", "rotating_light")
+    # honeypot: anything new since the last check
+    hp = data.get("honeypot") or {}
+    last_hp = st.get("hp_time", now)
+    new = [e for e in hp.get("recent", []) if e["time"] > last_hp]
+    if new:
+        names = sorted({e["service"] for e in new})
+        ntfy(cfg, "Honeypot touched", f"{len(new)} new hit{'s' if len(new) > 1 else ''} on: " + ", ".join(names) +
+             ". Check the attack map.", "high", "warning")
+    st["hp_time"] = max([last_hp] + [e["time"] for e in hp.get("recent", [])])
+    # temperature, with a 5 degree gap before it can alert again
+    hot = st.get("hot", False)
+    if temp is not None and temp >= HOT_C and not hot:
+        ntfy(cfg, "Pi is running hot", f"CPU is at {temp:.1f}°C. It slows itself down at 85°C.", "high", "fire")
+        hot = True
+    elif temp is not None and temp < HOT_C - 5:
+        hot = False
+    st.update({"fails": fails, "down": sorted(down), "hot": hot})
+    with open(ALERT_STATE + ".tmp", "w") as f:
+        json.dump(st, f)
+    os.replace(ALERT_STATE + ".tmp", ALERT_STATE)
+
+
 def main():
     now = time.time()
     temp = safe(temp_c)
@@ -689,6 +755,8 @@ def main():
     os.replace(tmp, os.path.join(OUT_DIR, "stats.json"))  # swap in one go
     safe(lambda: write_badges(data))
     safe(lambda: write_history(data, now))
+    if os.path.exists(NTFY_FILE):
+        safe(lambda: alerts(data, temp, now))
 
 
 if __name__ == "__main__":

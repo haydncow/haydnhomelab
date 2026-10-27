@@ -2,7 +2,11 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
-**Jump to:** [23 Oct](#23-october-2026) | [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+**Jump to:** [27 Oct](#27-october-2026) | [23 Oct](#23-october-2026) | [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+
+## 27 October 2026
+
+- Added phone alerts with ntfy. The stats script that runs every minute now sends a notification to my phone if a service fails 2 checks in a row (so a quick restart doesn't set it off), when it comes back up, when the honeypot is touched, and if the Pi goes over 75°C. Services I've stopped on purpose don't alert. The topic name works like a password, so it's in a root-only file on the Pi, not in this repo. Claude tested it against fake data first: a service going down and back up, an old honeypot hit that shouldn't alert, and a new one that should.
 
 ## 23 October 2026
 
