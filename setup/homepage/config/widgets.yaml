@@ -16,6 +16,14 @@
     label: Media drive
     disk: /mnt/media
 
+- openmeteo:
+    label: Wakefield
+    latitude: 53.68
+    longitude: -1.50
+    timezone: Europe/London
+    units: metric
+    cache: 15
+
 - datetime:
     text_size: md
     format:

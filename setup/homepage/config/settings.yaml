@@ -6,10 +6,26 @@ headerStyle: clean
 statusStyle: dot
 hideVersion: true
 target: _blank
+cardBlur: md
+useEqualHeights: true
+# press any key on the page to search my services and bookmarks
+quicklaunch:
+  searchDescriptions: true
+  hideVisitURL: true
 layout:
   Homelab:
+    tab: Lab
+    style: row
+    columns: 4
+  Security:
+    tab: Lab
     style: row
     columns: 4
   Remote:
+    tab: Remote
     style: row
     columns: 4
+  Learning:
+    tab: Remote
+  Tools:
+    tab: Remote

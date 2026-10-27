@@ -3,6 +3,7 @@
         icon: pi-hole.png
         href: http://pihole.lan
         description: Network ad blocking
+        siteMonitor: http://127.0.0.1:8090/admin/
         widget:
           type: pihole
           url: http://127.0.0.1:8090
@@ -26,22 +27,75 @@
         icon: speedtest-tracker.png
         href: http://speed.lan
         description: Broadband speed every 2 hours
+        siteMonitor: http://127.0.0.1:8765
         widget:
           type: speedtest
           version: 2
           url: http://127.0.0.1:8765
           key: "{{HOMEPAGE_VAR_SPEEDTEST_KEY}}"
 
-    - Status page:
-        icon: mdi-rack-server
-        href: https://haydnhomelab.com
-        description: My public live dashboard
-        siteMonitor: https://haydnhomelab.com
-
     - EE hub:
         icon: mdi-router-wireless
         href: http://192.168.1.254
         description: Home router admin
+
+- Security:
+    - Honeypot:
+        icon: mdi-bee
+        href: https://haydnhomelab.com/lab/
+        description: Fake SSH, Remote Desktop and NAS login
+        widget:
+          type: customapi
+          url: http://127.0.0.1:8080/stats.json   # my own stats, from Caddy on the Pi
+          refreshInterval: 60000
+          mappings:
+            - field: { honeypot: today }
+              label: Alerts today
+              format: number
+            - field: { honeypot: total }
+              label: All time
+              format: number
+
+    - Live lab:
+        icon: mdi-chart-box-outline
+        href: https://haydnhomelab.com/lab/
+        description: My public dashboard
+        siteMonitor: https://haydnhomelab.com
+        widget:
+          type: customapi
+          url: http://127.0.0.1:8080/stats.json
+          refreshInterval: 60000
+          mappings:
+            - field: { visitors: today }
+              label: Visitors today
+              format: number
+            - field: { visitors: week }
+              label: This week
+              format: number
+
+    - Power:
+        icon: mdi-lightning-bolt
+        href: https://haydnhomelab.com/lab/
+        description: Measured by the Pi 5's power chip
+        widget:
+          type: customapi
+          url: http://127.0.0.1:8080/stats.json
+          refreshInterval: 30000
+          mappings:
+            - field: power
+              label: Now
+            - field: cost_year
+              label: Per year
+
+    - Status page:
+        icon: mdi-list-status
+        href: https://haydnhomelab.com/status/
+        description: 90-day uptime for every service
+
+    - Phone alerts:
+        icon: mdi-bell-ring
+        href: https://ntfy.sh/app
+        description: ntfy, if anything goes down or the honeypot is touched
 
 - Remote:
     - Tailscale:

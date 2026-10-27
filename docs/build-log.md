@@ -6,6 +6,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 27 October 2026
 
+- Made my private Homepage dashboard more useful: a Security group showing honeypot alerts, website visitors and power use (read from the same stats.json as the live lab), a weather widget, Lab and Remote tabs, status dots on every service, and quick search (press any key to search). Also moved the list of allowed addresses out of the Docker Compose file and into the private `.env`, so my home and Tailscale IPs aren't on GitHub any more.
 - Speedtest Tracker is back. PHP 8.5.12 fixed the two flaws from the NCSC alert, so I pulled the newest image, checked its PHP version without starting it, then started it again and took it out of maintenance. It was stopped for 6 days.
 - Added phone alerts with ntfy. The stats script that runs every minute now sends a notification to my phone if a service fails 2 checks in a row (so a quick restart doesn't set it off), when it comes back up, when the honeypot is touched, and if the Pi goes over 75°C. Services I've stopped on purpose don't alert. The topic name works like a password, so it's in a root-only file on the Pi, not in this repo. Claude tested it against fake data first: a service going down and back up, an old honeypot hit that shouldn't alert, and a new one that should.
 
