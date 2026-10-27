@@ -926,13 +926,12 @@
     box-shadow: inset 0 1px 0 #ffffff08, 0 20px 40px -24px #000; position: relative;
   }
   :root[data-lock-theme] .tile::after {
-    content: ""; position: absolute; inset: 7px; border-radius: 0; pointer-events: none; opacity: .7; transition: opacity .3s;
-    background:
-      linear-gradient(var(--acc), var(--acc)) top left / 14px 1.5px, linear-gradient(var(--acc), var(--acc)) top left / 1.5px 14px,
-      linear-gradient(var(--acc), var(--acc)) top right / 14px 1.5px, linear-gradient(var(--acc), var(--acc)) top right / 1.5px 14px,
-      linear-gradient(var(--acc), var(--acc)) bottom left / 14px 1.5px, linear-gradient(var(--acc), var(--acc)) bottom left / 1.5px 14px,
-      linear-gradient(var(--acc), var(--acc)) bottom right / 14px 1.5px, linear-gradient(var(--acc), var(--acc)) bottom right / 1.5px 14px;
-    background-repeat: no-repeat; z-index: 3;
+    content: ""; position: absolute; inset: -1px; border-radius: inherit; pointer-events: none; opacity: .75; transition: opacity .3s; z-index: 3;
+    border: 1.5px solid var(--acc);   /* the tile's own rounded border, shown only at the four corners */
+    -webkit-mask: linear-gradient(#000 0 0) top left / 26px 26px no-repeat, linear-gradient(#000 0 0) top right / 26px 26px no-repeat,
+                  linear-gradient(#000 0 0) bottom left / 26px 26px no-repeat, linear-gradient(#000 0 0) bottom right / 26px 26px no-repeat;
+            mask: linear-gradient(#000 0 0) top left / 26px 26px no-repeat, linear-gradient(#000 0 0) top right / 26px 26px no-repeat,
+                  linear-gradient(#000 0 0) bottom left / 26px 26px no-repeat, linear-gradient(#000 0 0) bottom right / 26px 26px no-repeat;
   }
   :root[data-lock-theme] .tile:hover::after, :root[data-lock-theme] .tile:focus-visible::after { opacity: 1; }
   :root[data-lock-theme] .tile.click:hover { border-color: #3dff8f44; box-shadow: inset 0 1px 0 #ffffff0a, 0 0 0 1px #3dff8f22, 0 24px 50px -26px #3dff8f55; }
@@ -991,6 +990,68 @@
   @media (prefers-reduced-motion: reduce) { :root[data-lock-theme] .labbar h1::after { animation: none; } }
 
   :root[data-lock-theme] footer { color: var(--ink-3); font-family: var(--mono); font-size: 12px; }
+
+  /* ---------- control room: network map and attack map ---------- */
+  :root[data-lock-theme] #modal .sheet { background: linear-gradient(180deg, #0b110ef2, #070b09f2); border: 1px solid var(--rule-2); box-shadow: 0 0 0 1px #3dff8f14, 0 40px 120px -30px #000; }
+  :root[data-lock-theme] #modal .sheet h2#m-title { font-family: var(--mono); letter-spacing: -.02em; }
+  :root[data-lock-theme] #modal .sheet h2#m-title::before { content: "> "; color: var(--acc); }
+  :root[data-lock-theme] #modal .tag { color: var(--ink-3); }
+
+  /* network map */
+  :root[data-lock-theme] .nm { background-color: #050807; border: 1px solid var(--rule-2); border-radius: 18px;
+    background-image: radial-gradient(600px 300px at 75% 55%, #3dff8f0d, transparent 70%), linear-gradient(#3dff8f0a 1px, transparent 1px), linear-gradient(90deg, #3dff8f0a 1px, transparent 1px);
+    background-size: auto, 26px 26px, 26px 26px; }
+  :root[data-lock-theme] .nm > rect[fill="url(#nm-dots)"] { display: none; }
+  :root[data-lock-theme] .nm-zone { fill: none; stroke: #38d6ff33; stroke-dasharray: 5 6; }
+  :root[data-lock-theme] .nm-zone.home { fill: #38d6ff06; stroke: #38d6ff55; }
+  :root[data-lock-theme] .nm-zone.rack { fill: #3dff8f0a; stroke: #3dff8f66; stroke-dasharray: none; }
+  :root[data-lock-theme] .nm-zl { fill: #38d6ffaa; font-family: var(--mono) !important; font-weight: 600; letter-spacing: .16em; }
+  :root[data-lock-theme] .nm-link { stroke: #1d2a24; stroke-width: 2.2; }
+  :root[data-lock-theme] .nm-box { fill: #0a110e; stroke: #24332b; stroke-width: 1.3; rx: 26; }
+  :root[data-lock-theme] .nm-node:hover .nm-box { stroke: #3dff8f88; }
+  :root[data-lock-theme] .nm-node.lit .nm-box { fill: #0d1813; stroke: var(--flow); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--flow) 45%, transparent)); }
+  :root[data-lock-theme] .nm-node.picked .nm-box { stroke: #f2fff6; }
+  :root[data-lock-theme] .nm-ico svg { stroke: #9fb8aa; } :root[data-lock-theme] .nm-node.lit .nm-ico svg { stroke: var(--flow); }
+  :root[data-lock-theme] .nm-t { fill: #eafff2; font-family: var(--mono) !important; font-size: 11px; font-weight: 600; }
+  :root[data-lock-theme] .nm-s { fill: #7f9a8b; font-family: var(--mono) !important; font-size: 9.5px; }
+  :root[data-lock-theme] .nm-tl { font-family: var(--mono) !important; letter-spacing: .04em; }
+  :root[data-lock-theme] .nm-pkt { fill: #fff; stroke: var(--flow); stroke-width: 4; }
+  :root[data-lock-theme] .nm-flow { font-family: var(--mono); text-transform: uppercase; letter-spacing: .06em; font-size: 12.5px; background: #ffffff05; border-color: var(--rule-2); }
+  :root[data-lock-theme] .nm-flow.on { background: color-mix(in srgb, var(--c) 12%, transparent); }
+  :root[data-lock-theme] .nm-steps li { background: #ffffff04; border-color: var(--rule); font-size: 13.5px; }
+  :root[data-lock-theme] .nm-steps li span { font-family: var(--mono); border-radius: 50%; }
+  :root[data-lock-theme] .nm-steps li.on { background: color-mix(in srgb, var(--flow) 8%, #0a110e); }
+  :root[data-lock-theme] .nm-info, :root[data-lock-theme] .nm-live span { background: #ffffff04; border-color: var(--rule); }
+  :root[data-lock-theme] .nm-live em { font-family: var(--mono); }
+  :root[data-lock-theme] .nm-key { font-family: var(--mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .05em; }
+
+  /* attack map: a green radar, threats show up pink */
+  :root[data-lock-theme] .am { --amber: #ff4d8d; }
+  :root[data-lock-theme] .am-svg { background: radial-gradient(circle at 50% 50%, #3dff8f0c, transparent 62%), #050807; border-radius: 50%; }
+  :root[data-lock-theme] .am > .am-svg, :root[data-lock-theme] .am-svg { border: 1px solid var(--rule-2); }
+  :root[data-lock-theme] .am-ring { stroke: #3dff8f22; } :root[data-lock-theme] .am-ring.home { stroke: #3dff8f66; stroke-dasharray: 3 6; }
+  :root[data-lock-theme] .am-spoke { stroke: #3dff8f14; stroke-dasharray: 2 5; }
+  :root[data-lock-theme] .am-zl { fill: #3dff8faa; font-family: var(--mono) !important; letter-spacing: .16em; }
+  /* the round radar would cut off the corner note, and the description already says it */
+  :root[data-lock-theme] .am-wall, :root[data-lock-theme] .am-svg > text:first-of-type { display: none; }
+  :root[data-lock-theme] .am-core circle { fill: #07100b; stroke: #3dff8f; stroke-width: 1.5; filter: drop-shadow(0 0 18px #3dff8f55); }
+  :root[data-lock-theme] .am-core circle.pulse { fill: none; stroke: #3dff8f; opacity: .5; transform-box: fill-box; transform-origin: center; filter: none; }
+  :root[data-lock-theme] .am-core text { font-family: var(--mono) !important; fill: #eafff2; font-weight: 600; }
+  :root[data-lock-theme] .am-trap circle.b { fill: #08100c; stroke: #3dff8f55; }
+  :root[data-lock-theme] .am-trap text.p { fill: #3dff8f; }
+  :root[data-lock-theme] .am-trap text.n { fill: #b7c4bb; font-family: var(--mono) !important; font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
+  :root[data-lock-theme] .am-trap.hit circle.b { fill: #2a0816; stroke: #ff4d8d; filter: drop-shadow(0 0 18px #ff4d8d); }
+  :root[data-lock-theme] .am-trap .cnt circle { fill: #ff4d8d; } :root[data-lock-theme] .am-trap .cnt text { fill: #fff; }
+  :root[data-lock-theme] .am-mode { font-family: var(--mono); border-color: #3dff8f55; color: var(--acc); background: #3dff8f0d; }
+  :root[data-lock-theme] .am-mode i { background: var(--acc); box-shadow: 0 0 10px var(--acc); }
+  :root[data-lock-theme] .am-feed li { font-family: var(--mono); font-size: 12.5px; background: #ffffff04; border-color: var(--rule); }
+  :root[data-lock-theme] .am-feed li i, :root[data-lock-theme] .am-feed li::before { background: #ff4d8d; box-shadow: 0 0 8px #ff4d8d; }
+  :root[data-lock-theme] .am-btns .hbtn { font-family: var(--mono); text-transform: uppercase; letter-spacing: .05em; font-size: 12.5px; border: 1px solid var(--rule-2); border-radius: 999px; padding: 6px 14px; }
+  :root[data-lock-theme] .am-btns .hbtn:hover { border-color: var(--acc); color: var(--acc); }
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-lock-theme] .am-core circle.pulse { animation: corepulse 2.4s ease-out infinite; }
+    @keyframes corepulse { from { transform: scale(1); opacity: .6; } to { transform: scale(1.6); opacity: 0; } }
+  }
 </style>
 </head>
 <body class="intro">

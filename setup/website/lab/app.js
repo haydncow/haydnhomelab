@@ -675,7 +675,7 @@ function atkMap() {
   const h = stats && stats.honeypot;
   return `<div class="am">
     <svg class="am-svg" viewBox="0 0 640 640" role="img" aria-label="Map of my honeypot's fake services and what has touched them">
-      <defs><linearGradient id="am-sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb21a" stop-opacity="0"/><stop offset="1" stop-color="#ffb21a" stop-opacity=".28"/></linearGradient></defs>
+      <defs><linearGradient id="am-sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3dff8f" stop-opacity="0"/><stop offset="1" stop-color="#3dff8f" stop-opacity=".22"/></linearGradient></defs>
       <text class="am-zl" x="24" y="34">THE INTERNET</text>
       <text class="am-wall" x="24" y="52">can't reach these: no ports</text>
       <text class="am-wall" x="24" y="67">forwarded on my router</text>
@@ -684,7 +684,7 @@ function atkMap() {
       <circle class="am-ring" cx="${AC}" cy="${AC}" r="${AR_TRAP}"/><circle class="am-ring" cx="${AC}" cy="${AC}" r="100"/><circle class="am-ring" cx="${AC}" cy="${AC}" r="236"/>
       ${reduceMotion ? "" : `<g class="am-sweep"><path d="M${AC} ${AC} L${AC + AR_HOME} ${AC} A${AR_HOME} ${AR_HOME} 0 0 0 ${(AC + AR_HOME * Math.cos(-0.5)).toFixed(1)} ${(AC + AR_HOME * Math.sin(-0.5)).toFixed(1)} Z" fill="url(#am-sw)"/></g>`}
       ${spokes}
-      <g class="am-core" transform="translate(${AC},${AC})"><rect x="-66" y="-30" width="132" height="60" rx="14"/>
+      <g class="am-core" transform="translate(${AC},${AC})"><circle class="pulse" r="58"/><circle r="56"/>
         <text text-anchor="middle" y="-3">OpenCanary</text><text class="s" text-anchor="middle" y="13">on the Pi</text></g>
       ${traps}
       <g id="am-fx"></g>
