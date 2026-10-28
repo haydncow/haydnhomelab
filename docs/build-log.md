@@ -6,7 +6,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 
 ## 28 October 2026
 
-- Cloudflare emailed every Tunnel user: eight eMudhra security certificates had been made with private keys so weak they could be worked out, and cloudflared versions before 2026.10.2 still trusted them. I checked the email matched Cloudflare's own blog post before acting on it. My Pi was on 2026.10.1, so I upgraded through apt to 2026.10.5. The site was only down for the few seconds the tunnel took to restart, and came straight back. My tunnel talks to Caddy over plain HTTP on the Pi itself, so the warning about HTTPS origin certificates didn't affect me.
+- Cloudflare emailed every Tunnel user: eight eMudhra security certificates had been made with private keys so weak they could be worked out, and cloudflared versions before 2026.10.2 still trusted them. Before acting on it, Claude checked it matched Cloudflare's own blog post, in case it was phishing. My Pi was on 2026.10.1, so I upgraded through apt to 2026.10.5. The site was only down for the few seconds the tunnel took to restart, and came straight back. My tunnel talks to Caddy over plain HTTP on the Pi itself, so the warning about HTTPS origin certificates didn't affect me. Wrote it up as [a write-up](https://haydnhomelab.com/writeups/cloudflared-emudhra/).
 
 ## 27 October 2026
 
