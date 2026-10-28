@@ -2,7 +2,11 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
-**Jump to:** [27 Oct](#27-october-2026) | [23 Oct](#23-october-2026) | [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+**Jump to:** [28 Oct](#28-october-2026) | [27 Oct](#27-october-2026) | [23 Oct](#23-october-2026) | [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+
+## 28 October 2026
+
+- Cloudflare emailed every Tunnel user: eight eMudhra security certificates had been made with private keys so weak they could be worked out, and cloudflared versions before 2026.10.2 still trusted them. I checked the email matched Cloudflare's own blog post before acting on it. My Pi was on 2026.10.1, so I upgraded through apt to 2026.10.5. The site was only down for the few seconds the tunnel took to restart, and came straight back. My tunnel talks to Caddy over plain HTTP on the Pi itself, so the warning about HTTPS origin certificates didn't affect me.
 
 ## 27 October 2026
 
