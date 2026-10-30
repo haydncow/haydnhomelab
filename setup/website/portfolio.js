@@ -1,56 +1,28 @@
-// My portfolio (the homepage): theme toggle and live readings from my Raspberry Pi.
+// My portfolio (the homepage): theme, live readings from my Raspberry Pi, and the
+// sentence at the top that's built from my Cloudflare firewall log.
 // Kept in its own file so the Content Security Policy can block inline scripts.
-// Code written by Claude (AI). The data comes from the same stats files as my live lab.
+// Code written by Claude (AI). It never shows IP addresses: only paths, countries and counts.
+// The paths come from strangers' requests, so they're only ever added as plain text.
 (function () {
   "use strict";
   var root = document.documentElement;
   root.classList.add("js");
 
-  // ---- theme: follows the system setting unless the visitor picks one ----
+  // ---------- theme: follows the system setting unless the visitor picks one ----------
   var saved = null;
   try { saved = localStorage.getItem("theme"); } catch (e) { /* storage blocked, fine */ }
   if (saved === "light" || saved === "dark") root.setAttribute("data-theme", saved);
   // phones always get dark mode (easier on the eyes, and one less button on a small screen)
-  var phone = window.matchMedia && matchMedia("(max-width: 760px)").matches;
-  if (phone) root.setAttribute("data-theme", "dark");
+  if (window.matchMedia && matchMedia("(max-width: 760px)").matches) root.setAttribute("data-theme", "dark");
   var darkQuery = window.matchMedia ? matchMedia("(prefers-color-scheme: dark)") : null;
   function currentTheme() {
-    var t = root.getAttribute("data-theme");
-    if (t) return t;
-    return darkQuery && darkQuery.matches ? "dark" : "light";
+    return root.getAttribute("data-theme") || (darkQuery && darkQuery.matches ? "dark" : "light");
   }
+  var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  document.addEventListener("DOMContentLoaded", function () {
-    var btn = document.querySelector(".theme");
-    function syncButton() {
-      var t = currentTheme();
-      btn.setAttribute("data-mode", t);
-      btn.setAttribute("aria-label", t === "dark" ? "Switch to light theme" : "Switch to dark theme");
-    }
-    if (btn) {
-      syncButton();
-      btn.addEventListener("click", function () {
-        var next = currentTheme() === "dark" ? "light" : "dark";
-        root.setAttribute("data-theme", next);
-        try { localStorage.setItem("theme", next); } catch (e) { /* not saved, still switches */ }
-        syncButton();
-      });
-      if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener("change", syncButton);
-    }
-    var printBtn = document.querySelector("[data-print]");
-    if (printBtn) printBtn.addEventListener("click", function () { window.print(); });
-    startLive();
-    console.log("%cHi! You opened the console, so you're probably my kind of person.", "font-weight:bold");
-    console.log("Everything about this lab, including what went wrong, is at https://github.com/haydncow/haydnhomelab");
-  });
-
-  // ---- live readings ----
-  var stats = null, lastPoint = null, boot = null, fetchedOk = false;
-
-  function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
+  function all(sel, el) { return Array.prototype.slice.call((el || document).querySelectorAll(sel)); }
   function setText(name, text) { all('[data-live="' + name + '"]').forEach(function (el) { el.textContent = text; }); }
   function pad(n) { return (n < 10 ? "0" : "") + n; }
-
   function getJSON(url) {
     return fetch(url, { cache: "no-store" }).then(function (r) {
       if (!r.ok) throw new Error(url + " " + r.status);
@@ -58,193 +30,226 @@
     });
   }
 
-  // "1d 2h 5m" -> seconds, for older stats files without an exact boot time
-  function parseUptime(text) {
-    if (!text) return null;
-    var m = /(?:(\d+)d)?\s*(?:(\d+)h)?\s*(?:(\d+)m)?/.exec(text);
-    if (!m) return null;
-    return (+(m[1] || 0)) * 86400 + (+(m[2] || 0)) * 3600 + (+(m[3] || 0)) * 60;
+  // ---------- turning a blocked request into a plain-English sentence ----------
+  var regions = null;
+  try { regions = new Intl.DisplayNames(["en-GB"], { type: "region" }); } catch (e) { /* older browser */ }
+  var THE = { NL: 1, US: 1, GB: 1, PH: 1, AE: 1, BS: 1, DO: 1, CF: 1, MV: 1, SC: 1, KY: 1, GM: 1, CZ: 0, VA: 1, MH: 1, SB: 1, KM: 1 };
+  var NAMES = { HK: "Hong Kong", MO: "Macao", CD: "the DR Congo", CG: "the Republic of the Congo", US: "the United States", GB: "the UK", KR: "South Korea", KP: "North Korea" };
+  function place(code) {
+    code = (code || "").toUpperCase();
+    if (code === "T1") return "a computer hiding its location with Tor";
+    if (!code || code === "XX") return "a computer in an unknown country";
+    var name = NAMES[code];
+    if (!name) {
+      try { name = regions ? regions.of(code) : code; } catch (e) { name = code; }
+      if (THE[code]) name = "the " + name;
+    }
+    return "a computer in " + name;
   }
-
-  function formatUptime(secs) {
-    secs = Math.max(0, Math.floor(secs));
-    var d = Math.floor(secs / 86400), h = Math.floor(secs % 86400 / 3600), m = Math.floor(secs % 3600 / 60), s = secs % 60;
-    return (d ? d + "d " : "") + pad(h) + ":" + pad(m) + ":" + pad(s);
+  // what the path is, for someone who isn't technical (checked in order, first match wins)
+  var EXPLAIN = [
+    [/(^|\/)\.env/i, "a file that often holds passwords"],
+    [/(^|\/)\.git(\/|$)/i, "where code keeps its history"],
+    [/(^|\/)\.aws|credentials/i, "a file of cloud passwords"],
+    [/wp-login\.php|wp-admin/i, "a WordPress login page"],
+    [/xmlrpc\.php/i, "a WordPress file used to guess passwords"],
+    [/wp-|wordpress/i, "part of WordPress"],
+    [/phpinfo|(^|\/)info\.php/i, "a page that lists server settings"],
+    [/phpmyadmin|(^|\/)pma(\/|$)/i, "a database admin page"],
+    [/\.(bak|old|backup|sql|zip|tar|gz|tgz|rar|7z)$/i, "a backup file"],
+    [/\.php/i, "a PHP page"],
+    [/cgi-bin/i, "an old kind of server script"],
+    [/(^|\/)(admin|administrator|login|signin)(\/|$|\.)/i, "an admin login page"],
+    [/\.(ya?ml|ini|conf|config|json|xml)$/i, "a settings file"],
+    [/server-status/i, "a server status page"],
+    [/\.ds_store/i, "a hidden Mac file"],
+    [/actuator|(^|\/)api\//i, "an app’s admin interface"]
+  ];
+  function explain(path) {
+    for (var i = 0; i < EXPLAIN.length; i++) if (EXPLAIN[i][0].test(path)) return EXPLAIN[i][1];
+    return "";
   }
-
+  var BLOCKED_BY = {
+    "My firewall rule": "My firewall rule blocked it", "Rate limit": "My rate limit blocked it",
+    "Managed rules": "Cloudflare’s managed rules blocked it", "Security level": "Cloudflare’s security check blocked it",
+    "Browser check": "Cloudflare’s browser check stopped it", "DDoS protection": "Cloudflare’s DDoS protection blocked it",
+    "Bot fight mode": "Cloudflare’s bot protection blocked it", "Bad request": "Cloudflare refused it as a bad request"
+  };
+  function agoStart(secs) {
+    if (secs < 90) return "Just now";
+    if (secs < 3300) return Math.round(secs / 60) + " minutes ago";
+    if (secs < 5400) return "An hour ago";
+    return Math.round(secs / 3600) + " hours ago";
+  }
   function agoText(secs) {
     if (secs < 90) return "a minute ago";
     if (secs < 3600) return Math.round(secs / 60) + " minutes ago";
     if (secs < 172800) return Math.round(secs / 3600) + " hours ago";
     return Math.round(secs / 86400) + " days ago";
   }
+  function todayKey() {
+    try { return new Date().toLocaleDateString("en-CA", { timeZone: "Europe/London" }); }
+    catch (e) { return new Date().toISOString().slice(0, 10); }
+  }
+
+  var lineSig = null;
+  function liveLine(now) {
+    var el = document.querySelector("[data-live-line]");
+    if (!el || !hist || !hist.firewall) return;
+    var feed = hist.firewall.feed || [], f = feed[0];
+    if (!f || !f.time || now - f.time > 26 * 3600) return;      // nothing recent: keep the normal sentence
+    var path = String(f.path || "/"), shown = path.length > 38 ? path.slice(0, 36) + "…" : path;
+    var verb = String(f.method).toUpperCase() === "POST" ? " tried to send data to " : " tried to open ";
+    var what = explain(path);
+    var today = (hist.days || []).filter(function (d) { return d.date === todayKey(); })[0];
+    var n = today && today.cf_blocked;
+    var sig = [f.time, path, f.country, f.rule, n, Math.round((now - f.time) / 60)].join("|");
+    if (sig === lineSig) return;
+    lineSig = sig;
+    // built from text nodes, so a strange path can't turn into code on my page
+    var frag = document.createDocumentFragment();
+    frag.appendChild(document.createTextNode(agoStart(now - f.time) + ", " + place(f.country) + verb));
+    var code = document.createElement("span");
+    code.className = "path";
+    code.textContent = shown;
+    code.title = path;
+    frag.appendChild(code);
+    frag.appendChild(document.createTextNode((what ? ", " + what : "") + ". " + (BLOCKED_BY[f.rule] || "Cloudflare blocked it") +
+      " before it reached the Pi." + (n > 1 ? " That’s " + n.toLocaleString("en-GB") + " blocked today." : "")));
+    el.textContent = "";
+    el.appendChild(frag);
+    var src = document.querySelector("[data-live-src]");
+    if (src) src.textContent = "From my Cloudflare firewall log. It updates while you’re here, and never shows IP addresses.";
+  }
+
+  // ---------- live readings ----------
+  var stats = null, hist = null, lastPoint = null, boot = null, fetchedOk = false;
+
+  function parseUptime(text) {   // "1d 2h 5m" -> seconds, for older stats without an exact boot time
+    if (!text) return null;
+    var m = /(?:(\d+)d)?\s*(?:(\d+)h)?\s*(?:(\d+)m)?/.exec(text);
+    return m ? (+(m[1] || 0)) * 86400 + (+(m[2] || 0)) * 3600 + (+(m[3] || 0)) * 60 : null;
+  }
+  function formatUptime(secs) {
+    secs = Math.max(0, Math.floor(secs));
+    var d = Math.floor(secs / 86400), h = Math.floor(secs % 86400 / 3600), m = Math.floor(secs % 3600 / 60), s = secs % 60;
+    return (d ? d + "d " : "") + pad(h) + ":" + pad(m) + ":" + pad(s);
+  }
+  function fresh() { return fetchedOk && stats && stats.updated && Date.now() / 1000 - stats.updated < 600; }
 
   function refresh() {
     var a = getJSON("/stats.json").then(function (s) { stats = s; fetchedOk = true; }, function () { fetchedOk = false; });
     var b = getJSON("/live.json").then(function (l) {
       lastPoint = l && l.points && l.points.length ? l.points[l.points.length - 1] : null;
     }, function () { lastPoint = null; });
-    Promise.all([a, b]).then(render);
+    var c = getJSON("/history.json").then(function (h) { hist = h; }, function () { /* the rest still works */ });
+    Promise.all([a, b, c]).then(render);
   }
 
   function render() {
-    var now = Date.now() / 1000;
-    var fresh = fetchedOk && stats && stats.updated && now - stats.updated < 600;
-
-    // status light and sentence
+    var now = Date.now() / 1000, ok = fresh();
     all("[data-live-led]").forEach(function (el) {
-      el.classList.toggle("on", !!fresh);
-      el.classList.toggle("off", fetchedOk && !fresh);
+      el.classList.toggle("on", !!ok);
+      el.classList.toggle("off", fetchedOk && !ok);
     });
-    all("[data-live-pin]").forEach(function (el) { el.classList.toggle("on", !!fresh); });
+    var rack = document.querySelector("[data-anatomy]");
+    if (rack) rack.classList.toggle("offline", !ok);
+
+    liveLine(now);
 
     if (!fetchedOk || !stats) {
       boot = null;
-      setText("status", "Couldn\u2019t reach the lab just now.");
-      setText("uptime", "up for --");
-      setText("temp", "CPU --");
-      setText("backup", "backup --");
+      setText("status", "Couldn’t reach the lab just now.");
+      setText("uptime", "Up for --"); setText("temp", "CPU --"); setText("backup", "Backup --");
+      var src = document.querySelector("[data-live-src]");
+      if (src && lineSig === null) src.textContent = "Couldn’t reach the Pi just now, so this sentence isn’t live.";
       return;
     }
+    var svc = stats.services || [], up = svc.filter(function (s) { return s.up; }).length;
+    setText("status", ok ? (svc.length ? "Online now, " + up + " of " + svc.length + " services running." : "Online now.")
+                         : "Offline right now. Last seen " + agoText(now - stats.updated) + ".");
 
-    var svc = stats.services || [];
-    var up = svc.filter(function (s) { return s.up; }).length;
-    if (fresh) {
-      setText("status", svc.length ? "Online now, " + up + " of " + svc.length + " services running." : "Online now.");
-    } else {
-      setText("status", "The lab is offline right now. Last seen " + agoText(now - stats.updated) + ".");
-    }
-
-    // uptime: exact boot time if the stats have it, otherwise work it out
     if (typeof stats.boot === "number") boot = stats.boot;
-    else {
-      var secs = parseUptime(stats.uptime);
-      boot = secs == null ? null : stats.updated - secs;
-    }
-    if (!fresh) boot = null;
+    else { var secs = parseUptime(stats.uptime); boot = secs == null ? null : stats.updated - secs; }
+    if (!ok) boot = null;
     tick();
 
-    // temperature: the 3 second reading if there is one, otherwise the minute one
-    var temp = null;
-    if (lastPoint && lastPoint[2] != null && now - lastPoint[0] < 120) temp = lastPoint[2].toFixed(1) + "°C";
-    else if (stats.temp) temp = stats.temp;
+    var temp = lastPoint && lastPoint[2] != null && now - lastPoint[0] < 120 ? lastPoint[2].toFixed(1) + "°C" : stats.temp;
     setText("temp", temp ? "CPU " + temp : "CPU --");
-
-    // last backup, from the "Nightly backup" line in What's running
     var backup = svc.filter(function (s) { return s.name === "Nightly backup"; })[0];
     var m = backup && backup.detail ? /last ran (.+?) ago/.exec(backup.detail) : null;
-    setText("backup", m ? "backed up " + m[1] + " ago" : "backup --");
+    setText("backup", m ? "Last backed up " + m[1] + " ago" : "Backup --");
+
+    var sec = stats.security;
+    setText("cve-line", sec && sec.cve_critical != null
+      ? "This week’s scan: " + sec.cve_critical + " critical, " + (sec.cve_high != null ? sec.cve_high : "?") + " high."
+      : "");
   }
 
   function tick() {
-    if (boot == null) {
-      if (!fresh()) setText("uptime", fetchedOk && stats ? "offline" : "up for --");
-      return;
-    }
-    setText("uptime", "up for " + formatUptime(Date.now() / 1000 - boot));
+    if (boot == null) { if (!fresh()) setText("uptime", fetchedOk && stats ? "Offline" : "Up for --"); return; }
+    setText("uptime", "Up for " + formatUptime(Date.now() / 1000 - boot));
   }
-  function fresh() { return fetchedOk && stats && stats.updated && Date.now() / 1000 - stats.updated < 600; }
 
-  function startLive() {
+  document.addEventListener("DOMContentLoaded", function () {
+    // theme button
+    var btn = document.querySelector(".theme");
+    if (btn) {
+      var sync = function () {
+        var t = currentTheme();
+        btn.setAttribute("data-mode", t);
+        btn.setAttribute("aria-label", t === "dark" ? "Switch to light theme" : "Switch to dark theme");
+      };
+      sync();
+      btn.addEventListener("click", function () {
+        var next = currentTheme() === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", next);
+        try { localStorage.setItem("theme", next); } catch (e) { /* not saved, still switches */ }
+        sync();
+      });
+      if (darkQuery && darkQuery.addEventListener) darkQuery.addEventListener("change", sync);
+    }
+    all("[data-print]").forEach(function (b) { b.addEventListener("click", function () { window.print(); }); });
+
+    // my name joins the top bar once the big one has scrolled away
+    var mast = document.querySelector("[data-masthead]");
+    if (mast && "IntersectionObserver" in window) {
+      new IntersectionObserver(function (es) {
+        document.body.classList.toggle("past-name", !es[0].isIntersecting);
+      }, { rootMargin: "-60px 0px 0px 0px" }).observe(mast);
+    } else document.body.classList.add("past-name");
+
+    // the one thing that moves on its own: the rack's lights switch on when you reach it
+    var rack = document.querySelector("[data-anatomy]");
+    if (rack) {
+      if ("IntersectionObserver" in window && !calm) {
+        var ro = new IntersectionObserver(function (es) {
+          if (es[0].isIntersecting) { rack.classList.add("on"); ro.disconnect(); }
+        }, { threshold: 0.45 });
+        ro.observe(rack);
+      } else rack.classList.add("on");
+    }
+
     refresh();
     setInterval(refresh, 30000);
     setInterval(tick, 1000);
-  }
-})();
 
-// Back to top button for long pages on phones. Code written by Claude (AI).
-(function () {
-  "use strict";
-  if (!window.matchMedia || !matchMedia("(max-width: 760px)").matches) return;
-  document.addEventListener("DOMContentLoaded", function () {
-    if (document.documentElement.scrollHeight < window.innerHeight * 3) return;   // short pages don't need it
-    var b = document.createElement("button");
-    b.className = "to-top"; b.type = "button"; b.setAttribute("aria-label", "Back to top");
-    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
-    b.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
-    document.body.appendChild(b);
-    var shown = false;
-    window.addEventListener("scroll", function () {
-      var s = window.scrollY > window.innerHeight * 1.5;
-      if (s !== shown) { shown = s; b.classList.toggle("show", s); }
-    }, { passive: true });
-  });
-})();
-
-// ---- 2026 refresh: reveal on scroll, reading progress and live numbers. Code written by Claude (AI). ----
-(function () {
-  "use strict";
-  var calm = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!calm && "IntersectionObserver" in window) document.documentElement.classList.add("js-rv");
-  function all(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
-
-  function countUp(el, to, fmt) {
-    if (calm) { el.textContent = fmt(to); return; }
-    var t0 = performance.now(), D = 1600;
-    (function step(now) {
-      var p = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - p, 3);
-      el.textContent = fmt(to * e);
-      if (p < 1) requestAnimationFrame(step);
-    })(t0);
-  }
-  function whenSeen(el, fn) {
-    if (!("IntersectionObserver" in window)) return fn();
-    var io = new IntersectionObserver(function (es) { if (es[0].isIntersecting) { io.disconnect(); fn(); } }, { threshold: 0.35 });
-    io.observe(el);
-  }
-
-  document.addEventListener("DOMContentLoaded", function () {
-    // reveal sections as they scroll into view
-    // wrap each terminal line so the lines can appear one after another
-    if (document.documentElement.classList.contains("js-rv")) all(".ev pre.term").forEach(function (pre) {
-      pre.innerHTML = pre.innerHTML.split("\n").map(function (line, i) {
-        return '<span class="ln" style="--l:' + i + '">' + (line || " ") + "</span>";
-      }).join("\n");
-    });
-    var items = all(".block > h2, .block > .intro, .ev, .fixes, .timeline li, .facts > div, .pulse, .skills > *, .block .card");
-    items.forEach(function (el, i) { el.classList.add("rv"); });
-    all(".facts > div").forEach(function (el, i) { el.style.setProperty("--rd", (i * 0.07) + "s"); });
-    all(".timeline li").forEach(function (el, i) { el.style.setProperty("--rd", (i % 4 * 0.08) + "s"); });
-    if ("IntersectionObserver" in window) {
-      var io = new IntersectionObserver(function (es) {
-        es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
-      }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
-      items.forEach(function (el) { io.observe(el); });
-    } else items.forEach(function (el) { el.classList.add("in"); });
-
-    // thin reading progress bar along the top
-    var bar = document.createElement("div"); bar.className = "read-progress"; document.body.appendChild(bar);
-    var ticking = false;
-    function prog() {
-      var h = document.documentElement.scrollHeight - window.innerHeight;
-      bar.style.transform = "scaleX(" + (h > 0 ? Math.min(1, window.scrollY / h) : 0) + ")"; ticking = false;
+    // a back-to-top button on phones
+    if (window.matchMedia && matchMedia("(max-width: 760px)").matches) {
+      var toTop = document.createElement("button");
+      toTop.className = "to-top"; toTop.type = "button"; toTop.setAttribute("aria-label", "Back to top");
+      toTop.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>';
+      toTop.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: calm ? "auto" : "smooth" }); });
+      document.body.appendChild(toTop);
+      var ticking = false;
+      window.addEventListener("scroll", function () {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () { toTop.classList.toggle("show", window.scrollY > window.innerHeight * 1.5); ticking = false; });
+      }, { passive: true });
     }
-    window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(prog); } }, { passive: true });
 
-    // live numbers strip
-    var strip = document.querySelector(".pulse"); if (!strip) return;
-    function get(u) { return fetch(u, { cache: "no-store" }).then(function (r) { if (!r.ok) throw 0; return r.json(); }); }
-    Promise.all([get("/stats.json").catch(function () { return null; }), get("/history.json").catch(function () { return null; })]).then(function (res) {
-      var s = res[0], h = res[1], days = (h && h.days) || [], last = days.slice(-30);
-      var attacks = last.reduce(function (a, d) { return a + (d.cf_blocked || 0); }, 0);
-      var ups = last.map(function (d) {
-        var v = Object.keys(d.uptime || {}).map(function (k) { return d.uptime[k]; }).filter(function (x) { return typeof x === "number"; });
-        return v.length ? v.reduce(function (a, b) { return a + b; }, 0) / v.length : null;
-      }).filter(function (v) { return v != null; });
-      var vals = {
-        attacks: h ? [attacks, function (v) { return Math.round(v).toLocaleString("en-GB"); }] : null,
-        ads: s && s.blocked ? [Number(String(s.blocked).replace(/,/g, "")), function (v) { return Math.round(v).toLocaleString("en-GB"); }] : null,
-        uptime: ups.length ? [ups.reduce(function (a, b) { return a + b; }, 0) / ups.length, function (v) { return v.toFixed(2) + "%"; }] : null,
-        cve: s && s.security && s.security.cve_critical != null ? [s.security.cve_critical, function (v) { return String(Math.round(v)); }] : null
-      };
-      whenSeen(strip, function () {
-        Object.keys(vals).forEach(function (k) {
-          var el = strip.querySelector('[data-pulse="' + k + '"]');
-          if (!el) return;
-          if (!vals[k]) { el.parentNode.style.display = "none"; return; }   // hide anything the Pi didn't report
-          countUp(el, vals[k][0], vals[k][1]);
-        });
-      });
-    });
+    console.log("%cHi! You opened the console, so you're probably my kind of person.", "font-weight:bold");
+    console.log("Everything about this lab, including what went wrong, is at https://github.com/haydncow/haydnhomelab");
   });
 })();

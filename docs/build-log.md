@@ -2,7 +2,18 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
-**Jump to:** [28 Oct](#28-october-2026) | [27 Oct](#27-october-2026) | [23 Oct](#23-october-2026) | [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+**Jump to:** [30 Oct](#30-october-2026) | [28 Oct](#28-october-2026) | [27 Oct](#27-october-2026) | [23 Oct](#23-october-2026) | [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+
+## 30 October 2026
+
+- Redesigned my homepage for employers. Claude researched what they look for first: recruiters spend about 7 seconds on a first look (Ladders' 2018 eye-tracking study), Level 6 cyber apprenticeships are built on the ST0409 Cyber Security Technical Professional standard, interviews use "tell me about a time" questions, and UK employers know Cyber Essentials. The first version looked too AI-made to me, so we started again and built it around my actual rack:
+  - My name in big type, what I'm applying for, and the rack photo cut out of its background so it stands on a line like it's on a desk. Under the line: where I'm based, my course, GCSEs and EPQ.
+  - The first sentence is live. It's built from my Cloudflare firewall log, like "5 minutes ago, a computer in the United States tried to open /wp-login.php, a WordPress login page. My firewall rule blocked it before it reached the Pi." It explains the path in plain English and never shows IP addresses. Paths come from strangers, so they're only added to the page as plain text, never as code.
+  - A front photo of the rack labelled by rack unit (U1 to U4) with live readings. The lights on the switch and Pi come on when you scroll to it, and only blink while the Pi is online.
+  - Four STAR case studies, and a test log where every claim opens to show its proof: real terminal output, the securityheaders.com F and A+ screenshots (IP blurred) and Cloudflare's log from my rate limit test.
+  - My work matched to six ST0409 competencies and the behaviours, a Cyber Essentials v3.3 self-check (four controls met, malware protection only partly), the two-week timeline, things that broke, skills, how I used AI and how to contact me.
+  - Colour only means status: green for working or passed, red for attacks, amber for partly. One typeface, Archivo, served from the Pi. It prints as a 3-page summary for applications.
+- Gave the write-ups, status page and live lab the same top bar, with my full name, and the write-ups and status page the same type and colours. Their fonts come from the Pi now instead of Google Fonts. The live lab is a little wider so it lines up with the rest of the site.
 
 ## 28 October 2026
 

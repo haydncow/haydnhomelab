@@ -42,8 +42,8 @@ I'm Haydn, an IT student in West Yorkshire applying for cyber security degree ap
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://haydnhomelab.com"><img src="images/screenshot-portfolio.jpg" alt="My portfolio homepage, with live readings from the Pi pinned to a photo of the rack"></a>
-      <p><b>Portfolio</b><br>What I've built, with the proof next to each part. The readings on the rack photo are live from the Pi.</p>
+      <a href="https://haydnhomelab.com"><img src="images/screenshot-portfolio.jpg" alt="My portfolio homepage: my name in big type, a live sentence about the latest request my firewall blocked, and my rack photographed like a product"></a>
+      <p><b>Portfolio</b><br>Written for employers: case studies, every claim tested with the proof, and my work matched to the apprenticeship standard. The first sentence comes live from my firewall log.</p>
     </td>
     <td width="50%" valign="top">
       <a href="https://haydnhomelab.com/lab/"><img src="images/screenshot-lab.jpg" alt="The live lab dashboard: ads blocked, uptime, CPU temperature, power, DNS queries and every service running"></a>
@@ -62,7 +62,7 @@ I'm Haydn, an IT student in West Yorkshire applying for cyber security degree ap
   </tr>
 </table>
 
-<sub>Screenshots taken on 20 October 2026 with real data from the Pi.</sub>
+<sub>The live lab and map screenshots were taken on 20 October 2026 with real data from the Pi. The portfolio screenshot shows the new design (30 October) with sample data in the same format.</sub>
 
 ## How I tested it
 
