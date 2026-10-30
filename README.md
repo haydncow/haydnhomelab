@@ -42,21 +42,21 @@ I'm Haydn, an IT student in West Yorkshire applying for cyber security degree ap
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://haydnhomelab.com"><img src="images/screenshot-portfolio.jpg" alt="My portfolio homepage: my name in big type, a live sentence about the latest request my firewall blocked, and a photo of my rack beside it"></a>
+      <a href="https://haydnhomelab.com"><img src="images/screenshot-portfolio-v5.jpg" alt="My portfolio homepage: my name in big type, a live sentence about the latest request my firewall blocked, and a photo of my rack beside it"></a>
       <p><b>Portfolio</b><br>Written for employers: case studies, every claim tested with the proof, and my work matched to the apprenticeship standard. The first sentence comes live from my firewall log.</p>
     </td>
     <td width="50%" valign="top">
-      <a href="https://haydnhomelab.com/lab/"><img src="images/screenshot-lab.jpg" alt="The live lab: headline numbers, a photo of my rack you can click to zoom in, security, every service running, Pi-hole and the Pi's live readings"></a>
+      <a href="https://haydnhomelab.com/lab/"><img src="images/screenshot-lab-v5.jpg" alt="The live lab: headline numbers, a photo of my rack you can click to zoom in, security, every service running, Pi-hole and the Pi's live readings"></a>
       <p><b>Live lab</b><br>Real-time stats from the Pi, what Cloudflare blocked, every service it runs, and graphs of the last 24 hours. Click a part of the rack to zoom in.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="images/screenshot-attack-map.jpg" alt="The honeypot attack map: eight fake services around OpenCanary, with hits on the fake SSH, Remote Desktop and NAS services">
+      <img src="images/screenshot-attack-map-v5.jpg" alt="The honeypot attack map: eight fake services around OpenCanary, with hits on the fake SSH, Remote Desktop and NAS services">
       <p><b>Honeypot attack map</b><br>My own test attacks from Kali landing on the fake services. It never shows IP addresses or passwords.</p>
     </td>
     <td width="50%" valign="top">
-      <img src="images/screenshot-network-map.jpg" alt="The network map showing how a visit travels through Cloudflare and the tunnel to the Pi">
+      <img src="images/screenshot-network-map-v5.jpg" alt="The network map showing how a visit travels through Cloudflare and the tunnel to the Pi">
       <p><b>Network map</b><br>How a visit reaches the Pi without any open ports, animated step by step.</p>
     </td>
   </tr>
