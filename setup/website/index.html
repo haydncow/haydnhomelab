@@ -132,7 +132,7 @@
   .button { display: inline-flex; align-items: center; height: 50px; padding: 0 24px; border-radius: 3px; background: var(--ink); color: var(--paper);
             font-weight: 650; font-stretch: 106%; text-decoration: none; }
   .button:hover { background: var(--ink-2); }
-  .hero-rack { grid-column: 8 / -1; grid-row: 2 / 4; align-self: end; position: relative; margin: 0 calc(-1 * var(--pad)) -3px 0; }
+  .hero-rack { grid-column: 8 / -1; grid-row: 2 / 4; align-self: end; position: relative; margin: 0 0 -3px 0; }
   .hero-rack img { position: relative; z-index: 1; width: 100%; }
   .hero-rack::before { content: ""; position: absolute; inset: -14% -8% 2%; background: radial-gradient(closest-side, var(--stage), transparent); }
   .hero-rack::after { content: ""; position: absolute; z-index: 0; left: 8%; right: 9%; bottom: -6px; height: 26px;
@@ -339,12 +339,14 @@
   .contact-links { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; margin: 26px 0 0; font-size: 17px; }
   .linkbtn { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-decoration: underline; text-decoration-thickness: 1.5px; text-underline-offset: .22em; cursor: pointer; }
   .linkbtn:hover { text-decoration-thickness: 2.5px; }
-  .ask { margin: 44px 0 0; }
-  .ask ul { padding: 0; list-style: none; margin-top: 10px; }
-  .ask li { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); gap: 18px; padding: 12px 0; border-top: 1px solid var(--rule); font-size: 16px; line-height: 1.45; }
-  .ask li:last-child { border-bottom: 1px solid var(--rule); }
-  .ask a { font-weight: 650; }
-  .ask span { color: var(--ink-2); }
+  .wu { padding: 0; margin: 0; list-style: none; border-top: 2px solid var(--ink); }
+  .wu li { border-bottom: 1px solid var(--rule); }
+  .wu a { display: grid; grid-template-columns: 128px minmax(0, 1fr) minmax(0, 15em); gap: 20px; align-items: baseline; padding: 14px 0; text-decoration: none; color: inherit; }
+  .wu a:hover h3 { text-decoration: underline; text-underline-offset: .2em; }
+  .wu time { font-size: 15px; color: var(--ink-3); }
+  .wu h3 { margin: 0; font-size: 18px; line-height: 1.35; font-weight: 650; }
+  .wu .res { font-size: 15px; color: var(--pass); }
+  .wu-all { margin: 18px 0 0; }
 
   footer { margin-top: clamp(96px, 10vw, 140px); padding: 0 0 56px; font-size: 15px; color: var(--ink-3); }
   footer .wrap { position: relative; padding-top: 20px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gap); row-gap: 12px; }
@@ -358,7 +360,6 @@
   .to-top svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 
   /* ---------- smaller screens ---------- */
-  @media screen and (max-width: 1400px) { .hero-rack { margin-right: 0; } }
   @media screen and (max-width: 1100px) {
     .sec-head, .sec-body { grid-column: 1 / -1; }
     .sec-head > div { position: static; padding-bottom: 28px; }
@@ -401,7 +402,7 @@
     .fixes td { display: block; padding: 2px 0; border: 0 !important; }
     .fixes td:nth-child(2)::before { content: "Why: "; color: var(--ink-3); }
     .fixes td:nth-child(3)::before { content: "Fix: "; color: var(--ink-3); }
-    .ask li { grid-template-columns: 1fr; gap: 2px; }
+    .wu a { grid-template-columns: 1fr; gap: 2px; }
     .case-links { margin-left: 0; }
     footer p, footer nav { grid-column: 1 / -1; justify-content: flex-start; }
     .top nav { gap: 18px; font-size: 15.5px; }
@@ -436,7 +437,7 @@
     .sec-head, h2, h3 { break-after: avoid; }
     .ce th small { display: none; }
     .ce .c1 { width: 24%; }
-    .top, .skip, .hero-rack, .live-line, .live-src, .actions, .to-top, #lab, #timeline, #fixes, #skills, #ai, #contact, footer, .tog, .proof, .log-head, .star-key, .src-note { display: none !important; }
+    .top, .skip, .hero-rack, .live-line, .live-src, .actions, .to-top, #lab, #writeups, #timeline, #fixes, #skills, #ai, #contact, footer, .tog, .proof, .log-head, .star-key, .src-note { display: none !important; }
     .print-ai { margin: 0 0 8pt; font-size: 9pt; color: #333; }
     .behave { display: none !important; }
     .print-only { display: block; }
@@ -602,7 +603,7 @@
     <div class="wrap sec-grid">
       <div class="sec-head"><div>
         <h2 id="cases-title">Four times I had to think on my feet</h2>
-        <p>Written the way you’d answer “tell me about a time when…” in an interview: the situation, my task, what I did and the result. All four are real, and each has a full write-up.</p>
+        <p>Four real problems from building my lab: what happened, what I did about it and how it turned out.</p>
       </div></div>
       <div class="sec-body">
         <article class="case">
@@ -1007,6 +1008,32 @@ PORT    STATE SERVICE
     </div>
   </section>
 
+  <!-- ===================== write-ups ===================== -->
+  <section class="sec" id="writeups" aria-labelledby="wu-title">
+    <div class="wrap sec-grid">
+      <div class="sec-head"><div>
+        <h2 id="wu-title">Write-ups</h2>
+        <p>Everything I’ve set up, tested or fixed, written up with the commands and evidence. Newest first.</p>
+      </div></div>
+      <div class="sec-body">
+        <ul class="wu">
+          <li><a href="/writeups/cloudflared-emudhra/"><time datetime="2026-10-28">28 October 2026</time><h3>A security email from Cloudflare, and checking it wasn't phishing first</h3><span class="res">Updated in minutes, site down for seconds</span></a></li>
+          <li><a href="/writeups/trivy-scan/"><time datetime="2026-10-27">27 October 2026</time><h3>I scanned my own apps for vulnerabilities. The first run found 2 critical</h3><span class="res">2 critical, 15 high down to 0 critical, 6 high</span></a></li>
+          <li><a href="/writeups/phpinfo-scanner/"><time datetime="2026-10-23">23 October 2026</time><h3>A bot hunted my site for phpinfo.php. Here's what stopped it</h3><span class="res">Every request blocked</span></a></li>
+          <li><a href="/writeups/php-alert/"><time datetime="2026-10-21">21 October 2026</time><h3>Responding to an NCSC alert the same day</h3><span class="res">Found and stopped the same day</span></a></li>
+          <li><a href="/writeups/encrypted-backups/"><time datetime="2026-10-20">20 October 2026</time><h3>Finding a weak spot in my own backups</h3><span class="res">Encrypted, restore tested</span></a></li>
+          <li><a href="/writeups/cloudflare-waf/"><time datetime="2026-10-20">20 October 2026</time><h3>Testing my Cloudflare firewall rules (and finding my mistake)</h3><span class="res">785 of 1,000 blocked</span></a></li>
+          <li><a href="/writeups/security-headers/"><time datetime="2026-10-20">20 October 2026</time><h3>From F to A+ on securityheaders.com</h3><span class="res">F to A+</span></a></li>
+          <li><a href="/writeups/private-dns/"><time datetime="2026-10-20">20 October 2026</time><h3>Private DNS with Unbound, and proving it rejects fakes</h3><span class="res">Fake answers refused</span></a></li>
+          <li><a href="/writeups/honeypot/"><time datetime="2026-10-20">20 October 2026</time><h3>Building a honeypot on my home network</h3><span class="res">Every test hit logged</span></a></li>
+          <li><a href="/writeups/no-open-ports/"><time datetime="2026-10-18">18 October 2026</time><h3>Putting a website online without opening a single port</h3><span class="res">65,531 ports filtered</span></a></li>
+          <li><a href="/writeups/ssh-lockout/"><time datetime="2026-10-17">17 October 2026</time><h3>Locking down SSH, and locking myself out</h3><span class="res">Password logins refused</span></a></li>
+        </ul>
+        <p class="wu-all"><a href="/writeups/">All write-ups</a></p>
+      </div>
+    </div>
+  </section>
+
   <!-- ===================== AI ===================== -->
   <section class="sec" id="ai" aria-labelledby="ai-title">
     <div class="wrap sec-grid">
@@ -1043,17 +1070,6 @@ PORT    STATE SERVICE
           <a href="https://github.com/haydncow/haydnhomelab">The full build on GitHub</a>
           <button class="linkbtn" type="button" data-print>Save a summary as a PDF</button>
         </p>
-        <div class="ask">
-          <h3>Good things to ask me about</h3>
-          <ul>
-            <li><a href="/writeups/no-open-ports/">Why my website needs no open ports</a><span>Cloudflare Tunnel versus port forwarding, and what each one exposes.</span></li>
-            <li><a href="/writeups/phpinfo-scanner/">The attack I watched on 23 October</a><span>What the scanner wanted, how I read the evidence and why it failed.</span></li>
-            <li><a href="/writeups/encrypted-backups/">Why the Pi can lock my backups but not open them</a><span>Public and private keys, and where each one lives.</span></li>
-            <li><a href="/writeups/ssh-lockout/">How I locked myself out, and what I do now</a><span>The mistake, the fix, and the order I always follow since.</span></li>
-            <li><a href="#ce">What I’d change about my lab next</a><span>My Cyber Essentials gaps: malware protection and a separate VLAN.</span></li>
-            <li><a href="#ai">Where AI helped, and where I had to check it</a><span>Using AI like a tutor, and why testing everything still matters.</span></li>
-          </ul>
-        </div>
       </div>
     </div>
   </section>
