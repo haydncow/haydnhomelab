@@ -16,6 +16,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Gave the write-ups, status page and live lab the same top bar, with my full name, and the write-ups and status page the same type and colours. Their fonts come from the Pi now instead of Google Fonts. The live lab is a little wider so it lines up with the rest of the site.
 - Redesigned the live lab to match, replacing the "control room" look from 27 October. It follows the light/dark setting now like every other page. The panels sit in a ruled grid instead of glowing cards: the headline numbers along the top, then my rack, security and what's running, then Pi-hole and the Pi. The rack is the real front photo, every part can still be clicked to zoom in, and its lights only blink while the Pi is online. The security panel shows Cloudflare's blocks for the last 14 days next to the latest blocked requests, and the Pi panel lists each reading with a small line showing the last few minutes. Took out the boot screen, the ticker and the numbers counting up, so the rack's lights are the only thing that moves by itself.
 - Small fixes to my homepage: the rack photo no longer sticks out past the end of the line and sits in the middle next to the text, the case studies have a simpler intro, and the "good things to ask me about" list is gone. In its place there's a Write-ups section listing all 11, newest first, each with its result.
+- Retook the screenshots on my GitHub page (portfolio, live lab, attack map and network map) so they show the new design.
 
 ## 28 October 2026
 

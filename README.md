@@ -42,17 +42,17 @@ I'm Haydn, an IT student in West Yorkshire applying for cyber security degree ap
 <table>
   <tr>
     <td width="50%" valign="top">
-      <a href="https://haydnhomelab.com"><img src="images/screenshot-portfolio.jpg" alt="My portfolio homepage: my name in big type, a live sentence about the latest request my firewall blocked, and my rack photographed like a product"></a>
+      <a href="https://haydnhomelab.com"><img src="images/screenshot-portfolio.jpg" alt="My portfolio homepage: my name in big type, a live sentence about the latest request my firewall blocked, and a photo of my rack beside it"></a>
       <p><b>Portfolio</b><br>Written for employers: case studies, every claim tested with the proof, and my work matched to the apprenticeship standard. The first sentence comes live from my firewall log.</p>
     </td>
     <td width="50%" valign="top">
-      <a href="https://haydnhomelab.com/lab/"><img src="images/screenshot-lab.jpg" alt="The live lab dashboard: ads blocked, uptime, CPU temperature, power, DNS queries and every service running"></a>
-      <p><b>Live lab</b><br>Real-time stats from the Pi, every service it runs, and graphs of the last 24 hours.</p>
+      <a href="https://haydnhomelab.com/lab/"><img src="images/screenshot-lab.jpg" alt="The live lab: headline numbers, a photo of my rack you can click to zoom in, security, every service running, Pi-hole and the Pi's live readings"></a>
+      <p><b>Live lab</b><br>Real-time stats from the Pi, what Cloudflare blocked, every service it runs, and graphs of the last 24 hours. Click a part of the rack to zoom in.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <img src="images/screenshot-attack-map.jpg" alt="The honeypot attack map showing six test hits from my Kali VM on the fake SSH, Remote Desktop and NAS services">
+      <img src="images/screenshot-attack-map.jpg" alt="The honeypot attack map: eight fake services around OpenCanary, with hits on the fake SSH, Remote Desktop and NAS services">
       <p><b>Honeypot attack map</b><br>My own test attacks from Kali landing on the fake services. It never shows IP addresses or passwords.</p>
     </td>
     <td width="50%" valign="top">
@@ -62,7 +62,7 @@ I'm Haydn, an IT student in West Yorkshire applying for cyber security degree ap
   </tr>
 </table>
 
-<sub>The live lab and map screenshots were taken on 20 October 2026 with real data from the Pi. The portfolio screenshot shows the new design (30 October) with sample data in the same format.</sub>
+<sub>The screenshots show the current design (30 October 2026) with sample data in the same format as the real feeds.</sub>
 
 ## How I tested it
 
