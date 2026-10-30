@@ -1,122 +1,34 @@
-// Status page code, kept in its own file so the Content Security Policy
-// can block inline scripts (securityheaders.com A+)
+// My live lab: live stats from the Raspberry Pi, the rack photo you can click,
+// and the detail views (network map, honeypot attack map, history, how it works).
+// Kept in its own file so the Content Security Policy can block inline scripts
+// (securityheaders.com A+). Code written by Claude (AI).
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const $ = s => document.querySelector(s);
 let stats = null, current = "intro";
 
-/* ---------- power-on intro ---------- */
-// standby light blinks, the screen switches on like an old CRT monitor,
-// the rack draws itself in green outlines, fills in, then the lights come on.
-let booted = false, timers = [];
+/* ---------- starting up ---------- */
+// No intro screen: the page is there straight away, then the lights on the
+// rack photo switch on one by one. That's the only thing that moves by itself.
+let booted = false;
 let hist = null;   // 90-day history from /history.json
-const sleep = ms => new Promise(r => timers.push(setTimeout(r, ms)));
-const later = (fn, ms) => timers.push(setTimeout(fn, ms));
-function prepTrace() {
-  const shapes = [...$("#rack").querySelectorAll("rect, path, circle, ellipse")].filter(e => !e.matches(".hit, .light"));
-  shapes.forEach(e => {
-    e.setAttribute("pathLength", "1");
-    let y = 0; try { y = e.getBBox().y; } catch (err) {}
-    e.style.setProperty("--d", (Math.max(0, y) / 590 * 0.9 + Math.random() * 0.15).toFixed(2) + "s");
-  });
-}
-function decrypt(el, text, ms) {
-  const chars = "!<>-_\\/[]{}=+*^?#01";
-  const t0 = performance.now();
-  const step = now => {
-    const p = Math.min(1, (now - t0) / ms), done = Math.floor(p * text.length);
-    el.textContent = text.slice(0, done) + [...text.slice(done)].map(() => chars[Math.random() * chars.length | 0]).join("");
-    if (p < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
 function showRest() {
   document.body.classList.remove("intro");
 }
-function finishBoot() {
-  if (booted) return; booted = true;
-  timers.forEach(clearTimeout);
-  const boot = $("#boot"); if (boot) boot.classList.add("gone");
-  const rack = $("#rack"); rack.classList.remove("tracing", "fillin", "paused");
-  $("#title").textContent = "Live lab";
-  showRest();
-  try { sessionStorage.setItem("booted", "1"); } catch (e) {}
-  powerOn();
-}
-async function runBoot() {
-  let seen = false;
-  try { seen = sessionStorage.getItem("booted") === "1"; } catch (e) {}
-  if (seen || reduceMotion) { $("#boot").remove(); booted = true; showRest(); powerOn(); return; }
-  const boot = $("#boot"), beam = boot.querySelector(".beam"), rack = $("#rack");
-  boot.addEventListener("click", finishBoot);
-  addEventListener("keydown", finishBoot, { once: true });
-  prepTrace();
-  rack.classList.add("tracing", "paused");
-  $("#title").textContent = "";
-  await sleep(950);                                   // standby light blinks
-  beam.classList.add("line");                         // stretches into a line
-  await sleep(300);
-  beam.classList.add("open"); boot.classList.add("open");   // screen switches on
-  rack.classList.remove("paused");
-  document.body.classList.add("crt");
-  later(() => document.body.classList.remove("crt"), 1200);
-  later(() => boot.classList.add("gone"), 700);
-  decrypt($("#title"), "Live lab", 900);
-  await sleep(1900);                                  // rack draws itself
-  rack.classList.replace("tracing", "fillin");
-  await sleep(900);
-  rack.classList.remove("fillin");
-  showRest();
+function runBoot() {
   booted = true;
-  try { sessionStorage.setItem("booted", "1"); } catch (e) {}
+  showRest();
   powerOn();
 }
-
-/* lights come on one by one, then data starts flowing */
 function powerOn() {
   const rack = $("#rack");
   const lights = [...rack.querySelectorAll(".light")];
+  lights.forEach(l => l.classList.add("off"));
   rack.classList.remove("booting");
-  lights.forEach((l, i) => { l.style.opacity = 0; setTimeout(() => (l.style.opacity = ""), reduceMotion ? 0 : 150 + i * 180); });
-  setTimeout(startPackets, reduceMotion ? 0 : 150 + lights.length * 180);
-}
-
-/* ---------- data packets along the cables ---------- */
-function packetSpeed() {
-  // busier Pi-hole = faster packets. Uses the last 10 minutes of DNS queries.
-  const h = stats && stats.dns_history;
-  const recent = h && h.length ? h[h.length - 1][1] : 0;
-  return Math.max(0.9, 3.2 - Math.min(recent, 600) / 260);
-}
-function startPackets() {
-  if (reduceMotion) return;
-  const g = $("#packets");
-  g.innerHTML = "";
-  const dur = packetSpeed();
-  const make = (path, colour, begin, back) => {
-    const c = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-    c.setAttribute("r", "2.6"); c.setAttribute("fill", colour); c.setAttribute("filter", "url(#glow)");
-    const m = document.createElementNS("http://www.w3.org/2000/svg", "animateMotion");
-    m.setAttribute("dur", dur + "s"); m.setAttribute("repeatCount", "indefinite"); m.setAttribute("begin", begin + "s");
-    if (back) { m.setAttribute("keyPoints", "1;0"); m.setAttribute("keyTimes", "0;1"); m.setAttribute("calcMode", "linear"); }
-    const mp = document.createElementNS("http://www.w3.org/2000/svg", "mpath");
-    mp.setAttribute("href", path);
-    m.appendChild(mp); c.appendChild(m); g.appendChild(c);
-  };
-  for (let i = 0; i < 3; i++) {
-    make("#cable-pi", "#5cff3a", i * dur / 3, false);
-    make("#cable-pi", "#e8eae6", i * dur / 3 + dur / 6, true);
-    make("#cable-router", "#ffb38f", i * dur / 3, false);
-    make("#cable-router", "#5cff3a", i * dur / 3 + dur / 6, true);
-  }
-  // my PC: lookups go up to the switch, answers come back down
-  for (let i = 0; i < 2; i++) {
-    make("#cable-pc", "#e8eae6", i * dur / 2 + dur / 4, true);
-    make("#cable-pc", "#5cff3a", i * dur / 2, false);
-  }
+  lights.forEach((l, i) => setTimeout(() => l.classList.remove("off"), reduceMotion ? 0 : 350 + i * 180));
 }
 
 /* ---------- zoom into a part ---------- */
-const FULL = [30, 0, 460, 590];
+const FULL = [0, 0, 1056, 883];
 let view = FULL.slice(), anim = null;
 function setView(v) { view = v; $("#rack").setAttribute("viewBox", v.map(n => n.toFixed(1)).join(" ")); }
 function zoomTo(target) {
@@ -131,7 +43,7 @@ function zoomTo(target) {
   anim = requestAnimationFrame(step);
 }
 function boxFor(el) {
-  const b = el.querySelector(".hit").getBBox(), ratio = FULL[2] / FULL[3], pad = 34;
+  const b = el.querySelector(".hit").getBBox(), ratio = FULL[2] / FULL[3], pad = 70;
   let w = b.width + pad * 2, h = b.height + pad * 2;
   if (w / h > ratio) h = w / ratio; else w = h * ratio;
   w = Math.min(w, FULL[2]); h = Math.min(h, FULL[3]);
@@ -145,27 +57,28 @@ function boxFor(el) {
 
 /* ---------- info tile: what each rack part is ---------- */
 const PARTS = {
-  intro: ["Welcome", () => `
+  intro: ["", () => `
     <h2>My homelab</h2>
-    <p class="tag">A small server I built to learn networking and security</p>
-    <div class="vis-line" id="vis-line">${visLine()}</div>
-    <p>Click the rack or any tile to see more. <button class="chip" data-go-how>How it works</button></p>`],
-  pi: ["U1 &middot; KKSB panel", () => `
+    <p class="tag">A small server I built to learn networking and security.</p>
+    <p class="vis-line" id="vis-line">${visLine()}</p>
+    <p>Click a part of the rack, or any panel, to see more.</p>
+    <div class="chips"><button class="chip" data-go-how>How it works</button><a class="chip" href="/">About me</a></div>`],
+  pi: ["U1, KKSB panel", () => `
     <h2>Raspberry Pi 5 (2GB)</h2>
     <p class="tag">The server. This page is running on it right now.</p>
     <ul>
       <li><b>Pi-hole</b> blocks ads and trackers</li>
       <li><b>Tailscale</b> lets me manage it from anywhere</li>
       <li><b>Cloudflare Tunnel</b> puts this page online</li>
-      <li><b>UFW + Fail2ban</b> keep everything else out</li>
+      <li><b>UFW and Fail2ban</b> keep everything else out</li>
     </ul>
-    <div class="chips"><button class="chip" data-open="pi">All live stats &#8599;</button></div>`],
-  switch: ["U2 &middot; shelf", () => `
+    <div class="chips"><button class="chip" data-open="pi">All live stats</button></div>`],
+  switch: ["U2, on the shelf", () => `
     <h2>TP-Link TL-SG105E</h2>
-    <p class="tag">5 port gigabit managed switch</p>
-    <p>Port 1 (orange) goes out to the router, port 2 to the Pi, and port 3 to my PC (both black). The moving dots are traffic, and they speed up when Pi-hole is busier.</p>
+    <p class="tag">5-port gigabit managed switch</p>
+    <p>Port 1 goes out to the router, port 2 to the Pi and port 3 to my PC. The lights on the photo blink while the Pi is online.</p>
     <p>It's managed, so it can do <b>VLANs</b>. That's next on my list.</p>`],
-  drive: ["U2 &middot; on the switch", () => `
+  drive: ["U2, on the switch", () => `
     <h2>WD My Passport 1TB</h2>
     <p class="tag">Storage, plugged into the Pi's blue USB 3 port</p>
     <ul>
@@ -173,7 +86,7 @@ const PARTS = {
       <li><b>Nightly backups</b> of the Pi, kept for 14 days</li>
     </ul>
     <p>It sits on top of the switch. If it's unplugged the Pi still boots, it just won't have the films.</p>`],
-  spare: ["U1 &middot; KKSB panel", () => `
+  spare: ["U1, KKSB panel", () => `
     <h2>Spare slot</h2>
     <p class="tag">Room for a second Pi</p>
     <p>The panel holds two Pis. This one's empty for now, ready for a backup Pi-hole or a media server.</p>`],
@@ -205,21 +118,14 @@ document.querySelectorAll(".part").forEach(p => {
 });
 $("#back").onclick = () => select("intro");
 
-/* ---------- tiles: mouse glow, counting numbers, mini graphs ---------- */
-document.querySelectorAll(".tile").forEach(t => t.addEventListener("pointermove", e => {
-  const r = t.getBoundingClientRect();
-  t.style.setProperty("--mx", (e.clientX - r.left) + "px"); t.style.setProperty("--my", (e.clientY - r.top) + "px");
-}));
+/* ---------- numbers and mini graphs ---------- */
 const num = v => parseFloat(String(v ?? "").replace(/[^0-9.]/g, "")) || 0;
 const shown = {};
+// numbers just change, no counting up: the rack's lights are the only thing that moves by itself
 function countTo(el, target, dec = 0) {
-  const key = el.dataset.count, from = shown[key] ?? 0; shown[key] = target;
-  const fmt = v => dec ? v.toFixed(dec) : Math.round(v).toLocaleString();
-  if (reduceMotion || from === target) { el.textContent = fmt(target); return; }
-  const t0 = performance.now(), D = 1400;
-  const step = now => { const p = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - p, 3);
-    el.textContent = fmt(from + (target - from) * e); if (p < 1) requestAnimationFrame(step); };
-  requestAnimationFrame(step);
+  if (!el) return;
+  if (el.dataset.count) shown[el.dataset.count] = target;
+  el.textContent = dec ? target.toFixed(dec) : Math.round(target).toLocaleString();
 }
 function spark(svg, series) {
   if (!svg) return;
@@ -232,11 +138,27 @@ function spark(svg, series) {
     return `<path class="a" d="${d}L${w} ${h}L0 ${h}Z" fill="${s.colour}"/><path class="l" d="${d}" stroke="${s.colour}" vector-effect="non-scaling-stroke"/>`;
   }).join("");
 }
-function setGauge(t) {
-  const g = $("#gauge");
-  $("#gauge-t").textContent = t == null ? "--" : t.toFixed(1);
-  g.style.strokeDashoffset = 100 - Math.max(0, Math.min(1, ((t ?? 30) - 30) / 55)) * 100;
-  g.setAttribute("stroke", t >= 75 ? "var(--bad)" : t >= 62 ? "var(--amber)" : "var(--pass)");
+// the temperature only gets a colour when it's warm (amber) or hot (red)
+function setTemp(t) {
+  const el = $("#temp");
+  el.textContent = t == null ? "-" : t.toFixed(1) + "°C";
+  el.classList.toggle("warm", t != null && t >= 62 && t < 75);
+  el.classList.toggle("hot", t != null && t >= 75);
+}
+// a thin grey line next to each Pi reading. minSpan stops tiny wobbles looking like big swings.
+function trace(svg, data, minSpan) {
+  if (!svg) return;
+  const w = 100, h = 22; svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  data = data.filter(v => v != null && isFinite(v));
+  if (data.length > 40) {   // average into 40 steps so the line reads as a trend, not noise
+    const k = data.length / 40;
+    data = Array.from({ length: 40 }, (_, i) => { const b = data.slice(Math.floor(i * k), Math.floor((i + 1) * k)); return b.reduce((a, c) => a + c, 0) / b.length; });
+  }
+  if (data.length < 2) { svg.innerHTML = ""; return; }
+  let lo = Math.min(...data), hi = Math.max(...data);
+  if (hi - lo < minSpan) { const mid = (hi + lo) / 2; lo = mid - minSpan / 2; hi = mid + minSpan / 2; }
+  const X = i => i / (data.length - 1) * w, Y = v => h - 2 - (v - lo) / (hi - lo) * (h - 4);
+  svg.innerHTML = `<path d="${data.map((v, i) => `${i ? "L" : "M"}${X(i).toFixed(1)} ${Y(v).toFixed(1)}`).join("")}"/>`;
 }
 // "0d 3h 15m" -> "3h 15m", and "104d 6h 2m" -> "104d 6h" so it never gets too wide
 function shortUptime(u) {
@@ -257,29 +179,35 @@ function render() {
     $("#pct").textContent = stats.percent;
     const ring = $("#ring"); if (ring) ring.style.strokeDashoffset = 207.3 * (1 - Math.min(num(stats.percent), 100) / 100);
   }
+  const pi = stats.pi_history || [], dns = stats.dns_history || [];   // pi_history: [time, temp, memory %, watts]
   $("#uptime").textContent = shortUptime(stats.uptime);
-  if (!liveOk) { $("#cpu").textContent = stats.load ? "load " + stats.load : "-"; $("#mem").textContent = stats.memory ?? "-"; }
   $("#cost").textContent = stats.cost_year ?? "n/a";
-  if (!liveOk) setGauge(stats.temp ? num(stats.temp) : null);
-  const pi = stats.pi_history || [], dns = stats.dns_history || [];
-  spark($("#spark-dns"), [{ colour: "var(--s-total)", data: dns.map(d => d[1]) }, { colour: "var(--s-blocked)", data: dns.map(d => d[2]) }]);
   if (!liveOk) {
-    spark($("#spark-cpu"), [{ colour: "var(--s-blocked)", data: pi.map(p => p[2]) }]);
-    spark($("#spark-pow"), [{ colour: "var(--s-blocked)", data: pi.filter(p => p[3] > 0).map(p => p[3]) }]);
+    // no live feed: the once-a-minute numbers, and lines for the last 24 hours
+    $("#cpu-l").textContent = "CPU load";
+    $("#cpu").textContent = stats.load ?? "-";
+    $("#mem").textContent = stats.memory ?? "-";
+    setTemp(stats.temp ? num(stats.temp) : null);
+    trace($("#tr-temp"), pi.map(p => p[1]), 5);
+    trace($("#tr-cpu"), [], 10);
+    trace($("#tr-pow"), pi.filter(p => p[3] > 0).map(p => p[3]), .5);
+    trace($("#tr-mem"), pi.map(p => p[2]), 5);
+    $("#tr-span").textContent = "the last 24 hours";
   }
+  spark($("#spark-dns"), [{ colour: "var(--s-total)", data: dns.map(d => d[1]) }, { colour: "var(--s-blocked)", data: dns.map(d => d[2]) }]);
   const svc = stats.services || [], up = svc.filter(s => s.up).length;
   $("#svc-count").textContent = !svc.length ? "" : up === svc.length ? `all ${up} up` : `${svc.length - up} down, ${up}/${svc.length} up`;
   $("#svc-count").classList.toggle("bad", up < svc.length);
   const down = svc.filter(s => !s.up);
+  // each group as a plain list of names. Anything down is red and says so.
   $("#svc").innerHTML = svc.length
-    ? svcGroups().map(g => `<div class="svc-sec${g.list.length <= 2 ? " half" : ""}"><div class="svc-h">${g.name} ${svcCount(g.list)}</div><div class="svc-chips">${g.list.map(s =>
-        `<div class="svc ${s.up ? "up" : "down"}" title="${ABOUT[s.name] || ""}"><i></i>${SVC_SHORT[s.name] || s.name}</div>`).join("")}</div></div>`).join("")
+    ? svcGroups().map(g => `<div class="svc-sec"><p class="svc-h">${g.name} ${svcCount(g.list)}</p><p class="svc-names">${g.list.map(s =>
+        `<span${s.up ? "" : ' class="down"'} title="${ABOUT[s.name] || ""}">${SVC_SHORT[s.name] || s.name}${s.up ? "" : " (down)"}</span>`).join(", ")}</p></div>`).join("")
     : `<span class="note">not available yet</span>`;
   const hp = stats.honeypot;
   const cfDay = hist && (hist.days || []).find(d => d.date === new Date().toISOString().slice(0, 10));   // Cloudflare's days are UTC
   const cfToday = hist && hist.firewall ? (cfDay && cfDay.cf_blocked != null ? cfDay.cf_blocked : (hist.firewall.feed || []).filter(e => Date.now() / 1000 - e.time < 86400).length) : null;
-  $("#hp-line").innerHTML = (hp ? `honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in 24h` : "")
-    ;
+  $("#hp-line").innerHTML = hp ? `Honeypot: <b class="${hp.today ? "hp-hot" : ""}">${hp.today} alert${hp.today === 1 ? "" : "s"}</b> in the last 24 hours.` : "";
   const vl = $("#vis-line"); if (vl) vl.innerHTML = visLine();
   renderTop(svc, up, cfToday);
   if (modalOpen && !["network", "attacks", "how", "history"].includes(modalOpen)) drawModal(modalOpen, false);
@@ -384,21 +312,21 @@ function svcGroups() {
 }
 const svcCount = list => { const up = list.filter(s => s.up).length; return `<b class="${up < list.length ? "bad" : ""}">${up}/${list.length}</b>`; };
 const MODALS = {
-  dns: () => `<h2 id="m-title">Pi-hole &middot; DNS</h2><p class="tag">Every website lookup my devices make goes through Pi-hole. Ads and trackers get blocked.</p>
+  dns: () => `<h2 id="m-title">Pi-hole and DNS</h2><p class="tag">Every website lookup my devices make goes through Pi-hole. Ads and trackers get blocked.</p>
     <div class="mgrid">${st("Queries (24h)", stats.queries)}${st("Blocked (24h)", stats.blocked)}${st("Blocked %", stats.percent)}</div>
     <div class="chart" id="mc-dns"></div>`,
   pi: () => `<h2 id="m-title">Raspberry Pi 5</h2><p class="tag">Live stats from the server this page runs on.</p>
-    <div class="mgrid">${st("Uptime", stats.uptime)}${st("CPU temp", stats.temp)}${st("CPU load", stats.load)}${st("Memory used", stats.memory)}${st("Power", stats.power)}${st("Cost per year (est.)", stats.cost_year)}</div>
+    <div class="mgrid">${st("Uptime", shortUptime(stats.uptime))}${st("CPU temp", stats.temp)}${st("CPU load", stats.load)}${st("Memory used", stats.memory)}${st("Power", stats.power)}${st("Electricity a year", stats.cost_year)}</div>
     <div class="chart" id="ml-cpu"></div><div class="chart" id="mc-mem"></div>`,
   temp: () => `<h2 id="m-title">CPU temperature</h2><p class="tag">The Pi has an active cooler. Under 60°C is comfortable, it slows down at 85°C.</p>
     <div class="mgrid">${st("Right now", stats.temp)}${st("CPU load", stats.load)}</div><div class="chart" id="ml-temp"></div><div class="chart" id="mc-temp"></div>`,
   power: () => `<h2 id="m-title">Power use</h2><p class="tag">Measured by the Pi 5's own power chip (volts x amps on each rail). The yearly cost adds about 2 W for the switch and power supply, at about 25p per kWh.</p>
-    <div class="mgrid">${st("Pi right now", stats.power)}${st("Whole rack per year (est.)", stats.cost_year)}</div><div class="chart" id="ml-pow"></div><div class="chart" id="mc-pow"></div>`,
+    <div class="mgrid">${st("Pi right now", stats.power)}${st("Whole rack, a year", stats.cost_year)}</div><div class="chart" id="ml-pow"></div><div class="chart" id="mc-pow"></div>`,
   services: () => {
     const all = stats.services || [], up = all.filter(s => s.up).length;
-    const card = s => `<div class="${s.up ? "up" : ""}"><i></i><div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span>${s.detail || s.for ? `<span class="d">${[s.detail, s.for ? "up for " + s.for : ""].filter(Boolean).join(" &middot; ")}</span>` : ""}</div><em>${s.up ? "running" : "down"}</em></div>`;
+    const card = s => `<div class="${s.up ? "up" : ""}"><i></i><div><b>${s.name}</b><span>${ABOUT[s.name] || ""}</span>${s.detail || s.for ? `<span class="d">${[s.detail, s.for ? "up for " + s.for : ""].filter(Boolean).join(", ")}</span>` : ""}</div><em>${s.up ? "running" : "down"}</em></div>`;
     return `<h2 id="m-title">What's running</h2><p class="tag">Everything on the Pi, checked every minute. Most important first.</p>
-    <div class="mgrid">${st("Running", `${up} of ${all.length}`)}${st("Firewall rules", (all.find(s => s.name === "Firewall (UFW)") || {}).detail?.replace(" rules", "") ?? "n/a")}${st("Pi uptime", stats.uptime)}</div>
+    <div class="mgrid">${st("Running", `${up} of ${all.length}`)}${st("Firewall rules", (all.find(s => s.name === "Firewall (UFW)") || {}).detail?.replace(" rules", "") ?? "n/a")}${st("Pi uptime", shortUptime(stats.uptime))}</div>
     ${svcGroups().map(g => `<section class="svc-group"><h3>${g.name} ${svcCount(g.list)}</h3>${g.about ? `<p>${g.about}</p>` : ""}<div class="svc-big">${g.list.map(card).join("")}</div></section>`).join("")}`;
   },
   how: () => howHtml(),
@@ -415,7 +343,7 @@ const MODALS = {
       <div><b>Only safe info here</b><p>No IP addresses, hostnames or software versions on this page.</p></div>
     </div>
     ${honeypotHtml()}
-    <div class="am-btns" style="margin:-4px 0 12px"><button class="hbtn" data-go-atk>open the attack map <kbd>A</kbd></button><button class="hbtn" data-go-hist>30-day security history <kbd>S</kbd></button></div>
+    <div class="am-btns"><button class="hbtn" data-go-atk>Open the attack map <kbd>A</kbd></button><button class="hbtn" data-go-hist>30-day security history <kbd>S</kbd></button></div>
     <pre class="scan"><span class="f"># every TCP port, scanned from another device on my network</span>
 $ sudo nmap -p- &lt;the pi&gt;
 Not shown: <span class="f">65531 filtered tcp ports (no-response)</span>
@@ -437,6 +365,8 @@ function honeypotHtml() {
 }
 const st = (l, v) => `<div class="stat"><span>${l}</span><b>${v ?? "n/a"}</b></div>`;
 function drawModal(kind, animate = true) {
+  // set the width first, so the graphs are drawn for the size they'll be shown at
+  $("#modal .sheet").classList.toggle("wide", kind === "network" || kind === "attacks" || kind === "how" || kind === "history");
   if (!stats) { $("#m-body").innerHTML = `<p class="empty">Loading live stats...</p>`; return; }
   $("#m-body").innerHTML = MODALS[kind]();
   const dns = stats.dns_history || [], pi = stats.pi_history || [], n = v => Number(v).toLocaleString();
@@ -452,7 +382,6 @@ function drawModal(kind, animate = true) {
   if (kind === "network") netSetup();
   if (kind === "attacks") atkSetup();
   if (kind === "history") histSetup();
-  $("#modal .sheet").classList.toggle("wide", kind === "network" || kind === "attacks" || kind === "how" || kind === "history");
   if (!animate) document.querySelectorAll("#m-body .draw").forEach(p => p.classList.remove("draw"));
 }
 let modalOpen = null, opener = null;
@@ -466,8 +395,8 @@ function openModal(kind, from) {
   // grow out of the tile that was clicked
   const a = from.getBoundingClientRect(), b = sheet.getBoundingClientRect();
   sheet.animate([
-    { transform: `translate(${a.left + a.width / 2 - (b.left + b.width / 2)}px, ${a.top + a.height / 2 - (b.top + b.height / 2)}px) scale(${a.width / b.width}, ${a.height / b.height})`, opacity: .4, borderRadius: "16px" },
-    { transform: "none", opacity: 1, borderRadius: "20px" },
+    { transform: `translate(${a.left + a.width / 2 - (b.left + b.width / 2)}px, ${a.top + a.height / 2 - (b.top + b.height / 2)}px) scale(${a.width / b.width}, ${a.height / b.height})`, opacity: .4 },
+    { transform: "none", opacity: 1 },
   ], { duration: 380, easing: "cubic-bezier(.2,.8,.2,1)" });
 }
 function closeModal() {
@@ -528,17 +457,17 @@ const NODES = {
 };
 const LINKS = [["you","cf"],["cf","net"],["net","ts"],["me","ts"],["net","hub"],["hub","tp","wifi"],["tp","sw"],["sw","pi"],["sw","pc"],["pi","drive","usb"]];
 const FLOWS = {
-  site: { name: "Visiting this site", colour: "#f38020", route: ["you","cf","net","hub","tp","sw","pi"], tunnel: "cf",
+  site: { name: "Visiting this site", colour: "var(--ink)", route: ["you","cf","net","hub","tp","sw","pi"], tunnel: "cf",
     steps: [[0, 1, "You open haydnhomelab.com. Your browser connects to Cloudflare, not to my house."],
             [1, 3, "Cloudflare sends it down the tunnel. The Pi opened this tunnel itself, going outwards, so my router has no open ports."],
             [3, 6, "Inside my home it travels EE hub, TP-Link box, switch, Pi."],
             [6, 6, "Caddy on the Pi serves the page. The live stats update every 3 seconds."]] },
-  remote: { name: "My remote access", colour: "#5a86e6", route: ["me","ts","net","hub","tp","sw","pi"], tunnel: "ts",
+  remote: { name: "My remote access", colour: "var(--ink)", route: ["me","ts","net","hub","tp","sw","pi"], tunnel: "ts",
     steps: [[0, 1, "On my phone or Mac, I switch Tailscale on."],
             [1, 3, "Tailscale makes an encrypted WireGuard tunnel to the Pi. Again, the Pi's side started it, so nothing is open on my router."],
             [3, 6, "It comes through the home network like any other traffic."],
             [6, 6, "Now I can SSH in (keys only) or open Pi-hole and Jellyfin. Nobody else can reach these."]] },
-  dns: { name: "Blocking ads", colour: "#5cff3a", route: ["pc","sw","pi","sw","tp","hub","net"],
+  dns: { name: "Blocking ads", colour: "var(--ink)", route: ["pc","sw","pi","sw","tp","hub","net"],
     steps: [[0, 2, "My PC wants to load a website, so it asks Pi-hole for the address."],
             [2, 2, "__GRAVITY__"],
             [2, 6, "Allowed lookups go to Unbound, also on the Pi. It asks the internet's own DNS servers directly (root, then .com, then the site's own server) and checks the DNSSEC signatures, so no single company sees every site I visit."]] },
@@ -564,9 +493,9 @@ function netmap() {
     <div class="nm-scroll"><svg class="nm" viewBox="0 0 ${W} ${H}" role="img" aria-label="Network map of my homelab">
       <defs><pattern id="nm-dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" class="nm-dot"/></pattern></defs>
       <rect width="${W}" height="${H}" fill="url(#nm-dots)"/>
-      <rect class="nm-zone" x="18" y="24" width="425" height="430" rx="22"/><text class="nm-zl" x="40" y="50">THE INTERNET</text>
-      <rect class="nm-zone home" x="458" y="160" width="700" height="294" rx="22"/><text class="nm-zl" x="480" y="186">MY HOME</text>
-      <path class="nm-zone rack" d="M 826 200 H 1146 Q 1156 200 1156 210 V 434 Q 1156 444 1146 444 H 1004 Q 994 444 994 434 V 296 Q 994 286 984 286 H 826 Q 816 286 816 276 V 210 Q 816 200 826 200 Z"/><text class="nm-zl" x="1004" y="306">THE RACK</text>
+      <rect class="nm-zone" x="18" y="24" width="425" height="430" rx="6"/><text class="nm-zl" x="40" y="50">The internet</text>
+      <rect class="nm-zone home" x="458" y="160" width="700" height="294" rx="6"/><text class="nm-zl" x="480" y="186">My home</text>
+      <path class="nm-zone rack" d="M 826 200 H 1146 Q 1156 200 1156 210 V 434 Q 1156 444 1146 444 H 1004 Q 994 444 994 434 V 296 Q 994 286 984 286 H 826 Q 816 286 816 276 V 210 Q 816 200 826 200 Z"/><text class="nm-zl" x="1004" y="306">The rack</text>
       ${LINKS.map(link).join("")}
       ${tunnels}
       <text class="nm-tl cf" x="700" y="64">Cloudflare Tunnel, started by the Pi</text>
@@ -598,7 +527,7 @@ function netInfo() {
   if (d.pi && stats) {
     const L = lastLive();
     live = `<div class="nm-live">${[["CPU", L ? Math.round(L[1]) + "%" : stats.load], ["Temp", L && L[2] != null ? L[2].toFixed(1) + "°C" : stats.temp],
-      ["Power", L && L[3] != null ? L[3].toFixed(1) + " W" : stats.power], ["Uptime", stats.uptime]].map(([k, v]) => `<span><em>${k}</em>${v ?? "n/a"}</span>`).join("")}</div>`;
+      ["Power", L && L[3] != null ? L[3].toFixed(1) + " W" : stats.power], ["Uptime", shortUptime(stats.uptime)]].map(([k, v]) => `<span><em>${k}</em>${v ?? "n/a"}</span>`).join("")}</div>`;
   }
   box.innerHTML = `<div class="nm-ih"><svg width="22" height="22" viewBox="0 0 24 24">${ICON[d.icon]}</svg><b>${d.t}</b></div><p>${d.info}</p>${live}<p class="nm-hint">Click any device on the map.</p>`;
 }
@@ -675,14 +604,12 @@ function atkMap() {
   const h = stats && stats.honeypot;
   return `<div class="am">
     <svg class="am-svg" viewBox="0 0 640 640" role="img" aria-label="Map of my honeypot's fake services and what has touched them">
-      <defs><linearGradient id="am-sw" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3dff8f" stop-opacity="0"/><stop offset="1" stop-color="#3dff8f" stop-opacity=".22"/></linearGradient></defs>
-      <text class="am-zl" x="24" y="34">THE INTERNET</text>
+      <text class="am-zl" x="24" y="34">The internet</text>
       <text class="am-wall" x="24" y="52">can't reach these: no ports</text>
       <text class="am-wall" x="24" y="67">forwarded on my router</text>
       <circle class="am-ring home" cx="${AC}" cy="${AC}" r="${AR_HOME}"/>
-      <text class="am-zl" x="${AC}" y="${AC - AR_HOME + 20}" text-anchor="middle">MY HOME NETWORK</text>
-      <circle class="am-ring" cx="${AC}" cy="${AC}" r="${AR_TRAP}"/><circle class="am-ring" cx="${AC}" cy="${AC}" r="100"/><circle class="am-ring" cx="${AC}" cy="${AC}" r="236"/>
-      ${reduceMotion ? "" : `<g class="am-sweep"><path d="M${AC} ${AC} L${AC + AR_HOME} ${AC} A${AR_HOME} ${AR_HOME} 0 0 0 ${(AC + AR_HOME * Math.cos(-0.5)).toFixed(1)} ${(AC + AR_HOME * Math.sin(-0.5)).toFixed(1)} Z" fill="url(#am-sw)"/></g>`}
+      <text class="am-zl" x="${AC}" y="${AC - AR_HOME + 22}" text-anchor="middle">My home network</text>
+      <circle class="am-ring" cx="${AC}" cy="${AC}" r="${AR_TRAP}"/>
       ${spokes}
       <g class="am-core" transform="translate(${AC},${AC})"><circle class="pulse" r="58"/><circle r="56"/>
         <text text-anchor="middle" y="-3">OpenCanary</text><text class="s" text-anchor="middle" y="13">on the Pi</text></g>
@@ -690,11 +617,11 @@ function atkMap() {
       <g id="am-fx"></g>
     </svg>
     <div class="am-side">
-      <div class="am-mode" id="am-mode"><i></i><span>replaying the last 7 days</span></div>
+      <div class="am-mode" id="am-mode"><i></i><span>Replaying the last 7 days</span></div>
       <div class="mgrid">${st("Last 24h", h ? h.today : "n/a")}${st("Last 7 days", h ? atkWeek().length : "n/a")}${st("All time", h ? h.total : "n/a")}</div>
       <div id="am-quiet"></div>
       <ul class="am-feed" id="am-feed" aria-live="polite"></ul>
-      <div class="am-btns"><button class="hbtn" id="am-replay">replay</button><button class="hbtn" id="am-test">send a test hit</button></div>
+      <div class="am-btns"><button class="hbtn" id="am-replay">Replay</button><button class="hbtn" id="am-test">Send a test hit</button></div>
       <p class="am-note">Shows which fake service was touched, when, and common usernames like root. Never IP addresses or passwords.</p>
     </div>
   </div>`;
@@ -710,7 +637,7 @@ function atkSetMode(mode) {
   atkMode = mode;
   const m = $("#am-mode"); if (!m) return;
   m.classList.toggle("live", mode === "live");
-  m.querySelector("span").textContent = mode === "live" ? "live, watching every minute" : "replaying the last 7 days";
+  m.querySelector("span").textContent = mode === "live" ? "Live, checking every minute" : "Replaying the last 7 days";
 }
 function atkQuiet() {
   const q = $("#am-quiet"); if (!q) return;
@@ -768,7 +695,7 @@ function atkHit(e, animate) {
   const fx = $("#am-fx"), NS = "http://www.w3.org/2000/svg";
   const trail = document.createElementNS(NS, "line"), pkt = document.createElementNS(NS, "circle");
   trail.setAttribute("class", "am-trail"); pkt.setAttribute("class", "am-pkt"); pkt.setAttribute("r", 4.5);
-  if (e.test) { trail.style.stroke = "#5a86e6"; }
+  if (e.test) { trail.classList.add("test"); pkt.classList.add("test"); }
   fx.append(trail, pkt);
   const ex = t.x - (t.x - sx) * 31 / Math.hypot(t.x - sx, t.y - sy), ey = t.y - (t.y - sy) * 31 / Math.hypot(t.x - sx, t.y - sy);
   const dur = 750, start = performance.now();
@@ -798,37 +725,14 @@ function atkFeed(e, t, animate) {
 $("#open-atk").onclick = e => openModal("attacks", e.currentTarget);
 document.addEventListener("click", e => { if (e.target.closest("[data-go-atk]")) openModal("attacks", $("#open-atk")); });
 
-/* ---------- live ticker of blocked attacks and honeypot hits ---------- */
-function renderTicker(feed, hp) {
-  const track = $("#ticker-track"); if (!track) return;
-  const items = [];
-  (feed || []).slice(0, 10).forEach(e => items.push({ t: e.time, hp: false,
-    html: `<i></i>Blocked <b>${escH(e.path)}</b><em>from ${escH(country(e.country))}, ${agoShort(e.time)}</em>` }));
-  ((hp && hp.recent) || []).slice(0, 4).forEach(e => items.push({ t: e.time, hp: true,
-    html: `<i></i>Honeypot: <b>${escH(e.service)}</b><em>touched, ${agoShort(e.time)}</em>` }));
-  if (!items.length) return;
-  items.sort((a, b) => b.t - a.t);
-  const sig = items.map(x => x.html).join("");
-  if (track.dataset.sig === sig) return;
-  track.dataset.sig = sig;
-  const one = items.map(x => `<span class="t-item${x.hp ? " hp" : ""}">${x.html}</span>`).join("");
-  track.innerHTML = one + one.replace(/class="t-item/g, 'aria-hidden="true" class="t-item');   // twice, so the loop is seamless
-  track.style.setProperty("--dur", Math.max(30, items.length * 7) + "s");
-  track.classList.add("run");
-}
-
 /* ---------- headline numbers and the security tile ---------- */
 function renderTop(svc, up, cfToday) {
   const hp = stats && stats.honeypot, n = v => Number(v).toLocaleString();
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  // headline numbers count up the first time, then bump when they change
+  // headline numbers: plain, no counting up
   const num = (id, v) => {
     const el = document.getElementById(id); if (!el) return;
-    if (v == null) { el.textContent = "-"; return; }
-    const old = el.dataset.v;
-    el.dataset.v = v; el.dataset.count = "kpi-" + id;
-    if (old == null) { countTo(el, Number(v)); return; }
-    if (Number(old) !== Number(v)) { el.textContent = n(v); el.classList.remove("bump"); void el.offsetWidth; el.classList.add("bump"); }
+    el.textContent = v == null ? "-" : n(v);
   };
   num("kpi-cf", cfToday);
   num("kpi-hp", hp ? hp.today : null);
@@ -838,27 +742,26 @@ function renderTop(svc, up, cfToday) {
   const avg = ups.length ? ups.reduce((a, b) => a + b, 0) / ups.length : null;
   set("kpi-up", avg != null ? avg.toFixed(2) + "%" : "-");
   if (ups.length) set("kpi-up-s", `all services, ${ups.length} day${ups.length === 1 ? "" : "s"}`);
-  const su = $("#svc-up");
-  if (su) su.innerHTML = avg != null ? `Uptime over the last ${ups.length} day${ups.length === 1 ? "" : "s"}: <b>${avg.toFixed(2)}%</b> &middot; <a href="/status/" data-stop>status page</a>` : "";
   // last 14 days of Cloudflare blocks, newest on the right
   const bars = $("#sec-bars");
   const d14s = hist ? last30().slice(-14) : [], sig14 = JSON.stringify(d14s.map(d => d.cf_blocked ?? null));
   if (bars && bars.dataset.sig !== sig14) {   // only redraw (and re-animate) when the numbers change
     bars.dataset.sig = sig14;
     const d14 = d14s, vals = d14.map(d => d.cf_blocked ?? null), max = Math.max(1, ...vals.filter(v => v != null));
-    const W = 280, H = 60, bw = W / Math.max(1, d14.length);
+    const W = 280, H = 76, bw = W / Math.max(1, d14.length);
     bars.innerHTML = d14.map((d, i) => {
-      const v = vals[i], h = v == null ? 2 : Math.max(2, v / max * (H - 2)), cls = v == null ? "none" : i === d14.length - 1 ? "today" : "";
-      return `<rect style="--i:${i}" class="${cls}" x="${(i * bw + 1.5).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw - 3).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${d.date}: ${v == null ? "not recorded" : n(v) + " blocked"}</title></rect>`;
+      const v = vals[i], h = v == null ? 2 : Math.max(2, v / max * (H - 4)), cls = v == null ? "none" : i === d14.length - 1 ? "today" : "";
+      return `<rect class="${cls}" x="${(i * bw + 2.5).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw - 5).toFixed(1)}" height="${h.toFixed(1)}"><title>${d.date}: ${v == null ? "not recorded" : n(v) + " blocked"}</title></rect>`;
     }).join("");
+    const from = $("#sec-from");
+    if (from && d14.length) from.textContent = new Date(d14[0].date + "T12:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   }
   const feed = $("#sec-feed"), f = hist && hist.firewall && hist.firewall.feed;
-  renderTicker(f, hp);
   const sigF = JSON.stringify((f || []).slice(0, 6).map(e => [e.time, e.path])) + agoShort((f && f[0] && f[0].time) || 0);
   if (feed && feed.dataset.sig === sigF) return fitFeed();
   if (feed) feed.dataset.sig = sigF;
   if (feed) feed.innerHTML = f && f.length
-    ? f.slice(0, 4).map((e, i) => `<li style="--i:${i}"><code>${escH(e.path)}</code><em>${escH(country(e.country))} &middot; ${agoShort(e.time)}</em></li>`).join("")
+    ? f.slice(0, 4).map(e => `<li><code>${escH(e.path)}</code><em>${escH(country(e.country))}, ${agoShort(e.time)}</em></li>`).join("")
     : `<li class="none">${hist ? "Nothing blocked recently" : "Loading..."}</li>`;
   fitFeed();
 }
@@ -899,7 +802,7 @@ function dayBars(id, title, sub, days, get, fmt = v => Number(v).toLocaleString(
     const v = vals[i];
     if (v == null) return `<rect class="none" x="${(i * bw + 1).toFixed(1)}" y="${H - B - 2}" width="${(bw - 2).toFixed(1)}" height="2"><title>${d.date}: not recorded</title></rect>`;
     const h = Math.max(2, (v - lo) / (max - lo || 1) * (H - B - 6));
-    return `<rect class="${opts.bad && opts.bad(v) ? "bad" : ""}" x="${(i * bw + 1).toFixed(1)}" y="${(H - B - h).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${d.date}: ${fmt(v)}</title></rect>`;
+    return `<rect class="${opts.bad && opts.bad(v) ? "bad" : ""}" x="${(i * bw + 1).toFixed(1)}" y="${(H - B - h).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${h.toFixed(1)}"><title>${d.date}: ${fmt(v)}</title></rect>`;
   }).join("");
   const label = d => new Date(d.date + "T12:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
   const total = opts.total ? opts.total(vals.filter(v => v != null)) : null;
@@ -934,7 +837,7 @@ function visLine() {
   const v = stats && stats.visitors;
   if (!v) return "";
   const n = x => Number(x).toLocaleString();
-  return `visitors: <b>${n(v.today)}</b> today &middot; <b>${n(v.week)}</b> this week`;
+  return `<b>${n(v.today)}</b> visitors today, <b>${n(v.week)}</b> this week`;
 }
 function visBars(days) {
   if (!days || days.length < 2) return "";
@@ -942,11 +845,11 @@ function visBars(days) {
   const today = new Date().toISOString().slice(0, 10);
   return `<svg class="hw-bars" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Visitors per day">${days.map((d, i) => {
     const h = Math.max(2, d[1] / max * (H - 4));
-    return `<rect class="${d[0] === today ? "today" : ""}" x="${(i * bw + 1).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="2"><title>${d[0]}: ${d[1]} visitors</title></rect>`;
+    return `<rect class="${d[0] === today ? "today" : ""}" x="${(i * bw + 1).toFixed(1)}" y="${(H - h).toFixed(1)}" width="${(bw - 2).toFixed(1)}" height="${h.toFixed(1)}"><title>${d[0]}: ${d[1]} visitors</title></rect>`;
   }).join("")}</svg>`;
 }
 function howHtml() {
-  const card = (icon, t, s) => `<div class="hw-card"><svg viewBox="0 0 24 24">${ICON[icon]}</svg><b>${t}</b><span>${s}</span></div>`;
+  const card = (icon, t, s) => `<div class="hw-card"><b>${t}</b><span>${s}</span></div>`;
   const v = stats && stats.visitors, n = x => Number(x).toLocaleString();
   return `<h2 id="m-title">How it works</h2><p class="tag">The plain English version, no tech knowledge needed.</p>
   <section class="hw-sec"><h3>What is this?</h3>
@@ -971,7 +874,7 @@ function howHtml() {
       <li><b>Through a tunnel</b>The Pi opened a tunnel out to Cloudflare itself, so my router has no open doors.</li>
       <li><b>The Pi answers</b>It sends this page back, and updates the numbers every 3 seconds.</li>
     </ol>
-    <div class="am-btns"><button class="hbtn" data-go-net>see it animated on the network map <kbd>N</kbd></button></div></section>
+    <div class="am-btns"><button class="hbtn" data-go-net>See it on the network map <kbd>N</kbd></button></div></section>
   <section class="hw-sec"><h3>How it stays safe</h3><ul class="hw-safe">
     <li><b>No open doors</b> on my home router</li>
     <li><b>Firewall</b> blocks everything I haven't allowed</li>
@@ -983,7 +886,7 @@ function howHtml() {
     <li><b>Security updates</b> install themselves daily</li>
     <li><b>Tested it myself</b> by attacking it from Kali Linux</li>
   </ul>
-  <div class="am-btns"><button class="hbtn" data-go-atk>watch the honeypot <kbd>A</kbd></button></div></section>
+  <div class="am-btns"><button class="hbtn" data-go-atk>Watch the honeypot <kbd>A</kbd></button></div></section>
   ${v ? `<section class="hw-sec"><h3>Visitors</h3>
     <div class="mgrid">${st("Today", n(v.today))}${st("Last 7 days", n(v.week))}${st("Last " + v.days.length + " days", n(v.month))}${st("Page views", n(v.views_month))}</div>
     ${visBars(v.days)}
@@ -1042,13 +945,15 @@ function drawLive(animate = false) {
 }
 function renderLive() {
   const pts = live.points, last = pts[pts.length - 1];
-  if (last[2] != null) setGauge(last[2]);
+  // live.json points: [time, CPU %, temp, watts, memory %], one every 3 seconds
+  if (last[2] != null) setTemp(last[2]);
   if (last[3] != null) countTo(document.querySelector('[data-count="power"]'), last[3], 1);
+  $("#cpu-l").textContent = "CPU use";
   $("#cpu").textContent = Math.round(last[1]) + "%";
   if (last[4] != null) $("#mem").textContent = Math.round(last[4]) + "%";
-  spark($("#spark-cpu"), [{ colour: "var(--s-blocked)", data: pts.map(p => p[1]) }]);
-  const pw = pts.filter(p => p[3] != null).map(p => p[3]);
-  if (pw.length > 1) spark($("#spark-pow"), [{ colour: "var(--s-blocked)", data: pw }]);
+  const col = i => pts.map(p => p[i]);
+  trace($("#tr-cpu"), col(1), 10); trace($("#tr-temp"), col(2), 5); trace($("#tr-pow"), col(3), .5); trace($("#tr-mem"), col(4), 5);
+  $("#tr-span").textContent = `the last ${Math.max(1, Math.round(pts.length * (live.every || 3) / 60))} minutes`;
   drawLive();
 }
 async function loadLive() {
@@ -1069,19 +974,24 @@ async function loadLive() {
 setInterval(loadLive, 3000);
 
 /* ---------- minute data ---------- */
+// the lights in the top bar and on the rack photo only show as on while the Pi is answering
+function setOnline(on) {
+  document.querySelectorAll("[data-live-led]").forEach(el => { el.classList.toggle("on", on); el.classList.toggle("off", !on); });
+  const rack = $("#rack"); if (rack) rack.classList.toggle("offline", !on);
+}
 async function load() {
   const pill = $("#status"), text = $("#status-text");
   try {
     const r = await fetch("/stats.json", { cache: "no-store" });
-    const first = !stats;
     stats = await r.json();
     const live = (Date.now() / 1000 - stats.updated) / 60 < 15;
     pill.classList.remove("online", "offline"); pill.classList.add(live ? "online" : "offline");
-    text.textContent = live ? "online" : "last seen " + stats.updated_text;
+    text.textContent = live ? "Online" : "Offline. Last seen " + stats.updated_text;
+    setOnline(live);
     if (booted) render();
-    if (booted && !reduceMotion && first) startPackets();
   } catch (e) {
-    pill.classList.remove("online"); pill.classList.add("offline"); text.textContent = "stats unavailable";
+    pill.classList.remove("online"); pill.classList.add("offline"); text.textContent = "Couldn’t reach the Pi";
+    setOnline(false);
   }
 }
 const _showRest = showRest;

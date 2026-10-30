@@ -14,6 +14,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
   - My work matched to six ST0409 competencies and the behaviours, a Cyber Essentials v3.3 self-check (four controls met, malware protection only partly), the two-week timeline, things that broke, skills, how I used AI and how to contact me.
   - Colour only means status: green for working or passed, red for attacks, amber for partly. One typeface, Archivo, served from the Pi. It prints as a 3-page summary for applications.
 - Gave the write-ups, status page and live lab the same top bar, with my full name, and the write-ups and status page the same type and colours. Their fonts come from the Pi now instead of Google Fonts. The live lab is a little wider so it lines up with the rest of the site.
+- Redesigned the live lab to match, replacing the "control room" look from 27 October. It follows the light/dark setting now like every other page. The panels sit in a ruled grid instead of glowing cards: the headline numbers along the top, then my rack, security and what's running, then Pi-hole and the Pi. The rack is the real front photo, every part can still be clicked to zoom in, and its lights only blink while the Pi is online. The security panel shows Cloudflare's blocks for the last 14 days next to the latest blocked requests, and the Pi panel lists each reading with a small line showing the last few minutes. Took out the boot screen, the ticker and the numbers counting up, so the rack's lights are the only thing that moves by itself.
 
 ## 28 October 2026
 
