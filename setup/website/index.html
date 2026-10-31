@@ -9,17 +9,17 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="author" content="Haydn Cowley">
-<title>Haydn Cowley | Cyber security apprenticeship portfolio</title>
+<title>haydnhomelab</title>
 <meta name="description" content="Haydn Cowley built a Raspberry Pi homelab, secured it, attacked it from Kali Linux and wrote it all up. Applying for cyber security degree apprenticeships.">
 <link rel="canonical" href="https://haydnhomelab.com/">
 <!-- Tells Google the site's name and who made it, for search results. It's data, not code, so the Content Security Policy doesn't block it. -->
-<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://haydnhomelab.com/#site","name":"Haydn's Homelab","alternateName":["haydnhomelab","Haydn's homelab"],"url":"https://haydnhomelab.com/","author":{"@id":"https://haydnhomelab.com/#haydn"}},{"@type":"Person","@id":"https://haydnhomelab.com/#haydn","name":"Haydn Cowley","givenName":"Haydn","familyName":"Cowley","alternateName":"Haydn","url":"https://haydnhomelab.com/","description":"IT student in West Yorkshire applying for cyber security degree apprenticeships for 2027. Built and secured a Raspberry Pi homelab.","knowsAbout":["Cyber security","Networking","Linux","Raspberry Pi","Pi-hole","Tailscale","Cloudflare","Honeypots","Vulnerability management","Cyber Essentials"],"address":{"@type":"PostalAddress","addressRegion":"West Yorkshire","addressCountry":"GB"},"sameAs":["https://github.com/haydncow","https://www.linkedin.com/in/haydncowley"]}]}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","@id":"https://haydnhomelab.com/#site","name":"haydnhomelab","alternateName":["haydnhomelab.com","Haydn's Homelab"],"url":"https://haydnhomelab.com/","author":{"@id":"https://haydnhomelab.com/#haydn"}},{"@type":"Person","@id":"https://haydnhomelab.com/#haydn","name":"Haydn Cowley","givenName":"Haydn","familyName":"Cowley","alternateName":"Haydn","url":"https://haydnhomelab.com/","description":"IT student in West Yorkshire applying for cyber security degree apprenticeships for 2027. Built and secured a Raspberry Pi homelab.","knowsAbout":["Cyber security","Networking","Linux","Raspberry Pi","Pi-hole","Tailscale","Cloudflare","Honeypots","Vulnerability management","Cyber Essentials"],"address":{"@type":"PostalAddress","addressRegion":"West Yorkshire","addressCountry":"GB"},"sameAs":["https://github.com/haydncow","https://www.linkedin.com/in/haydncowley"]}]}</script>
 <meta property="og:type" content="profile">
 <meta property="og:url" content="https://haydnhomelab.com/">
-<meta property="og:title" content="Haydn Cowley | Cyber security apprenticeship portfolio">
+<meta property="og:title" content="haydnhomelab">
 <meta property="og:description" content="I built a small network at home, locked it down and attacked it to check it held. Live evidence, case studies and write-ups from my Raspberry Pi homelab.">
 <meta property="og:image" content="https://haydnhomelab.com/og.jpg">
-<meta property="og:site_name" content="Haydn's Homelab">
+<meta property="og:site_name" content="haydnhomelab">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#151617" media="(max-width: 760px)">
 <meta name="theme-color" content="#ecedee" media="(prefers-color-scheme: light)">
@@ -519,8 +519,8 @@
                alt="My 10 inch rack from the side: a black frame with two carry handles and a smoked glass side panel. The Raspberry Pi's ports show at the top front, with two short cables looping out to the switch below.">
         </figure>
         <div class="hero-text">
-          <p class="live-line" data-live-line>Computers around the world try to break into this website every day. My firewall rules stop them before they reach the Pi it runs on.</p>
-          <p class="live-src"><span class="led" data-live-led></span><span data-live-src>From my Cloudflare firewall log. It never shows IP addresses.</span></p>
+          <p class="live-line" data-live-line data-nosnippet>Computers around the world try to break into this website every day. My firewall rules stop them before they reach the Pi it runs on.</p>
+          <p class="live-src" data-nosnippet><span class="led" data-live-led></span><span data-live-src>From my Cloudflare firewall log. It never shows IP addresses.</span></p>
           <p class="intro">I’m an IT student in West Yorkshire. To learn cyber security properly, I built a small network in a rack at home: a Raspberry Pi running my own DNS, VPN, honeypot and this website, with no ports open on my router. Then I attacked it from Kali Linux to check it held, and wrote up everything, including what went wrong.</p>
           <div class="actions">
             <a class="button" href="mailto:cowleyhaydn@gmail.com">Email me</a>
@@ -536,13 +536,13 @@
           <div><dt>GCSEs</dt><dd>Maths 6, English 5</dd></div>
           <div><dt>Extended project</dt><dd>Does AI help attackers or defenders more? Working at A</dd></div>
         </dl>
-        <p class="rack-note"><span class="k">The rack in the photo</span>Built 14 to 20 October 2026. It’s serving this page right now.<span class="st"><span class="led" data-live-led></span><span data-live="status">Checking the lab…</span></span></p>
+        <p class="rack-note" data-nosnippet><span class="k">The rack in the photo</span>Built 14 to 20 October 2026. It’s serving this page right now.<span class="st"><span class="led" data-live-led></span><span data-live="status">Checking the lab…</span></span></p>
       </div>
     </div>
   </section>
 
   <!-- ===================== the lab ===================== -->
-  <section class="sec" id="lab" aria-labelledby="lab-title">
+  <section class="sec" id="lab" data-nosnippet aria-labelledby="lab-title">
     <div class="wrap sec-grid">
       <div class="sec-head"><div>
         <h2 id="lab-title">One Raspberry Pi, set up like a small company network</h2>
@@ -607,7 +607,7 @@
       </div></div>
       <div class="sec-body">
         <article class="case">
-          <p class="case-meta"><time datetime="2026-10-21">21 October 2026</time><span>Vulnerability management and incident response</span></p>
+          <p class="case-meta" data-nosnippet><time datetime="2026-10-21">21 October 2026</time><span>Vulnerability management and incident response</span></p>
           <h3>An NCSC warning, handled the same day</h3>
           <dl class="star">
             <div><dt>Situation</dt><dd>The NCSC warned about two critical PHP flaws that could let an attacker run their own code on a web server.</dd></div>
@@ -618,7 +618,7 @@
           <p class="case-links"><a href="/writeups/php-alert/">Read the write-up</a><a class="tech" href="https://attack.mitre.org/techniques/T1190/">MITRE ATT&amp;CK T1190</a></p>
         </article>
         <article class="case">
-          <p class="case-meta"><time datetime="2026-10-23">23 October 2026</time><span>A real attack, and reading the evidence</span></p>
+          <p class="case-meta" data-nosnippet><time datetime="2026-10-23">23 October 2026</time><span>A real attack, and reading the evidence</span></p>
           <h3>Spotting a real attack in my logs</h3>
           <dl class="star">
             <div><dt>Situation</dt><dd>The day I added a blocked-request feed to my live lab, it showed a burst of requests I hadn’t made.</dd></div>
@@ -629,7 +629,7 @@
           <p class="case-links"><a href="/writeups/phpinfo-scanner/">Read the write-up</a><a class="tech" href="https://attack.mitre.org/techniques/T1595/003/">MITRE ATT&amp;CK T1595.003</a></p>
         </article>
         <article class="case">
-          <p class="case-meta"><time datetime="2026-10-27">27 October 2026</time><span>Vulnerability management and automation</span></p>
+          <p class="case-meta" data-nosnippet><time datetime="2026-10-27">27 October 2026</time><span>Vulnerability management and automation</span></p>
           <h3>Scanning my own apps: 2 critical down to 0</h3>
           <dl class="star">
             <div><dt>Situation</dt><dd>The PHP alert showed me that Docker apps carry their own software, which can quietly go out of date.</dd></div>
@@ -640,7 +640,7 @@
           <p class="case-links"><a href="/writeups/trivy-scan/">Read the write-up</a></p>
         </article>
         <article class="case">
-          <p class="case-meta"><time datetime="2026-10-20">20 October 2026</time><span>Cryptography and risk</span></p>
+          <p class="case-meta" data-nosnippet><time datetime="2026-10-20">20 October 2026</time><span>Cryptography and risk</span></p>
           <h3>Finding a weak spot in my own backups</h3>
           <dl class="star">
             <div><dt>Situation</dt><dd>My nightly backups held my VPN key, tunnel token and password hashes, unencrypted, on a USB drive.</dd></div>
@@ -926,7 +926,7 @@ PORT    STATE SERVICE
   </section>
 
   <!-- ===================== timeline ===================== -->
-  <section class="sec" id="timeline" aria-labelledby="tl-title">
+  <section class="sec" id="timeline" data-nosnippet aria-labelledby="tl-title">
     <div class="wrap sec-grid">
       <div class="sec-head"><div>
         <h2 id="tl-title">Two weeks: build it, then defend it</h2>
@@ -1009,7 +1009,7 @@ PORT    STATE SERVICE
   </section>
 
   <!-- ===================== write-ups ===================== -->
-  <section class="sec" id="writeups" aria-labelledby="wu-title">
+  <section class="sec" id="writeups" data-nosnippet aria-labelledby="wu-title">
     <div class="wrap sec-grid">
       <div class="sec-head"><div>
         <h2 id="wu-title">Write-ups</h2>
