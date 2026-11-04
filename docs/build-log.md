@@ -19,6 +19,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Retook the screenshots on my GitHub page (portfolio, live lab, attack map and network map) so they show the new design, in dark mode, and made a new banner for the top of it in the same style.
 - Google was still showing a plain globe instead of my site icon, and a date and "Read more" on my result. The old favicon.ico only had 16 and 32 pixel sizes, and Google needs at least 48, so Claude designed a new icon (a white H on black with a green status light, like the site) in every size. Also gave the homepage a shorter description that fits in one search result, and took the date out of the sitemap. Google decides when to pick these up.
 - Google kept showing "2 days ago" on my result, probably because it read the live "5 minutes ago" sentence and the dates in my timeline. Marked those parts `data-nosnippet` so Google leaves them out of the snippet, and renamed the page and site to just "haydnhomelab".
+- New link preview image (`og-v5.jpg`), so pasting my site into WhatsApp, LinkedIn or Discord shows a banner with my name, the rack and my three main results instead of just the rack. New file name so apps don't keep showing their saved copy of the old one.
 
 ## 28 October 2026
 
