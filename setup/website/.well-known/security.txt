@@ -1,0 +1,6 @@
+# Found a security problem on haydnhomelab.com? Please tell me.
+# This is a personal homelab, so there's no bug bounty, but I'll say thanks and fix it.
+Contact: mailto:cowleyhaydn@gmail.com
+Expires: 2027-11-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://haydnhomelab.com/.well-known/security.txt

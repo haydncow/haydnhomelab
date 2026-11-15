@@ -22,6 +22,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - New link preview image (`og-v5.jpg`), so pasting my site into WhatsApp, LinkedIn or Discord shows a banner with my name, the rack and my three main results instead of just the rack. New file name so apps don't keep showing their saved copy of the old one.
 - Changed my homepage title to "Haydn Cowley | Cyber security homelab" so searching my name with cyber security finds it. The site name Google shows above it is still haydnhomelab.
 - Google now shows my new icon and description. Made a square version of the banner (`og-square-v5.jpg`) and marked it as the page's main image, so Google can use it as the thumbnail next to my result instead of a crop of the rack photo. Google still chooses which image to show.
+- Added a `security.txt` file at `/.well-known/security.txt`, the standard way to tell security researchers how to report a problem to me (RFC 9116).
 
 ## 28 October 2026
 
