@@ -9,6 +9,7 @@ Whenever something changes in the homelab or the website (a new service, a new p
 - Raspberry Pi 5 (2GB), Debian 13, umask 027: new files need `chmod 644`, new folders `chmod 755`.
 - Switch port 1 to router (via a TP-Link wireless box to the EE hub), port 2 to the Pi, port 3 to the PC. 1TB My Passport on the Pi's USB (runs at USB 2 speed).
 - Services: Pi-hole (admin 8090) + Unbound (127.0.0.1:5335), Tailscale, UFW, Fail2ban, SSH keys only, OpenCanary honeypot (2222, 3389, 8081), Jellyfin, Homepage and Speedtest Tracker in Docker, Samba, nightly age-encrypted backups, ntfy phone alerts, CrowdSec (local API moved to 127.0.0.1:8085 because Caddy has 8080), weekly Trivy scan of Docker images (`/usr/local/bin/homelab-trivy`, cron Mondays, results in `/var/lib/homelab-trivy/last.json`).
+- Domain email: haydnhomelab.com sends and receives no email. Cloudflare DNS has SPF `v=spf1 -all`, DMARC `p=reject` and an empty `*._domainkey` record so nobody can spoof it. If email is ever added, these must change first.
 - Website: Caddy (`/etc/caddy/Caddyfile`) serves `/srv/status` through a Cloudflare Tunnel. No open router ports. Strict CSP, no inline scripts. Every page, the live lab included, follows the light/dark setting, and phones always get dark.
 
 ## Where things are

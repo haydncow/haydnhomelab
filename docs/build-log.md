@@ -23,6 +23,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Changed my homepage title to "Haydn Cowley | Cyber security homelab" so searching my name with cyber security finds it. The site name Google shows above it is still haydnhomelab.
 - Google now shows my new icon and description. Made a square version of the banner (`og-square-v5.jpg`) and marked it as the page's main image, so Google can use it as the thumbnail next to my result instead of a crop of the rack photo. Google still chooses which image to show.
 - Added a `security.txt` file at `/.well-known/security.txt`, the standard way to tell security researchers how to report a problem to me (RFC 9116).
+- Locked down email for my domain. It never sends email, so I added SPF (`v=spf1 -all`), DMARC (`p=reject`) and an empty DKIM record in Cloudflare, which tell other mail servers to reject anything pretending to be from haydnhomelab.com. The NCSC email security check went from 2 issues (DMARC and SPF missing) to no issues.
 
 ## 28 October 2026
 
