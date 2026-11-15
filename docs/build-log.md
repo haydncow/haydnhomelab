@@ -24,6 +24,7 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Google now shows my new icon and description. Made a square version of the banner (`og-square-v5.jpg`) and marked it as the page's main image, so Google can use it as the thumbnail next to my result instead of a crop of the rack photo. Google still chooses which image to show.
 - Added a `security.txt` file at `/.well-known/security.txt`, the standard way to tell security researchers how to report a problem to me (RFC 9116).
 - Locked down email for my domain. It never sends email, so I added SPF (`v=spf1 -all`), DMARC (`p=reject`) and an empty DKIM record in Cloudflare, which tell other mail servers to reject anything pretending to be from haydnhomelab.com. The NCSC email security check went from 2 issues (DMARC and SPF missing) to no issues.
+- Turned on DNSSEC for haydnhomelab.com in Cloudflare, so DNS answers for my domain are signed and can't be faked. The Verisign DNSSEC analyzer showed my domain's keys and signatures straight away; Cloudflare adds the last link (the DS record in .com) by itself because it's also my registrar.
 
 ## 28 October 2026
 
