@@ -1,0 +1,110 @@
+<!doctype html>
+<!-- Part of my apprenticeship portfolio, served by the Raspberry Pi in my rack.
+     Claude (an AI assistant) wrote the code. I built the lab, ran every command and tested it.
+     The whole build is written up at https://github.com/haydncow/haydnhomelab -->
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, follow">
+<title>Locking down my domain: fake emails, faked DNS and a way to report bugs | Haydn's Homelab</title>
+<meta name="description" content="My domain only hosts a website, but anyone could still send emails pretending to be from it. I blocked that, signed my DNS and added security.txt.">
+<link rel="canonical" href="https://haydnhomelab.com/writeups/domain-hardening/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://haydnhomelab.com/writeups/domain-hardening/">
+<meta property="og:title" content="Locking down my domain: fake emails, faked DNS and a way to report bugs | Haydn's Homelab">
+<meta property="og:description" content="My domain only hosts a website, but anyone could still send emails pretending to be from it. I blocked that, signed my DNS and added security.txt.">
+<meta property="og:image" content="https://haydnhomelab.com/og-v5.jpg">
+<meta property="og:site_name" content="Haydn's Homelab">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#151617" media="(max-width: 760px)">
+<meta name="theme-color" content="#ecedee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151617" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css?v=6">
+<script src="/assets/theme.js"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"Locking down my domain: fake emails, faked DNS and a way to report bugs","description":"My domain only hosts a website, but anyone could still send emails pretending to be from it. I blocked that, signed my DNS and added security.txt.","datePublished":"2026-11-15","url":"https://haydnhomelab.com/writeups/domain-hardening/","author":{"@type":"Person","name":"Haydn","url":"https://haydnhomelab.com/"},"isPartOf":{"@type":"WebSite","name":"Haydn's Homelab","url":"https://haydnhomelab.com/"}}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="/" aria-label="Haydn Cowley, home">Haydn<span class="last"> Cowley</span></a>
+    <nav aria-label="Site">
+      <a href="/writeups/" aria-current="page">Write-ups</a>
+      <a href="/status/">Status</a>
+      <a class="lab-link" href="/lab/"><span class="led" data-live-led></span>Live lab</a>
+    </nav>
+    <button class="theme" type="button" aria-label="Switch theme">
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    </button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap narrow"><article>
+  <div class="page-head">
+    <p class="eyebrow"><a href="/writeups/">Write-ups</a></p>
+    <h1>Locking down my domain: fake emails, faked DNS and a way to report bugs</h1>
+    <p class="lede">My domain only hosts a website, but anyone could still send emails pretending to be from it. I blocked that, signed my DNS and added security.txt.</p>
+    <div class="meta"><span><time datetime="2026-11-15">15 November 2026</time></span><span>3 min read</span><span>By <b>Haydn</b></span></div>
+  </div>
+  <dl class="summary"><div><dt>Goal</dt><dd>Stop people faking emails or DNS for my domain</dd></div><div><dt>Result</dt><dd>2 email issues to none, DNSSEC on</dd></div><div><dt>Tools</dt><dd>Cloudflare DNS, NCSC email check, Verisign DNSSEC analyzer</dd></div></dl>
+  <h2>Why bother on a website-only domain?</h2>
+<p>haydnhomelab.com never sends email. But email lets anyone write any address in the "From" line, so without the right DNS records someone could send a phishing email that looks like it came from me, and other mail servers would have nothing telling them to reject it. A domain nobody watches is an easy one to borrow.</p>
+<p>DNS has a similar gap. When you visit my site, your computer asks DNS where it lives. Without DNSSEC, those answers aren't signed, so in the right position an attacker could fake one and send you somewhere else.</p>
+
+<h2>1. Blocking fake emails</h2>
+<p>I ran my domain through the NCSC's free email security check first. It found <strong>2 issues</strong>: no DMARC and no SPF record.</p>
+<figure class="shot"><img src="/assets/domain-email-before.webp" width="1040" height="499" alt="NCSC email security check: 2 issues found, DMARC and SPF record flagged" loading="lazy"><figcaption>Before: DMARC and SPF missing.</figcaption></figure>
+<p>I checked Cloudflare had no MX records (so nothing receives email for the domain), then added three TXT records:</p>
+<pre class="term"><span class="c"># SPF: no server is allowed to send email as this domain</span>
+TXT  @             <b>v=spf1 -all</b>
+
+<span class="c"># DMARC: reject anything that fails, for subdomains too</span>
+TXT  _dmarc        <b>v=DMARC1; p=reject; sp=reject; adkim=s; aspf=s</b>
+
+<span class="c"># DKIM: there are no signing keys, so any "signed" email is fake</span>
+TXT  *._domainkey  <b>v=DKIM1; p=</b></pre>
+<p>A few minutes later the same check came back clean.</p>
+<figure class="shot"><img src="/assets/domain-email-after.webp" width="1040" height="499" alt="NCSC email security check: no issues found, DMARC and SPF passing" loading="lazy"><figcaption>After: no issues.</figcaption></figure>
+
+<h2>2. Signing my DNS with DNSSEC</h2>
+<p>The Verisign DNSSEC analyzer showed that the internet's root and the .com zone were already signed, but my domain had no keys and no signatures.</p>
+<figure class="shot"><img src="/assets/domain-dnssec-before.webp" width="1040" height="345" alt="Verisign DNSSEC analyzer before: no DS records, no DNSKEY records and no RRSIGs for haydnhomelab.com. Addresses blacked out." loading="lazy"><figcaption>Before: no keys or signatures. Addresses blacked out.</figcaption></figure>
+<p>In Cloudflare it's one switch: DNS, Settings, Enable DNSSEC. Straight away the analyzer found my domain's keys and verified signatures on its records.</p>
+<figure class="shot"><img src="/assets/domain-dnssec-after.webp" width="1040" height="495" alt="Verisign DNSSEC analyzer after: DNSKEY records found and signatures verified for haydnhomelab.com, DS record not yet in the com zone. Addresses blacked out." loading="lazy"><figcaption>After: keys and signatures verified. Addresses blacked out.</figcaption></figure>
+<p>The one red line left is the DS record, the link that tells .com to trust my keys. Because I bought the domain through Cloudflare, it adds that itself, which can take up to a day or two.</p>
+
+<h2>3. A way to report problems</h2>
+<p>If someone finds a security problem on my site, they need to know who to tell. <code>security.txt</code> (RFC 9116) is the standard place to look, so I added one:</p>
+<pre class="term"><span class="c">$ curl https://haydnhomelab.com/.well-known/security.txt</span>
+Contact: mailto:cowleyhaydn@gmail.com
+Expires: 2027-11-01T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://haydnhomelab.com/.well-known/security.txt</pre>
+
+<div class="callout mistake"><p><strong>Easy to get wrong:</strong> these email records are only right because the domain sends no email. If I ever set up email on it, I'd have to change SPF and DMARC first, or my own emails would be rejected. The <code>Expires</code> date in security.txt also has to be renewed every year.</p></div>
+
+<h2>What I learned</h2>
+<ul>
+<li>A domain that doesn't send email still needs SPF and DMARC, or anyone can borrow it for phishing.</li>
+<li>DNSSEC works as a chain: root, then .com, then my domain. One missing link and it isn't trusted yet.</li>
+<li>Free tools like the NCSC check make before and after easy to prove.</li>
+</ul>
+  <p class="ai-note"><b>How I used AI:</b> Claude explained what each record does, gave me the exact values and steps, and wrote security.txt and this page. I added the records and switched on DNSSEC in Cloudflare, and ran every check myself. The full, unedited notes are in my <a href="https://github.com/haydncow/haydnhomelab/blob/main/docs/build-log.md">build log</a>.</p>
+  <nav class="next-prev" aria-label="More write-ups"><a href="/writeups/cloudflared-emudhra/"><small>&larr; Older</small><span>A security email from Cloudflare, and checking it wasn't phishing first</span></a><span></span></nav>
+</article></div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <span>Served from a Raspberry Pi 5 in my rack, through a Cloudflare Tunnel. No open ports at home.</span>
+    <span class="links"><a href="/">Portfolio</a> <a href="/lab/">Live lab</a> <a href="https://github.com/haydncow/haydnhomelab">GitHub</a> <a href="https://www.linkedin.com/in/haydncowley">LinkedIn</a></span>
+  </div>
+</footer>
+</body>
+</html>
