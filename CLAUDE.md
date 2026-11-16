@@ -8,7 +8,7 @@ Whenever something changes in the homelab or the website (a new service, a new p
 ## The setup
 - Raspberry Pi 5 (2GB), Debian 13, umask 027: new files need `chmod 644`, new folders `chmod 755`.
 - Switch port 1 to router (via a TP-Link wireless box to the EE hub), port 2 to the Pi, port 3 to the PC. 1TB My Passport on the Pi's USB (runs at USB 2 speed).
-- Services: Pi-hole (admin 8090) + Unbound (127.0.0.1:5335), Tailscale, UFW, Fail2ban, SSH keys only, OpenCanary honeypot (2222, 3389, 8081), Jellyfin, Homepage and Speedtest Tracker in Docker, Samba, nightly age-encrypted backups, ntfy phone alerts, CrowdSec (local API moved to 127.0.0.1:8085 because Caddy has 8080), weekly Trivy scan of Docker images (`/usr/local/bin/homelab-trivy`, cron Mondays, results in `/var/lib/homelab-trivy/last.json`).
+- Services: Pi-hole (admin 8090) + Unbound (127.0.0.1:5335), Tailscale, UFW, Fail2ban, SSH keys only, OpenCanary honeypot (2222, 3389, 8081), Jellyfin, Homepage and Speedtest Tracker in Docker, Samba, nightly age-encrypted backups, ntfy phone alerts, CrowdSec (local API moved to 127.0.0.1:8085 because Caddy has 8080), weekly Trivy scan of Docker images (`/usr/local/bin/homelab-trivy`, cron Mondays, results in `/var/lib/homelab-trivy/last.json`), Wazuh agent (agent name `pi`; the Wazuh server is a VirtualBox VM on Haydn's PC, so its IP can change; the agent also reads `/var/log/opencanary/opencanary.log`, and custom rule 100200 in the server's `local_rules.xml` turns honeypot hits into level 10 alerts). rsyslog is installed so `/var/log/auth.log` exists for Wazuh. Run test attacks from Kali, not the PC: a ban on the PC also kills its DNS through Pi-hole.
 - Domain email: haydnhomelab.com sends and receives no email. Cloudflare DNS has SPF `v=spf1 -all`, DMARC `p=reject` and an empty `*._domainkey` record so nobody can spoof it. If email is ever added, these must change first. DNSSEC is on (Cloudflare is the registrar, so the DS record is managed automatically).
 - Website: Caddy (`/etc/caddy/Caddyfile`) serves `/srv/status` through a Cloudflare Tunnel. No open router ports. Strict CSP, no inline scripts. Every page, the live lab included, follows the light/dark setting, and phones always get dark.
 
@@ -42,4 +42,4 @@ Write-ups, the status page and the live lab share `assets/site.css` and the same
 - Keys, tokens and the ntfy topic never go in chat or the repo.
 
 ## Ideas not done yet
-Copy backups off the Pi (3-2-1), VLANs on the switch, SSD instead of the SD card, USB 3 cable for the drive, remove the old UFW 8443 rule.
+Copy backups off the Pi (3-2-1), VLANs on the switch, SSD instead of the SD card, USB 3 cable for the drive, remove the old UFW 8443 rule, raise the Pi's CIS Debian 13 score in Wazuh (49% on 16 Nov 2026).

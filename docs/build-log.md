@@ -2,7 +2,7 @@
 
 Notes on how the build is going, including anything that goes wrong and how I fix it. Newest at the top.
 
-**Jump to:** [30 Oct](#30-october-2026) | [28 Oct](#28-october-2026) | [27 Oct](#27-october-2026) | [23 Oct](#23-october-2026) | [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
+**Jump to:** [16 Nov](#16-november-2026) | [30 Oct](#30-october-2026) | [28 Oct](#28-october-2026) | [27 Oct](#27-october-2026) | [23 Oct](#23-october-2026) | [21 Oct](#21-october-2026) | [20 Oct](#20-october-2026) | [18 Oct](#18-october-2026) | [17 Oct](#17-october-2026) | [16 Oct](#16-october-2026) | [15 Oct](#15-october-2026) | [14 Oct](#14-october-2026)
 
 ## 30 October 2026
 
@@ -30,6 +30,15 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 ## 16 November 2026
 
 - The weekly Trivy scan found new problems that weren't there when I last updated: Homepage 0 critical and 9 high, Speedtest Tracker 2 critical and 47 high. Pulled the latest images for both, recreated the containers and pruned the old images, then scanned again. Now Homepage is 0 critical and 6 high, and Speedtest Tracker is 0 critical and 0 high. The 6 left in Homepage are waiting on a new image from its makers. This is why the scan runs every week: nothing changed on my Pi, but new vulnerabilities were found in the software inside the images.
+- Set up Wazuh, a free SIEM, to collect my Pi's logs in one place and alert on attacks. The server is Wazuh's ready-made virtual machine (4.14.10) in VirtualBox on my PC, with 4 CPUs and 8GB of RAM, and I installed the Wazuh agent on the Pi. My PC had no SSH key for the Pi yet, so I made one and added it from another device.
+- Problem: my first test didn't show up. Debian 13 keeps logs in the system journal and doesn't write `/var/log/auth.log`, which is where the agent reads logins from. Installing `rsyslog` brought the file back.
+- Tested it by attacking my own Pi:
+  - SSH logins as a user that doesn't exist: each one was a level 5 alert (rule 5710), and Wazuh spotted the pattern and raised a level 10 brute force alert (rule 5712), tagged with MITRE ATT&CK (Password Guessing, SSH, Brute Force).
+  - An nmap service scan from Kali: Wazuh saw nothing, because a scan never logs in and nothing on the Pi logged it. nmap also guessed my Pi was a Cisco router, fooled by the honeypot's fake services.
+  - The honeypot: told the agent to read the OpenCanary log and wrote my own Wazuh rule (100200, level 10) so every honeypot connection becomes an alert. Connections to the fake SSH on 2222 and the fake NAS login on 8081 were both caught.
+- My own defences banned my PC after the login test. My PC uses Pi-hole for DNS, so it lost its internet as well as SSH. Lifting the ban fixed it. Next time I'll run attacks from Kali.
+- Wazuh also checked the Pi against the CIS Debian 13 benchmark and scored it 49%. That's my next thing to improve.
+- Wrote it up as my 13th write-up, "I set up a SIEM and attacked my own Pi", with screenshots (addresses blacked out). Added it to the write-ups page and my homepage.
 
 ## 28 October 2026
 
