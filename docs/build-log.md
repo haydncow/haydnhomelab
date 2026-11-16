@@ -27,6 +27,10 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - Turned on DNSSEC for haydnhomelab.com in Cloudflare, so DNS answers for my domain are signed and can't be faked. The Verisign DNSSEC analyzer showed my domain's keys and signatures straight away; Cloudflare adds the last link (the DS record in .com) by itself because it's also my registrar.
 - Wrote it all up as my 12th write-up, "Locking down my domain", with the NCSC and Verisign before and after screenshots (addresses blacked out). Added it to the write-ups page and my homepage.
 
+## 16 November 2026
+
+- The weekly Trivy scan found new problems that weren't there when I last updated: Homepage 0 critical and 9 high, Speedtest Tracker 2 critical and 47 high. Pulled the latest images for both, recreated the containers and pruned the old images, then scanned again. Now Homepage is 0 critical and 6 high, and Speedtest Tracker is 0 critical and 0 high. The 6 left in Homepage are waiting on a new image from its makers. This is why the scan runs every week: nothing changed on my Pi, but new vulnerabilities were found in the software inside the images.
+
 ## 28 October 2026
 
 - Cloudflare emailed every Tunnel user: eight eMudhra security certificates had been made with private keys so weak they could be worked out, and cloudflared versions before 2026.10.2 still trusted them. Before acting on it, Claude checked it matched Cloudflare's own blog post, in case it was phishing. My Pi was on 2026.10.1, so I upgraded through apt to 2026.10.5. The site was only down for the few seconds the tunnel took to restart, and came straight back. My tunnel talks to Caddy over plain HTTP on the Pi itself, so the warning about HTTPS origin certificates didn't affect me. Wrote it up as [a write-up](https://haydnhomelab.com/writeups/cloudflared-emudhra/).
