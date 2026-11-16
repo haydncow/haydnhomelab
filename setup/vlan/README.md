@@ -4,6 +4,8 @@ Port 5 on my switch is a separate lab network (VLAN 20). Anything plugged into i
 
 ## Switch (TP-Link TL-SG105E, web page on my home network)
 
+Login password changed from the default.
+
 VLAN > 802.1Q VLAN: Enable
 
 | VLAN | Name | Port 1 router | Port 2 Pi | Port 3 PC | Port 4 | Port 5 lab |

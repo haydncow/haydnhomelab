@@ -67,7 +67,7 @@
 <p>My EE router doesn't understand VLANs, so the lab gets no internet at all. For an attack lab, that's what I want.</p>
 
 <h2>The switch</h2>
-<p>First I had to find it. The only TP-Link in my scan was my Wi-Fi extender, and the switch wasn't on its factory address. TP-Link's own tool found it straight away. Then I turned on 802.1Q VLANs and added VLAN 20, tagged on port 2 and untagged on port 5:</p>
+<p>First I had to find it. The only TP-Link in my scan was my Wi-Fi extender, and the switch wasn't on its factory address. TP-Link's own tool found it straight away. I changed its login password first, so nobody else on my network can change it, then turned on 802.1Q VLANs and added VLAN 20, tagged on port 2 and untagged on port 5:</p>
 <figure class="shot"><img src="/assets/vlan-table.webp" width="1040" height="471" alt="TL-SG105E 802.1Q VLAN table: VLAN 1 Default with ports 1 to 4 untagged, VLAN 20 lab with port 2 tagged and port 5 untagged" loading="lazy"><figcaption>VLAN 1 is home, VLAN 20 is the lab.</figcaption></figure>
 <p>Port 5 also needed its PVID set to 20, so anything plugged in without a tag lands in the lab:</p>
 <figure class="shot"><img src="/assets/vlan-pvid.webp" width="672" height="314" style="max-width:420px" alt="TL-SG105E PVID settings: ports 1 to 4 on 1, port 5 on 20" loading="lazy"><figcaption>Port 5 defaults to VLAN 20.</figcaption></figure>
