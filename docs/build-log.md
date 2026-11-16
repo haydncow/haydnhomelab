@@ -39,6 +39,11 @@ Notes on how the build is going, including anything that goes wrong and how I fi
 - My own defences banned my PC after the login test. My PC uses Pi-hole for DNS, so it lost its internet as well as SSH. Lifting the ban fixed it. Next time I'll run attacks from Kali.
 - Wazuh also checked the Pi against the CIS Debian 13 benchmark and scored it 49%. That's my next thing to improve.
 - Wrote it up as my 13th write-up, "I set up a SIEM and attacked my own Pi", with screenshots (addresses blacked out). Added it to the write-ups page and my homepage.
+- Set up a lab VLAN so I have somewhere to attack from that can't touch my home network. Port 5 on my switch is now VLAN 20 ("lab"). The Pi joins it as well as my normal network (port 2 carries both, tagged), with the address 10.20.0.1, and UFW only lets the lab reach the honeypot ports (2222, 3389, 8081). See [vlan](../setup/vlan/).
+- Problem: I couldn't find the switch. The only TP-Link in my nmap scan was my RE315 Wi-Fi extender, and the switch wasn't on its factory address either. TP-Link's Easy Smart Configuration Utility on my PC found it straight away.
+- Problem: the switch wouldn't take port 5 out of VLAN 1 until I filled in the whole VLAN 1 row (name and every port) before clicking Add/Modify.
+- Tested it from my Mac on port 5 with Wi-Fi off: the Pi answered pings, the honeypot port opened, real SSH timed out, nmap only found the three honeypot ports (997 filtered), and pretending to be on my home network couldn't reach the router. So the lab can only reach the honeypot.
+- Wrote it up as my 14th write-up.
 
 ## 28 October 2026
 

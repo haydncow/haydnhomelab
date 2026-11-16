@@ -1,0 +1,127 @@
+<!doctype html>
+<!-- Part of my apprenticeship portfolio, served by the Raspberry Pi in my rack.
+     Claude (an AI assistant) wrote the code. I built the lab, ran every command and tested it.
+     The whole build is written up at https://github.com/haydncow/haydnhomelab -->
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, follow">
+<title>A separate lab network, so my attacks can't touch my home | Haydn's Homelab</title>
+<meta name="description" content="I turned one port on my switch into its own VLAN. Anything plugged into it can reach my honeypot and nothing else: not my home network, not the internet, not SSH.">
+<link rel="canonical" href="https://haydnhomelab.com/writeups/lab-vlan/">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://haydnhomelab.com/writeups/lab-vlan/">
+<meta property="og:title" content="A separate lab network, so my attacks can't touch my home | Haydn's Homelab">
+<meta property="og:description" content="I turned one port on my switch into its own VLAN. Anything plugged into it can reach my honeypot and nothing else: not my home network, not the internet, not SSH.">
+<meta property="og:image" content="https://haydnhomelab.com/og-v5.jpg">
+<meta property="og:site_name" content="Haydn's Homelab">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#151617" media="(max-width: 760px)">
+<meta name="theme-color" content="#ecedee" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#151617" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="/icon-192.png" type="image/png" sizes="192x192">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/site.css?v=6">
+<script src="/assets/theme.js"></script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","headline":"A separate lab network, so my attacks can't touch my home","description":"I turned one port on my switch into its own VLAN. Anything plugged into it can reach my honeypot and nothing else: not my home network, not the internet, not SSH.","datePublished":"2026-11-16","url":"https://haydnhomelab.com/writeups/lab-vlan/","author":{"@type":"Person","name":"Haydn","url":"https://haydnhomelab.com/"},"isPartOf":{"@type":"WebSite","name":"Haydn's Homelab","url":"https://haydnhomelab.com/"}}</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="top">
+  <div class="wrap">
+    <a class="name" href="/" aria-label="Haydn Cowley, home">Haydn<span class="last"> Cowley</span></a>
+    <nav aria-label="Site">
+      <a href="/writeups/" aria-current="page">Write-ups</a>
+      <a href="/status/">Status</a>
+      <a class="lab-link" href="/lab/"><span class="led" data-live-led></span>Live lab</a>
+    </nav>
+    <button class="theme" type="button" aria-label="Switch theme">
+      <svg class="sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6 6 6M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+      <svg class="moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/></svg>
+    </button>
+  </div>
+</header>
+<main id="main">
+<div class="wrap narrow"><article>
+  <div class="page-head">
+    <p class="eyebrow"><a href="/writeups/">Write-ups</a></p>
+    <h1>A separate lab network, so my attacks can't touch my home</h1>
+    <p class="lede">I turned one port on my switch into its own VLAN. Anything plugged into it can reach my honeypot and nothing else: not my home network, not the internet, not SSH.</p>
+    <div class="meta"><span><time datetime="2026-11-16">16 November 2026</time></span><span>3 min read</span><span>By <b>Haydn</b></span></div>
+  </div>
+  <dl class="summary"><div><dt>Goal</dt><dd>Somewhere to attack from that can't reach my real network</dd></div><div><dt>Result</dt><dd>Lab reaches the honeypot and nothing else</dd></div><div><dt>Tools</dt><dd>TP-Link TL-SG105E, 802.1Q VLANs, NetworkManager, UFW, nmap</dd></div></dl>
+  <h2>Why I needed it</h2>
+<p>In my <a href="/writeups/wazuh-siem/">SIEM write-up</a> I attacked my Pi from my main PC, my own defences banned it, and my internet went down with it. Attacks should come from somewhere separate. Businesses do this with VLANs: one switch, split into networks that can't see each other.</p>
+
+<h2>The plan</h2>
+<ul>
+<li><strong>VLAN 1</strong> is my home network, on ports 1 to 4 like before.</li>
+<li><strong>VLAN 20</strong> is the lab, on port 5 only.</li>
+<li>The Pi's port carries both, <strong>tagged</strong>, so the Pi can be on the lab too.</li>
+<li>On the Pi, the firewall lets the lab reach only the honeypot.</li>
+</ul>
+<p>My EE router doesn't understand VLANs, so the lab gets no internet at all. For an attack lab, that's what I want.</p>
+
+<h2>The switch</h2>
+<p>First I had to find it. The only TP-Link in my scan was my Wi-Fi extender, and the switch wasn't on its factory address. TP-Link's own tool found it straight away. Then I turned on 802.1Q VLANs and added VLAN 20, tagged on port 2 and untagged on port 5:</p>
+<figure class="shot"><img src="/assets/vlan-table.webp" width="1040" height="471" alt="TL-SG105E 802.1Q VLAN table: VLAN 1 Default with ports 1 to 4 untagged, VLAN 20 lab with port 2 tagged and port 5 untagged" loading="lazy"><figcaption>VLAN 1 is home, VLAN 20 is the lab.</figcaption></figure>
+<p>Port 5 also needed its PVID set to 20, so anything plugged in without a tag lands in the lab:</p>
+<figure class="shot"><img src="/assets/vlan-pvid.webp" width="672" height="314" style="max-width:420px" alt="TL-SG105E PVID settings: ports 1 to 4 on 1, port 5 on 20" loading="lazy"><figcaption>Port 5 defaults to VLAN 20.</figcaption></figure>
+
+<h2>The Pi</h2>
+<pre class="term"><span class="c"># join VLAN 20, never use it as the way to the internet</span>
+$ sudo nmcli con add type vlan con-name lab \
+    ifname eth0.20 dev eth0 id 20 \
+    ipv4.method manual ipv4.addresses 10.20.0.1/24 \
+    ipv4.never-default yes ipv6.method disabled
+$ ip -br addr show eth0.20
+<b>eth0.20@eth0     UP     10.20.0.1/24</b>
+
+<span class="c"># the lab can only reach the honeypot</span>
+$ sudo ufw allow in on eth0.20 from 10.20.0.0/24 to any port 2222,3389,8081 proto tcp</pre>
+<p>My firewall already blocks everything else coming in and refuses to route between networks, so the Pi can't be used as a way through to my home network.</p>
+
+<h2>Testing it</h2>
+<p>I plugged my Mac into port 5 with Wi-Fi off and gave it a lab address.</p>
+<pre class="term">$ ping -c 3 <span class="c">[pi, lab side]</span>
+<b>3 packets transmitted, 3 packets received</b>
+
+$ nc -vz <span class="c">[pi]</span> 2222      <span class="c"># honeypot</span>
+<b>succeeded!</b>
+$ nc -vz <span class="c">[pi]</span> 22        <span class="c"># real SSH</span>
+<b>Operation timed out</b>
+
+$ sudo nmap -Pn <span class="c">[pi]</span>
+Not shown: 997 filtered tcp ports (no-response)
+<b>2222/tcp open
+3389/tcp open
+8081/tcp open</b></pre>
+<p>From the lab, my Pi looks like a box with three services, and all three are fake. Then I pretended to be on my home network by giving the Mac a home address and pinging my router:</p>
+<pre class="term">$ ping -c 3 <span class="c">[router]</span>
+<b>No route to host</b></pre>
+<p>The switch keeps port 5 apart from everything else, so there was nobody there to answer.</p>
+
+<div class="callout mistake"><p><strong>Easy to get wrong:</strong> the switch kept port 5 in VLAN 1 until I filled in the whole VLAN 1 row, name and every port, before saving. Left like that, the lab would still have heard my home network's traffic.</p></div>
+
+<h2>What I learned</h2>
+<ul>
+<li>Tagged means the port carries several VLANs and the device sorts them out. Untagged means the device doesn't know VLANs exist.</li>
+<li>A VLAN stops traffic at the switch, but the firewall decides what's allowed on the device that sits in both.</li>
+<li>Test the thing you're trying to stop, not just the thing you want to work.</li>
+</ul>
+  <p class="ai-note"><b>How I used AI:</b> Claude explained VLANs, planned the setup and gave me each step and command, and wrote this page. I set up the switch and the Pi, ran every test from my Mac and checked the results. The full, unedited notes are in my <a href="https://github.com/haydncow/haydnhomelab/blob/main/docs/build-log.md">build log</a>.</p>
+  <nav class="next-prev" aria-label="More write-ups"><a href="/writeups/wazuh-siem/"><small>&larr; Older</small><span>I set up a SIEM and attacked my own Pi to see what it caught</span></a><span></span></nav>
+</article></div>
+</main>
+<footer class="site">
+  <div class="wrap">
+    <span>Served from a Raspberry Pi 5 in my rack, through a Cloudflare Tunnel. No open ports at home.</span>
+    <span class="links"><a href="/">Portfolio</a> <a href="/lab/">Live lab</a> <a href="https://github.com/haydncow/haydnhomelab">GitHub</a> <a href="https://www.linkedin.com/in/haydncowley">LinkedIn</a></span>
+  </div>
+</footer>
+</body>
+</html>

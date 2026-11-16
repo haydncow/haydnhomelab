@@ -22,7 +22,7 @@ How I keep my homelab secure, and how I've tested it. I started this as a plan b
 - [x] Lynis audit and hardening (score 63 to 75)
 - [x] Honeypot on my home network (OpenCanary) to catch anything scanning or logging in where it shouldn't
 - [x] Nightly backups, with a restore tested
-- [ ] VLANs on the managed switch
+- [x] VLANs on the managed switch (port 5 is a lab VLAN that can only reach the honeypot, see [vlan](../setup/vlan/))
 
 ## What I'm protecting against
 
